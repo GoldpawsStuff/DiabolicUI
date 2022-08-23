@@ -1,0 +1,19 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+
+	<Script file="UnitFrames.lua"/>
+
+	<Script file="Elements\SmartClassPower.lua"/>
+	<Script file="Elements\SmartHealth.lua"/>
+	<Script file="Elements\SmartPower.lua"/>
+	<Script file="Elements\SwingTimer.lua"/>
+	<Script file="Elements\Tags.lua"/>
+
+	<Script file="Units\Player.lua"/>
+	<Script file="Units\Pet.lua"/>
+	<Script file="Units\Focus.lua"/>
+	<Script file="Units\Target.lua"/>
+	<Script file="Units\ToT.lua"/>
+	<Script file="Units\Boss.lua"/>
+	<Script file="Units\NamePlates.lua"/>
+
+</Ui>

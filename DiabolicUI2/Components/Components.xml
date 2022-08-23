@@ -1,4 +1,13 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 
+	<Include file="ActionBars\ActionBars.xml"/>
+	<Include file="UnitFrames\UnitFrames.xml"/>
+
+	<Script file="ChatFrames.lua"/>
+	<Script file="Clutter.lua"/>
+	<Script file="Minimap.lua"/>
+	<Script file="Tooltips.lua"/>
+	<Script file="Tracker.lua"/>
+	<Script file="WorldMap.lua"/>
 
 </Ui>

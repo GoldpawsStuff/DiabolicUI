@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+
+	<Script file="ActionBars.lua"/>
+
+	<Script file="Structure\StanceBar.lua"/>
+	<Script file="Structure\StanceButton.lua"/>
+
+	<Script file="Common\Buttons.lua"/>
+
+	<Script file="Elements\Bars.lua"/>
+	<Script file="Elements\ExtraButtons.lua"/>
+	<Script file="Elements\PetBar.lua"/>
+	<Script file="Elements\StanceBar.lua"/>
+	<Script file="Elements\StatusBars.lua"/>
+	<Script file="Elements\MicroMenu.lua"/>
+
+</Ui>
