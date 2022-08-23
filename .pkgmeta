@@ -1,4 +1,4 @@
-package-as: UICore
+package-as: DiabolicUI2
 enable-nolib-creation: no
 
 embedded-libraries:
@@ -15,7 +15,7 @@ tools-used:
     - ouf
 
 move-folders:
-    UICore/UICore: UICore
+    DiabolicUI/DiabolicUI2: DiabolicUI2
 
 manual-changelog:
     filename: CHANGELOG.md
