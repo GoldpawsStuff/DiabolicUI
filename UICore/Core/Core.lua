@@ -127,7 +127,8 @@ ns.SwitchUI = function(self, input)
 			["AzeriteUI"] 	= { "azerite1", "az1", "azerite", "azui" },
 			["AzeriteUI2"] 	= { "azerite2", "az2", "azerite", "azui" },
 			["DiabolicUI2"] = { "diabolic", "diablo", "dui" },
-			["GoldpawUI"] 	= { "goldpaw", "gui" }
+			["GoldpawUI"] 	= { "goldpaw", "gui" },
+			["JourneyUI"] 	= { "journey", "jui" }
 		} do
 			-- Only include existing UIs that can be switched to.
 			if (ui ~= Addon) and (IsAddOnAvailable(ui)) then
