@@ -82,6 +82,11 @@ local SanitizeSettings = function(db)
 	return db
 end
 
+-- Proxy method to avoid modules using the callback object directly
+ns.Fire = function(self, name, ...)
+	ns.callbacks:Fire(name, ...)
+end
+
 ns.ResetScale = function(self)
 	if (InCombatLockdown()) then
 		return
