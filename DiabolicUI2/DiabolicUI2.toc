@@ -6,8 +6,8 @@
 ## Author: Lars Norberg, Daniel Troko
 
 ## X-Category: Interface Enhancements
-## X-Curse-Project-ID:
-## X-Wago-ID:
+## X-Curse-Project-ID: 100658
+## X-Wago-ID: WqKQBaGx
 ## X-License: Custom
 
 ## SavedVariables: DiabolicUI2_DB
