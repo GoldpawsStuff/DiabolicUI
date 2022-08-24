@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-08-22
+## [2.0.33-Release] 2022-08-24
 - Restructure repository to be a fork of UICore.
+- Added and updated the first draft of the wiki pages.
 
 ## [2.0.32-Release] 2022-08-17
 - Bump to client patch 9.2.7.
