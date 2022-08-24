@@ -15,7 +15,7 @@ tools-used:
     - ouf
 
 move-folders:
-    DiabolicUI/DiabolicUI2: DiabolicUI2
+    DiabolicUI2/DiabolicUI2: DiabolicUI2
 
 manual-changelog:
     filename: CHANGELOG.md
