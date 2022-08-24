@@ -34,6 +34,9 @@ _G[Addon] = ns
 -- Default settings
 local defaults = {
 	char = {
+		actionbars = {
+			enableSecondary = false
+		}
 	},
 	global = {
 		core = {
@@ -73,6 +76,15 @@ local UpdateObjectScales = ns.API.UpdateObjectScales
 local SanitizeSettings = function(db)
 	if (not db) then
 		return
+	end
+	local numBars = db.char.actionbars.numBars
+	if (numBars) then
+		db.char.actionbars.numBars = nil
+		if (numBars > 1) then
+			db.char.actionbars.enableSecondary = true
+		else
+			db.char.actionbars.enableSecondary = nil
+		end
 	end
 	local scale = db.global.core.relativeScale
 	if (scale) then
