@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.34-Release] 2022-09-03
+### Removed
+- Removed TaintLess.xml as it's about to be deprecated.
+
 ## [2.0.33-Release] 2022-08-24
 - Restructure repository to be a fork of UICore.
 - Added and updated the first draft of the wiki pages.
