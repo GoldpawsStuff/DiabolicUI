@@ -13,9 +13,6 @@
 ## SavedVariables: UICore_DB
 ## OptionalDeps: Ace3, Clique, LibKeyBound-1.0
 
-# General taint fixes
-TaintLess.xml
-
 # Libraries
 Libs\Libs.xml
 
