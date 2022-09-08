@@ -221,8 +221,7 @@ ChatFrame.GetTabTextures = function(self)
 	end
 end
 
-ChatFrame.SetFontObject = ChatFrame1.SetFontObject
-ChatFrame.UpdateFont = function(self)
+ChatFrame.UpdateFontOld = function(self)
 	--fontHeight will be 0 if it's still at the default (14)
 	local _, fontHeight = FCF_GetChatWindowInfo(self:GetID())
 	if (fontHeight == 0) then
@@ -306,6 +305,23 @@ ChatFrames.StyleChat = function(self, frame)
 		editBox:SetPoint("TOP", frame, "BOTTOM", 0, -1)
 	end
 
+	local locked
+	ChatFrame.SetFontObject = ChatFrame1.SetFontObject
+	ChatFrame.UpdateFont = function(frame)
+		if (locked) then
+			return
+		end
+		locked = true
+		local fontObject = frame:GetFontObject()
+		local font, size, style = fontObject:GetFont()
+		fontObject:SetFont(font, size, "OUTLINE")
+		fontObject:SetShadowColor(0,0,0,.5)
+		--fontObject:SetFont(font, size, "")
+		--fontObject:SetShadowColor(0,0,0,.75)
+		fontObject:SetShadowOffset(-.75, -.75)
+		locked = false
+	end
+
 	ChatFrame.UpdateFont(frame)
 
 	hooksecurefunc(frame, "SetFont", ChatFrame.UpdateFont) -- blizzard use this
@@ -345,6 +361,17 @@ ChatFrames.OnInitialize = function(self)
 
 	-- Need to set this to avoid frame popping back up
 	CHAT_FRAME_BUTTON_FRAME_MIN_ALPHA = 0
+
+	-- Chat window chat heights
+	if (CHAT_FONT_HEIGHTS) then
+		for i = #CHAT_FONT_HEIGHTS, 1, -1 do
+			CHAT_FONT_HEIGHTS[i] = nil
+		end
+		-- Ensure we have bigger fonts for Wrath!
+		for i,v in ipairs({ 14, 16, 18, 20, 22, 24, 28, 32 }) do
+			CHAT_FONT_HEIGHTS[i] = v
+		end
+	end
 
 	local scaffold = SetObjectScale(CreateFrame("Frame", nil, UIParent))
 	scaffold:SetSize(475,228)

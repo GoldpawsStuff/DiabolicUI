@@ -69,7 +69,7 @@ local L_RARE = ITEM_QUALITY3_DESC
 local T_BOSS = "|TInterface\\TargetingFrame\\UI-TargetingFrame-Skull:14:14:-2:1|t"
 
 -- Tags
----------------------------------------------------------------------	
+---------------------------------------------------------------------
 Events["Diabolic:Absorb"] = "UNIT_ABSORB_AMOUNT_CHANGED"
 Methods["Diabolic:Absorb"] = function(unit)
 	if (UnitIsDeadOrGhost(unit)) then
@@ -85,8 +85,10 @@ end
 Events["Diabolic:Classification"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
 Methods["Diabolic:Classification"] = function(unit)
 	local l = UnitLevel(unit)
-	if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
-		l = UnitBattlePetLevel(unit)
+	if (not oUF.isWrath) then
+		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
+			l = UnitBattlePetLevel(unit)
+		end
 	end
 	local c = UnitClassification(unit)
 	if (c == "worldboss" or (not l) or (l < 1)) then
@@ -142,8 +144,10 @@ end
 Events["Diabolic:Level"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
 Methods["Diabolic:Level"] = function(unit)
 	local l = UnitLevel(unit)
-	if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
-		l = UnitBattlePetLevel(unit)
+	if (not oUF.isWrath) then
+		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
+			l = UnitBattlePetLevel(unit)
+		end
 	end
 	local c = UnitClassification(unit)
 	if (c == "worldboss" or (not l) or (l < 1)) then

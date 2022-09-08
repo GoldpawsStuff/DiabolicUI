@@ -292,16 +292,18 @@ BlizzKill.KillActionBars = function(self)
 	end
 
 	-- Spanking new layout system in Dragonflight
-	self:HandleManagedFrame(ExtraAbilityContainer) -- >= 10.0.0
-	self:HandleManagedFrame(MainMenuBarVehicleLeaveButton) -- >= 10.0.0
-	self:HandleManagedFrame(MultiCastActionBarFrame) -- >= 10.0.0
-	self:HandleManagedFrame(PetActionBarFrame) -- >= 10.0.0
-	self:HandleManagedFrame(PossessBarFrame) -- >= 10.0.0
-	self:HandleManagedFrame(StanceBarFrame) -- >= 10.0.0
-	self:HandleManagedFrame(TutorialFrameAlertButton) -- >= 10.0.0
+	if (ns.IsDragonflight) then
+		self:HandleManagedFrame(ExtraAbilityContainer) -- >= 10.0.0
+		self:HandleManagedFrame(MainMenuBarVehicleLeaveButton) -- >= 10.0.0
+		self:HandleManagedFrame(MultiCastActionBarFrame) -- >= 10.0.0
+		self:HandleManagedFrame(PetActionBarFrame) -- >= 10.0.0
+		self:HandleManagedFrame(PossessBarFrame) -- >= 10.0.0
+		self:HandleManagedFrame(StanceBarFrame) -- >= 10.0.0
+		self:HandleManagedFrame(TutorialFrameAlertButton) -- >= 10.0.0
+	end
 
 	-- Removed in Dragonflight.
-	if (UIPARENT_MANAGED_FRAME_POSITIONS) then
+	if (not ns.IsDragonflight) then
 		UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil -- < 10.0.0
 		UIPARENT_MANAGED_FRAME_POSITIONS["StanceBarFrame"] = nil -- < 10.0.0
 		UIPARENT_MANAGED_FRAME_POSITIONS["PossessBarFrame"] = nil -- < 10.0.0
@@ -320,8 +322,11 @@ BlizzKill.KillActionBars = function(self)
 	self:HandleActionBar(MainMenuBarVehicleLeaveButton, true, false, true)
 	self:HandleActionBar(OverrideActionBar, true, false, true)
 
-	StatusTrackingBarManager:Hide()
-	StatusTrackingBarManager:UnregisterAllEvents()
+	-- Does not exist in Wrath
+	if (StatusTrackingBarManager) then
+		StatusTrackingBarManager:Hide()
+		StatusTrackingBarManager:UnregisterAllEvents()
+	end
 
 	local animations = { OverrideActionBar.slideOut:GetAnimations() }
 	if (animations[1] and animations[1].SetOffset) then
@@ -336,6 +341,7 @@ BlizzKill.KillActionBars = function(self)
 
 	ShowPetActionBar = function() end
 
+	self:HandleActionBar(MainMenuExpBar, true, false, true) -- Wrath
 	self:HandleActionBar(MainMenuBar.BorderArt) -- >= 10.0.0
 	self:HandleActionBar(MainMenuBar.Background) -- >= 10.0.0
 	self:HandleActionBar(MainMenuBar.EndCaps) -- >= 10.0.0

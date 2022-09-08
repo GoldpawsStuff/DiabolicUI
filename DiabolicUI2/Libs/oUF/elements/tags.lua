@@ -588,6 +588,15 @@ local unitlessEvents = {
 	RUNE_POWER_UPDATE = true,
 }
 
+if oUF.isRetail then
+	tagEvents['arcanecharges']       = 'UNIT_POWER_UPDATE PLAYER_TALENT_UPDATE'
+	tagEvents['chi']                 = 'UNIT_POWER_UPDATE PLAYER_TALENT_UPDATE'
+	tagEvents['holypower']           = 'UNIT_POWER_UPDATE PLAYER_TALENT_UPDATE'
+	unitlessEvents.PLAYER_TALENT_UPDATE = true
+elseif oUF.isWrath then
+	unitlessEvents.PLAYER_TALENT_UPDATE = true
+end
+
 local events = {}
 local eventFrame = CreateFrame('Frame')
 eventFrame:SetScript('OnEvent', function(self, event, unit)

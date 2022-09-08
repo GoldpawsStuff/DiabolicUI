@@ -36,12 +36,19 @@ local unpack = unpack
 
 -- WoW API
 local CreateFrame = CreateFrame
+local UnitBattlePetLevel = UnitBattlePetLevel
+local UnitClass = UnitClass
+local UnitClassification = UnitClassification
+local UnitIsBattlePetCompanion = UnitIsBattlePetCompanion
+local UnitIsWildBattlePet = UnitIsWildBattlePet
+local UnitLevel = UnitLevel
 
 -- Addon API
 local AbbreviateTime = ns.API.AbbreviateTimeShort
 local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
+local IsWrath = ns.IsWrath
 
 
 -- Callbacks
@@ -78,7 +85,7 @@ local Aura_Sort = function(a, b)
 				else
 					return (aTime) and true or false
 				end
-	
+
 			else
 				local sortDirection = a:GetParent().sortDirection
 				if (sortDirection == "DESCENDING") then
@@ -121,7 +128,7 @@ local Aura_Secure_UpdateTooltip = function(self)
 end
 
 local Aura_Secure_OnEnter = function(self)
-	if (not self:IsVisible()) then return end 
+	if (not self:IsVisible()) then return end
 	if (GameTooltip:IsForbidden()) then return end
 	GameTooltip:SetOwner(self, self:GetParent().tooltipAnchor)
 	self:UpdateTooltip()
@@ -161,7 +168,7 @@ local Aura_CreateIcon = function(element, position)
 	time:SetPoint("TOPLEFT", aura, "TOPLEFT", -3, 3)
 	aura.time = time
 
-	-- Using a virtual cooldown element with the timer attached, 
+	-- Using a virtual cooldown element with the timer attached,
 	-- allowing them to piggyback on the back-end's cooldown updates.
 	aura.cd = ns.Widgets.RegisterCooldown(time)
 
@@ -169,7 +176,7 @@ local Aura_CreateIcon = function(element, position)
 	aura.UpdateTooltip = Aura_Secure_UpdateTooltip
 	aura:SetScript("OnEnter", Aura_Secure_OnEnter)
 	aura:SetScript("OnLeave", Aura_Secure_OnLeave)
-	
+
 	return aura
 end
 
@@ -198,7 +205,7 @@ local Aura_PostUpdateIcon = function(element, unit, button, index, position, dur
 		button.icon:SetDesaturated(true)
 		button.icon:SetVertexColor(.6, .6, .6)
 	end
-	
+
 end
 
 local Cast_CustomDelayText = function(element, duration)
@@ -257,8 +264,10 @@ local UpdateArtwork = function(self)
 		return
 	end
 	local l = UnitLevel(unit)
-	if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
-		l = UnitBattlePetLevel(unit)
+	if (not IsWrath) then
+		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
+			l = UnitBattlePetLevel(unit)
+		end
 	end
 	local c = UnitClassification(unit)
 	if (c == "worldboss" or (l and l < 1) or c == "elite" or c == "rareelite" or c == "rare") then
@@ -283,7 +292,7 @@ UnitStyles["Target"] = function(self, unit, id)
 	normalBg:SetTexture(GetMedia("target-normal-diabolic"))
 	normalBg:SetAlpha(1)
 	self.normalBg = normalBg
-	
+
 	local eliteBg = self:CreateTexture(nil, "BACKGROUND", nil, -1)
 	eliteBg:SetSize(512,128)
 	eliteBg:SetPoint("CENTER")
@@ -363,7 +372,7 @@ UnitStyles["Target"] = function(self, unit, id)
 	auras.disableMouse = false
 	auras.disableCooldown = false
 	auras.onlyShowPlayer = false
-	auras.showStealableBuffs = false 
+	auras.showStealableBuffs = false
 	auras.initialAnchor = "TOPLEFT"
 	auras["spacing-x"] = 4
 	auras["spacing-y"] = 4

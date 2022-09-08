@@ -435,7 +435,11 @@ UnitStyles["Player"] = function(self, unit, id)
 	healthValue:SetTextColor(unpack(self.colors.offwhite))
 	healthValue:SetAlpha(.85)
 	healthValue:SetPoint("BOTTOM", health, "TOP", 0, 16)
-	self:Tag(healthValue, "[Diabolic:Health:Full][Diabolic:Absorb]")
+	if (ns.IsWrath) then
+		self:Tag(healthValue, "[Diabolic:Health:Full]")
+	else
+		self:Tag(healthValue, "[Diabolic:Health:Full][Diabolic:Absorb]")
+	end
 	self.SmartHealth.Value = healthValue
 
 	local powerValue = power:CreateFontString(nil, "OVERLAY", nil, 0)
