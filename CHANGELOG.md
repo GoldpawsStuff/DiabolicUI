@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.0.36-RC] 2022-09-08
 ### Fixed
 - Hiding the reputation- and max level tracking bars in Wrath.
+- Fixed some issues related to difficulty coloring when hovering over certain units.
 
 ## [2.0.35-Release] 2022-09-08
 - Added first draft of Wrath compatibility.
