@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.35-Release] 2022-09-08
+- Added first draft of Wrath compatibility.
+
+### Fixed
+- Fixed an issue where chat font sizes would reset on every reload.
+
 ## [2.0.34-Release] 2022-09-03
 ### Removed
 - Removed TaintLess.xml as it's about to be deprecated.
