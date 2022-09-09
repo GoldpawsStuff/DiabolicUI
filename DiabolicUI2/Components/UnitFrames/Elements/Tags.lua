@@ -83,21 +83,33 @@ Methods["Diabolic:Absorb"] = function(unit)
 end
 
 Events["Diabolic:Classification"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
-Methods["Diabolic:Classification"] = function(unit)
-	local l = UnitLevel(unit)
-	if (not oUF.isWrath) then
+if (oUF.isClassic or oUF.isTBC or oUF.isWrath) then
+	Methods["Diabolic:Classification"] = function(unit)
+		local l = UnitLevel(unit)
+		local c = UnitClassification(unit)
+		if (c == "worldboss" or (not l) or (l < 1)) then
+			return
+		end
+		if (c == "elite" or c == "rareelite") then
+			return c_red.."+"..r.." "
+		end
+		return " "
+	end
+else
+	Methods["Diabolic:Classification"] = function(unit)
+		local l = UnitLevel(unit)
 		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
 			l = UnitBattlePetLevel(unit)
 		end
+		local c = UnitClassification(unit)
+		if (c == "worldboss" or (not l) or (l < 1)) then
+			return
+		end
+		if (c == "elite" or c == "rareelite") then
+			return c_red.."+"..r.." "
+		end
+		return " "
 	end
-	local c = UnitClassification(unit)
-	if (c == "worldboss" or (not l) or (l < 1)) then
-		return
-	end
-	if (c == "elite" or c == "rareelite") then
-		return c_red.."+"..r.." "
-	end
-	return " "
 end
 
 Events["Diabolic:Health"] = "UNIT_HEALTH UNIT_MAXHEALTH"
@@ -142,22 +154,35 @@ Methods["Diabolic:Health:Smart"] = function(unit)
 end
 
 Events["Diabolic:Level"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
-Methods["Diabolic:Level"] = function(unit)
-	local l = UnitLevel(unit)
-	if (not oUF.isWrath) then
+if (oUF.isClassic or oUF.isTBC or oUF.isWrath) then
+	Methods["Diabolic:Level"] = function(unit)
+		local l = UnitLevel(unit)
+		local c = UnitClassification(unit)
+		if (c == "worldboss" or (not l) or (l < 1)) then
+			return T_BOSS
+		end
+		local _,_,_,colorCode = GetDifficultyColorByLevel(l)
+		if (c == "elite" or c == "rareelite") then
+			return colorCode..l..r..c_red.."+"..r
+		end
+		return colorCode..l..r
+	end
+else
+	Methods["Diabolic:Level"] = function(unit)
+		local l = UnitLevel(unit)
 		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
 			l = UnitBattlePetLevel(unit)
 		end
+		local c = UnitClassification(unit)
+		if (c == "worldboss" or (not l) or (l < 1)) then
+			return T_BOSS
+		end
+		local _,_,_,colorCode = GetDifficultyColorByLevel(l)
+		if (c == "elite" or c == "rareelite") then
+			return colorCode..l..r..c_red.."+"..r
+		end
+		return colorCode..l..r
 	end
-	local c = UnitClassification(unit)
-	if (c == "worldboss" or (not l) or (l < 1)) then
-		return T_BOSS
-	end
-	local _,_,_,colorCode = GetDifficultyColorByLevel(l)
-	if (c == "elite" or c == "rareelite") then
-		return colorCode..l..r..c_red.."+"..r
-	end
-	return colorCode..l..r
 end
 
 Events["Diabolic:Level:Prefix"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
