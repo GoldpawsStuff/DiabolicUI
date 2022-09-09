@@ -666,10 +666,11 @@ BlizzKill.KillFloaters = function(self)
 end
 
 BlizzKill.KillMenuOptions = function(self)
+	if (ns.IsDragonflight) then
+		return
+	end
 	self:HandleMenuPage(5, "InterfaceOptionsActionBarsPanel")
-	--self:HandleMenuPage(6, "InterfaceOptionsNamesPanel")
-	--self:HandleMenuPage(10, "CompactUnitFrameProfiles")
-	self:HandleMenuOption(true, "InterfaceOptionsCombatPanelTargetOfTarget")
+	self:HandleMenuOption((not ns.IsWrath), "InterfaceOptionsCombatPanelTargetOfTarget")
 end
 
 BlizzKill.KillTimerBars = function(self)
@@ -769,8 +770,6 @@ end
 
 BlizzKill.OnInitialize = function(self)
 
-	-- Note that a lot of these are for dev reasons
-	-- and will be removed once the relevant components are ready.
 	self:KillActionBars()
 	self:KillFloaters()
 	self:KillTimerBars()
@@ -778,11 +777,6 @@ BlizzKill.OnInitialize = function(self)
 	self:KillTutorials()
 	self:KillNPE()
 	self:KillHelpTip()
-
-	-- The interface options menu is changed in Dragonflight,
-	-- so let's not mess with it until I know more.
-	if (not ns.IsDragonflight) then
-		self:KillMenuOptions()
-	end
+	self:KillMenuOptions()
 
 end
