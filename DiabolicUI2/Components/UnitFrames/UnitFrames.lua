@@ -25,6 +25,7 @@
 --]]
 local Addon, ns = ...
 local UnitFrames = ns:NewModule("UnitFrames", "LibMoreEvents-1.0")
+local oUF = ns.oUF
 
 -- Globally available registries
 ns.UnitStyles = {}
