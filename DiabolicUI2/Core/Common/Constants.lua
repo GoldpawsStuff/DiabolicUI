@@ -52,10 +52,8 @@ ns.Private.ClientBuild = tonumber(build)
 
 -- Simple flags for client version checks
 ns.Private.IsClassic = ns.Private.ClientMajor == 1
-ns.Private.IsBCC = ns.Private.ClientMajor == 2
-ns.Private.IsTBC = ns.Private.IsBCC
+ns.Private.IsTBC = ns.Private.ClientMajor == 2
 ns.Private.IsWrath = ns.Private.ClientMajor == 3
-ns.Private.IsWotLK = ns.Private.IsWrath
 ns.Private.IsRetail = ns.Private.ClientMajor >= 9
 ns.Private.IsShadowlands = ns.Private.ClientMajor == 9
 ns.Private.IsDragonflight = ns.Private.ClientMajor == 10

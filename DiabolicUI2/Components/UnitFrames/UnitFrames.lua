@@ -26,17 +26,6 @@
 local Addon, ns = ...
 local UnitFrames = ns:NewModule("UnitFrames", "LibMoreEvents-1.0")
 
--- Give oUF access to client constants
-local oUF = ns.oUF
-oUF.isClassic = ns.IsClassic
-oUF.isBCC = ns.IsBCC
-oUF.isTBC = ns.IsTBC
-oUF.isWrath = ns.IsWrath
-oUF.isWotLK = ns.IsWotLK
-oUF.isRetail = ns.IsRetail
-oUF.isShadowlands = ns.IsShadowlands
-oUF.isDragonflight = ns.IsDragonflight
-
 -- Globally available registries
 ns.UnitStyles = {}
 ns.NamePlates = {}
