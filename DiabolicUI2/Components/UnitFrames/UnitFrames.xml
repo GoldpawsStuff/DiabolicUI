@@ -2,7 +2,6 @@
 
 	<Script file="UnitFrames.lua"/>
 
-	<Script file="Elements\SmartClassPower.lua"/>
 	<Script file="Elements\SmartHealth.lua"/>
 	<Script file="Elements\SmartPower.lua"/>
 	<Script file="Elements\SwingTimer.lua"/>

@@ -49,7 +49,8 @@ local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local IsAddOnEnabled = ns.API.IsAddOnEnabled
 
-local MASK_TEXTURE = GetMedia("actionbutton-mask-circular")
+-- Constants
+local _, PlayerClass = UnitClass("player")
 
 -- Callbacks
 --------------------------------------------
@@ -425,6 +426,19 @@ UnitStyles["Player"] = function(self, unit, id)
 		self.Castbar = cast
 	end
 
+	-- Classpowers
+	--------------------------------------------
+	if (ns.IsRetail) then
+	elseif (ns.IsWrath) then
+	else
+	end
+
+	-- Runes
+	--------------------------------------------
+	if (PlayerClass == "DEATHKNIGHT") then
+	end
+
+
 	-- Tags
 	--------------------------------------------
 	local healthValue = health:CreateFontString(nil, "OVERLAY", nil, 0)
@@ -497,7 +511,6 @@ UnitStyles["Player"] = function(self, unit, id)
 	debuffs.CustomFilter = Aura_DebuffFilter
 	debuffs.PreSetPosition = Aura_DebuffSorting
 	self.Debuffs = debuffs
-
 
 	-- Hover Scripts
 	--------------------------------------------
