@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.37-RC] 2022-09-09
+### Changed
+- Updated oUF fully for Wrath.
+- Updated the Wrath quest tracker scale to follow DiabolicUI, not the Blizzard UIscale.
+
 ## [2.0.36-RC] 2022-09-08
 ### Fixed
 - Hiding the reputation- and max level tracking bars in Wrath.
