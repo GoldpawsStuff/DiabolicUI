@@ -251,7 +251,7 @@ local ObjectiveAlphaDriver = CreateFrame("Frame", nil, UIParent, "SecureHandlerA
 ObjectiveAlphaDriver.Update = function()
 
 	-- The tracker addon might not be loaded.
-	local tracker = QuestWatchFrame or ObjectiveTrackerFrame
+	local tracker = WatchFrame or QuestWatchFrame or ObjectiveTrackerFrame
 
 	-- Check for the visibility of addons conflicting with the visuals.
 	--local bags = Wheel("LibModule"):GetModule("Backpacker", true)
@@ -366,6 +366,20 @@ Tracker.InitializeTracker = function(self, event, addon)
 
 end
 
+Tracker.InitializeWrathTracker = function(self)
+	if (not ns.IsWrath) then
+		return
+	end
+	self:UpdateWrathTracker()
+end
+
+Tracker.UpdateWrathTracker = function(self)
+	if (not ns.IsWrath) then
+		return
+	end
+	SetObjectScale(WatchFrame, 1.25)
+end
+
 Tracker.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then
 		if (self.queueImmersionHook) then
@@ -377,16 +391,29 @@ Tracker.OnEvent = function(self, event, ...)
 			end
 		end
 		ObjectiveAlphaDriver:Update()
+		if (ns.IsWrath) then
+			self:UpdateWrathTracker()
+		end
+	elseif (event == "VARIABLES_LOADED") then
+		if (ns.IsWrath) then
+			self:UpdateWrathTracker()
+		end
 	end
 end
 
 Tracker.OnInitialize = function(self)
 	self.queueImmersionHook = IsAddOnEnabled("Immersion")
 
-	if (IsAddOnLoaded("Blizzard_ObjectiveTracker")) then
-		self:InitializeTracker()
+	if (ns.IsWrath) then
+		self:InitializeWrathTracker()
+		self:RegisterEvent("VARIABLES_LOADED", "OnEvent")
 	else
-		self:RegisterEvent("ADDON_LOADED", "InitializeTracker")
+		if (IsAddOnLoaded("Blizzard_ObjectiveTracker")) then
+			self:InitializeTracker()
+		else
+			self:RegisterEvent("ADDON_LOADED", "InitializeTracker")
+		end
 	end
+
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 end
