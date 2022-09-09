@@ -116,7 +116,7 @@ local Update = function(self, event, unit)
 	end
 
 	-- Different GUID means a different player or NPC,
-	-- so we want updates to be instant, not smoothed. 
+	-- so we want updates to be instant, not smoothed.
 	local guid = UnitGUID(unit)
 	local forced = (guid ~= element.guid) or (UnitIsDeadOrGhost(unit))
 	element.guid = guid
@@ -125,29 +125,16 @@ local Update = function(self, event, unit)
 	local cur, max = UnitHealth(unit), UnitHealthMax(unit)
 	local connected = UnitIsConnected(unit)
 
-	if ((element.showAbsorbGap) or (element.showAbsorbAsHealth)) then
-		absorb = UnitGetTotalAbsorbs(unit) or 0
-		if (max + absorb ~= (element.max or 0) + (element.absorb or 0)) then
-			forced = true
-		end
-		element:SetMinMaxValues(0, max + absorb, forced)
-	else
-		element:SetMinMaxValues(0, max, forced)
-	end
+	element:SetMinMaxValues(0, max, forced)
 
 	if (connected) then
-		if (element.showAbsorbAsHealth) then
-			element:SetValue(cur + absorb, forced)
-		else
-			element:SetValue(cur, forced)
-		end
+		element:SetValue(cur, forced)
 	else
 		element:SetValue(max, true)
 	end
 
 	element.cur = cur
 	element.max = max
-	element.absorb = absorb
 
 	--[[ Callback: SmartHealth:PostUpdate(unit, cur, max)
 	Called after the element has been updated.
@@ -158,7 +145,7 @@ local Update = function(self, event, unit)
 	* max  - the unit's maximum possible health value (number)
 	--]]
 	if (element.PostUpdate) then
-		element:PostUpdate(unit, cur, max, absorb)
+		element:PostUpdate(unit, cur, max)
 	end
 end
 
@@ -233,24 +220,6 @@ local SetColorThreat = function(element, state, isForced)
 	end
 end
 
---[[ SmartHealth:SetShowAbsorbGap(state, isForced)
-Used to toggle the inclusion of shields in the size of the max health.
-
-* self     - the SmartHealth element
-* state    - the desired state (boolean)
-* isForced - forces the event update even if the state wasn't changed (boolean)
---]]
-local SetShowAbsorbGap = function(element, state, isForced)
-	if (element.showAbsorbGap ~= state or isForced) then
-		element.showAbsorbGap = state
-		if (state) then
-			element.__owner:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", Path)
-		else
-			element.__owner:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", Path)
-		end
-	end
-end
-
 local Enable = function(self, unit)
 	local element = self.SmartHealth
 	if (element) then
@@ -259,7 +228,6 @@ local Enable = function(self, unit)
 		element.SetColorDisconnected = SetColorDisconnected
 		element.SetColorTapping = SetColorTapping
 		element.SetColorThreat = SetColorThreat
-		element.SetShowAbsorbGap = SetShowAbsorbGap
 
 		if (element.colorDisconnected) then
 			self:RegisterEvent("UNIT_CONNECTION", ColorPath)
@@ -271,10 +239,6 @@ local Enable = function(self, unit)
 
 		if (element.colorThreat) then
 			self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", ColorPath)
-		end
-
-		if (element.showAbsorbGap) then
-			self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", Path)
 		end
 
 		self:RegisterEvent("UNIT_HEALTH", Path)
@@ -293,7 +257,6 @@ local Disable = function(self)
 
 		self:UnregisterEvent("UNIT_HEALTH", Path)
 		self:UnregisterEvent("UNIT_MAXHEALTH", Path)
-		self:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", Path)
 		self:UnregisterEvent("UNIT_CONNECTION", ColorPath)
 		self:UnregisterEvent("UNIT_FACTION", ColorPath)
 		self:UnregisterEvent("UNIT_THREAT_LIST_UPDATE", ColorPath)

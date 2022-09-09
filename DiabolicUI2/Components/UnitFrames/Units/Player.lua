@@ -291,8 +291,6 @@ UnitStyles["Player"] = function(self, unit, id)
 	health:SetPoint("BOTTOM")
 	health:SetStatusBarTexture(GetMedia("orb2"), GetMedia("orb2"))
 	health.colorHealth = true
-	health.showAbsorbGap = false -- wait until we got a shield texture up
-	health.showAbsorbAsHealth = false -- don't. we die!
 
 	local a,b,c,d = health:GetStatusBarTexture()
 	b:SetTexCoord(1,0,1,0)
