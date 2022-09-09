@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2010-2020, Hendrik "nevcairiel" Leppkes <h.leppkes@gmail.com>
+Copyright (c) 2010-2021, Hendrik "nevcairiel" Leppkes <h.leppkes@gmail.com>
 
 All rights reserved.
 
@@ -32,22 +32,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 	LibActionButton-1.0 Goldpaw Edition
 
-	Based directly on LibActionButton-1.0.81, 
-	with the following modifications: 
+	Based directly on LibActionButton-1.0.81,
+	with the following modifications:
 
 		* Disabled most of the standard button elements by default
 		* Removed LibButtonGlow integration
 		* Removed Masque support completely
 		* Removed NewAction highlight functionality
 		* Removed NormalTexture texture and texcoord adjustments
-		* Removed count and hotkey element font changes
+		* Removed .Count and .HotKey element font changes
 		* Merged all three cooldown types into the same cooldown object
 		* Prevented texture changes in various elements
 		* Fixed button saturation to always be handled by UpdateUsable
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0-GoldpawEdition"
-local MINOR_VERSION = 23
+local MINOR_VERSION = 84
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -60,6 +60,7 @@ local str_match, format, tinsert, tremove = string.match, format, tinsert, tremo
 
 local WoWClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local WoWBCC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
+local WoWWrath = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
 
 local KeyBound = LibStub("LibKeyBound-1.0", true)
 local CBH = LibStub("CallbackHandler-1.0")
@@ -74,11 +75,6 @@ lib.buttonRegistry = lib.buttonRegistry or {}
 lib.activeButtons = lib.activeButtons or {}
 lib.actionButtons = lib.actionButtons or {}
 lib.nonActionButtons = lib.nonActionButtons or {}
-
-lib.ChargeCooldowns = lib.ChargeCooldowns or {}
-lib.NumChargeCooldowns = lib.NumChargeCooldowns or 0
-
-lib.ACTION_HIGHLIGHT_MARKS = lib.ACTION_HIGHLIGHT_MARKS or setmetatable({}, { __index = ACTION_HIGHLIGHT_MARKS })
 
 lib.callbacks = lib.callbacks or CBH:New(lib)
 
@@ -134,34 +130,12 @@ local function IsAddOnEnabled(target)
 	for i = 1,GetNumAddOns() do
 		local name, title, notes, loadable, reason, security, newVersion = GetAddOnInfo(i)
 		if (name:lower() == target) then
-			local enabled = not(GetAddOnEnableState(UnitName("player"), i) == 0) 
+			local enabled = not(GetAddOnEnableState(UnitName("player"), i) == 0)
 			if (enabled and loadable) then
 				return true
 			end
 		end
 	end
-end
-
-local DAY, HOUR, MINUTE = 86400, 3600, 60
-local function formatCooldownTime(time)
-	if time > DAY then -- more than a day
-		time = time + DAY/2
-		return "%d%s", time/DAY - time/DAY%1, "d"
-	elseif time > HOUR then -- more than an hour
-		time = time + HOUR/2
-		return "%d%s", time/HOUR - time/HOUR%1, "h"
-	elseif time > MINUTE then -- more than a minute
-		time = time + MINUTE/2
-		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
-	elseif time > 10 then -- more than 10 seconds
-		return "%d", time - time%1
-	elseif time >= 1 then -- more than 5 seconds
-		return "|cffff8800%d|r", time - time%1
-	elseif time > 0 then
-		return "|cffff0000%d|r", time*10 - time*10%1
-	else
-		return ""
-	end	
 end
 
 local DefaultConfig = {
@@ -290,7 +264,6 @@ function SetupSecureSnippets(button)
 
 	button:SetAttribute("OnDragStart", [[
 		if (self:GetAttribute("buttonlock") and not (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown())) or self:GetAttribute("LABdisableDragNDrop") then return false end
-		--if (self:GetAttribute("buttonlock") and not IsModifiedClick("PICKUPACTION")) or self:GetAttribute("LABdisableDragNDrop") then return false end
 		local state = self:GetAttribute("state")
 		local type = self:GetAttribute("type")
 		-- if the button is empty, we can't drag anything off it
@@ -408,7 +381,7 @@ function PrepareButton(button)
 		_G[name.."Border"],
 		_G[name.."FloatingBG"],
 		_G[name.."Name"],
-		_G[name.."NormalTexture"], 
+		_G[name.."NormalTexture"],
 		_G[name.."Shine"],
 		button.SpellHighlightTexture,
 		button.QuickKeybindHighlightTexture,
@@ -725,13 +698,15 @@ function InitializeEventHandler()
 	lib.eventFrame:RegisterEvent("SPELL_UPDATE_CHARGES")
 	lib.eventFrame:RegisterEvent("SPELL_UPDATE_ICON")
 	if not WoWClassic and not WoWBCC then
-		lib.eventFrame:RegisterEvent("ARCHAEOLOGY_CLOSED")
+		if not WoWWrath then
+			lib.eventFrame:RegisterEvent("ARCHAEOLOGY_CLOSED")
+			lib.eventFrame:RegisterEvent("UPDATE_SUMMONPETS_ACTION")
+			lib.eventFrame:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
+			lib.eventFrame:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
+		end
 		lib.eventFrame:RegisterEvent("UNIT_ENTERED_VEHICLE")
 		lib.eventFrame:RegisterEvent("UNIT_EXITED_VEHICLE")
 		lib.eventFrame:RegisterEvent("COMPANION_UPDATE")
-		lib.eventFrame:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
-		lib.eventFrame:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
-		lib.eventFrame:RegisterEvent("UPDATE_SUMMONPETS_ACTION")
 	end
 
 	-- With those two, do we still need the ACTIONBAR equivalents of them?
@@ -752,6 +727,7 @@ function InitializeEventHandler()
 	lib.eventFrame:SetScript("OnUpdate", OnUpdate)
 end
 
+local _lastFormUpdate = GetTime()
 function OnEvent(frame, event, arg1, ...)
 	if (event == "UNIT_INVENTORY_CHANGED" and arg1 == "player") or event == "LEARNED_SPELL_IN_TAB" then
 		local tooltipOwner = GameTooltip_GetOwnerForbidden()
@@ -764,7 +740,7 @@ function OnEvent(frame, event, arg1, ...)
 				Update(button)
 			end
 		end
-	elseif event == "PLAYER_ENTERING_WORLD" or event == "UPDATE_SHAPESHIFT_FORM" or event == "UPDATE_VEHICLE_ACTIONBAR" then
+	elseif event == "PLAYER_ENTERING_WORLD" or event == "UPDATE_VEHICLE_ACTIONBAR" then
 		for button in next, ActiveButtons do
 			if (button.maxDpsGlowShown) then
 				button.maxDpsGlowColor = nil
@@ -772,6 +748,26 @@ function OnEvent(frame, event, arg1, ...)
 			end
 		end
 		ForAllButtons(Update)
+	elseif event == "UPDATE_SHAPESHIFT_FORM" then
+		-- XXX: throttle these updates since Blizzard broke the event and its now extremely spammy in some clients
+		local _time = GetTime()
+		if (_time - _lastFormUpdate) < 1 then
+			return
+		end
+		_lastFormUpdate = _time
+
+		-- the attack icon can change when shapeshift form changes, so need to do a quick update here
+		-- for performance reasons don't run full updates here, though
+		for button in next, ActiveButtons do
+			local texture = button:GetTexture()
+			if texture then
+				button.icon:SetTexture(texture)
+			end
+			if (button.maxDpsGlowShown) then
+				button.maxDpsGlowColor = nil
+				button.maxDpsGlowShown = nil
+			end
+		end
 	elseif event == "ACTIONBAR_PAGE_CHANGED" or event == "UPDATE_BONUS_ACTIONBAR" then
 		-- TODO: Are these even needed?
 	elseif event == "ACTIONBAR_SHOWGRID" then
@@ -910,7 +906,7 @@ function OnEvent(frame, event, arg1, ...)
 	--			UpdateOverlayGlow(button)
 	--		end
 	--	end
-	
+
 	elseif event == "ADDON_LOADED" then
 		if (arg1 == "MaxDps") then
 			lib.eventFrame:UnregisterEvent("ADDON_LOADED")
@@ -1090,7 +1086,6 @@ end
 
 function Update(self)
 
-
 	-- Update Action Text
 	if not self:IsConsumableOrStackable() then
 		self.Name:SetText(self:GetActionText())
@@ -1175,7 +1170,7 @@ function Update(self)
 end
 
 function Generic:UpdateLocal()
--- dummy function the other button types can override for special updating
+	-- dummy function the other button types can override for special updating
 end
 
 function UpdateButtonState(self)
@@ -1190,10 +1185,10 @@ end
 function UpdateUsable(self)
 
 	local r, g, b = .4, .36, .32
-	if (UnitIsDeadOrGhost("player")) or (UnitOnTaxi("player")) then 
+	if (UnitIsDeadOrGhost("player")) or (UnitOnTaxi("player")) then
 		self.icon:SetDesaturated(true)
 		self.icon:SetVertexColor(r, g, b)
-	
+
 	elseif (self.outOfRange) then
 		self.icon:SetDesaturated(true)
 		self.icon:SetVertexColor(1, .15, .15)
@@ -1212,9 +1207,9 @@ function UpdateUsable(self)
 		end
 	end
 
-	if not WoWClassic and not WoWBCC and self._state_type == "action" then
+	if not WoWClassic and not WoWBCC and not WoWWrath and self._state_type == "action" then
 		local isLevelLinkLocked = C_LevelLink.IsActionLocked(self._state_action)
-		if (isLevelLinkLocked) then
+		if not self.icon:IsDesaturated() then
 			self.icon:SetDesaturated(isLevelLinkLocked)
 			self.icon:SetVertexColor(r, g, b)
 		end
@@ -1358,11 +1353,15 @@ function UpdateOverlayGlow(self)
 	if (self.maxDpsGlowShown) then
 		ShowOverlayGlow(self)
 	else
-		local spellId = self:GetSpellId()
-		if spellId and IsSpellOverlayed(spellId) then
-			ShowOverlayGlow(self)
-		else
+		if (WoWWrath) then
 			HideOverlayGlow(self)
+		else
+			local spellId = self:GetSpellId()
+			if spellId and IsSpellOverlayed(spellId) then
+				ShowOverlayGlow(self)
+			else
+				HideOverlayGlow(self)
+			end
 		end
 	end
 end
@@ -1425,7 +1424,7 @@ end
 function InitializeMaxDps()
 	if not MaxDps then
 		return
-	end 
+	end
 
 	MaxDps:RegisterLibActionButton(MAJOR_VERSION)
 
@@ -1534,7 +1533,9 @@ if WoWClassic then
 		-- if we don't have the library, only show count for items, like the default UI
 		Action.IsConsumableOrStackable = function(self) return IsItemAction(self._state_action) and (IsConsumableAction(self._state_action) or IsStackableAction(self._state_action)) end
 	end
+end
 
+if WoWClassic or WoWBCC or WoWWrath then
 	-- disable loss of control cooldown on classic
 	Action.GetLossOfControlCooldown = function(self) return 0,0 end
 end
@@ -1619,9 +1620,9 @@ Custom.GetSpellId              = function(self) return nil end
 Custom.RunCustom               = function(self, unit, button) return self._state_action.func(self, unit, button) end
 
 --- WoW Classic overrides
-if WoWClassic or WoWBCC then
-	UpdateOverlayGlow = function() end
-end
+--if WoWClassic or WoWBCC or WoWWrath then
+--	UpdateOverlayGlow = function() end
+--end
 
 -----------------------------------------------------------
 --- Update old Buttons

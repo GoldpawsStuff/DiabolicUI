@@ -291,59 +291,62 @@ BlizzKill.KillActionBars = function(self)
 		end
 	end
 
-	-- Spanking new layout system in Dragonflight
-	self:HandleManagedFrame(ExtraAbilityContainer) -- >= 10.0.0
-	self:HandleManagedFrame(MainMenuBarVehicleLeaveButton) -- >= 10.0.0
-	self:HandleManagedFrame(MultiCastActionBarFrame) -- >= 10.0.0
-	self:HandleManagedFrame(PetActionBarFrame) -- >= 10.0.0
-	self:HandleManagedFrame(PossessBarFrame) -- >= 10.0.0
-	self:HandleManagedFrame(StanceBarFrame) -- >= 10.0.0
-	self:HandleManagedFrame(TutorialFrameAlertButton) -- >= 10.0.0
-
-	-- Removed in Dragonflight.
 	if (UIPARENT_MANAGED_FRAME_POSITIONS) then
-		UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil -- < 10.0.0
-		UIPARENT_MANAGED_FRAME_POSITIONS["StanceBarFrame"] = nil -- < 10.0.0
-		UIPARENT_MANAGED_FRAME_POSITIONS["PossessBarFrame"] = nil -- < 10.0.0
-		UIPARENT_MANAGED_FRAME_POSITIONS["MultiCastActionBarFrame"] = nil -- < 10.0.0
-		UIPARENT_MANAGED_FRAME_POSITIONS["PETACTIONBAR_YPOS"] = nil -- < 10.0.0
-		UIPARENT_MANAGED_FRAME_POSITIONS["ExtraAbilityContainer"] = nil -- < 10.0.0
+		UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil
+		UIPARENT_MANAGED_FRAME_POSITIONS["StanceBarFrame"] = nil
+		UIPARENT_MANAGED_FRAME_POSITIONS["PossessBarFrame"] = nil
+		UIPARENT_MANAGED_FRAME_POSITIONS["MultiCastActionBarFrame"] = nil
+		UIPARENT_MANAGED_FRAME_POSITIONS["PETACTIONBAR_YPOS"] = nil
+		UIPARENT_MANAGED_FRAME_POSITIONS["ExtraAbilityContainer"] = nil
 	end
 
 	MainMenuBar:EnableMouse(false)
 	MainMenuBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
 	MainMenuBar:UnregisterEvent("UI_SCALE_CHANGED")
 
-	local animations = { MainMenuBar.slideOut:GetAnimations() }
-	animations[1]:SetOffset(0,0)
-
+	self:HandleActionBar(MainMenuBar.BorderArt)
+	self:HandleActionBar(MainMenuBar.Background)
+	self:HandleActionBar(MainMenuBar.EndCaps)
+	self:HandleActionBar(MainMenuBar.ActionBarPageNumber)
+	self:HandleActionBar(MainMenuBarArtFrame, false, true)
+	self:HandleActionBar(MainMenuBarArtFrameBackground)
+	self:HandleActionBar(MainMenuBarMaxLevelBar, true, false, true)
+	self:HandleActionBar(MainMenuBarPerformanceBarFrame, true, false, true)
 	self:HandleActionBar(MainMenuBarVehicleLeaveButton, true, false, true)
+	self:HandleActionBar(MainMenuExpBar, true, false, true)
+	self:HandleActionBar(MicroButtonAndBagsBar, false, false, true)
+	self:HandleActionBar(MultiCastActionBarFrame, true, true)
 	self:HandleActionBar(OverrideActionBar, true, false, true)
+	self:HandleActionBar(PetActionBarFrame, true, true)
+	self:HandleActionBar(PossessBarFrame, false, true)
+	self:HandleActionBar(ReputationWatchBar, true, false, true)
+	self:HandleActionBar(StanceBarFrame, true, true)
 
-	StatusTrackingBarManager:Hide()
-	StatusTrackingBarManager:UnregisterAllEvents()
+	self:HandleManagedFrame(ExtraAbilityContainer)
+	self:HandleManagedFrame(MainMenuBarVehicleLeaveButton)
+	self:HandleManagedFrame(MultiCastActionBarFrame)
+	self:HandleManagedFrame(PetActionBarFrame)
+	self:HandleManagedFrame(PossessBarFrame)
+	self:HandleManagedFrame(StanceBarFrame)
+	self:HandleManagedFrame(TutorialFrameAlertButton)
+
+	if (StatusTrackingBarManager) then
+		StatusTrackingBarManager:Hide()
+		StatusTrackingBarManager:UnregisterAllEvents()
+	end
 
 	local animations = { OverrideActionBar.slideOut:GetAnimations() }
 	if (animations[1] and animations[1].SetOffset) then
 		animations[1]:SetOffset(0,0)
 	end
 
-	self:HandleActionBar(MicroButtonAndBagsBar, false, false, true)
-	self:HandleActionBar(StanceBarFrame, true, true)
-	self:HandleActionBar(PossessBarFrame, false, true)
-	self:HandleActionBar(MultiCastActionBarFrame, true, true)
-	self:HandleActionBar(PetActionBarFrame, true, true)
+	local animations = { MainMenuBar.slideOut:GetAnimations() }
+	if (animations[1] and animations[1].SetOffset) then
+		animations[1]:SetOffset(0,0)
+	end
 
 	ShowPetActionBar = function() end
 
-	self:HandleActionBar(MainMenuBar.BorderArt) -- >= 10.0.0
-	self:HandleActionBar(MainMenuBar.Background) -- >= 10.0.0
-	self:HandleActionBar(MainMenuBar.EndCaps) -- >= 10.0.0
-	self:HandleActionBar(MainMenuBar.ActionBarPageNumber) -- >= 10.0.0
-	self:HandleActionBar(MainMenuBarArtFrame, false, true) -- < 10.0.0
-	self:HandleActionBar(MainMenuBarArtFrameBackground) -- < 10.0.0
-
-	-- Is this actually still needed?
 	if (PlayerTalentFrame) then
 		PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	elseif (TalentFrame_LoadUI) then
@@ -370,7 +373,7 @@ BlizzKill.KillActionBars = function(self)
 	-- Retrieve the first slot button and the backpack
 	local backpack = ContainerFrame1
 	local firstSlot = CharacterBag0Slot
-	local reagentSlot = CharacterReagentBag0Slot -- >= 10.0.0
+	local reagentSlot = CharacterReagentBag0Slot
 
 	-- Try to avoid the potential error with Shadowlands anima deposit animations.
 	-- Just give it a simplified version of the default position it is given,
@@ -398,7 +401,7 @@ BlizzKill.KillActionBars = function(self)
 			"CharacterBag1Slot",
 			"CharacterBag2Slot",
 			"CharacterBag3Slot",
-			"CharacterReagentBag0Slot" -- >= 10.0.0
+			"CharacterReagentBag0Slot"
 		}) do
 
 			-- Always check for existence,
@@ -550,7 +553,7 @@ BlizzKill.KillFloaters = function(self)
 
 	-- Player's castbar
 	if (CastingBarFrame) then
-		self:HandleManagedFrame(CastingBarFrame) -- >= 10.0.0
+		self:HandleManagedFrame(CastingBarFrame)
 		CastingBarFrame:SetScript("OnEvent", nil)
 		CastingBarFrame:SetScript("OnUpdate", nil)
 		CastingBarFrame:SetParent(UIHider)
@@ -596,8 +599,8 @@ BlizzKill.KillFloaters = function(self)
 	end
 
 	if (PlayerPowerBarAlt) then
-		self:HandleManagedFrame(PlayerPowerBarAlt) -- >= 10.0.0
-		PlayerPowerBarAlt.ignoreFramePositionManager = true -- < 10.0.0
+		self:HandleManagedFrame(PlayerPowerBarAlt)
+		PlayerPowerBarAlt.ignoreFramePositionManager = true
 		PlayerPowerBarAlt:UnregisterAllEvents()
 		PlayerPowerBarAlt:SetParent(UIHider)
 	end
@@ -663,10 +666,11 @@ BlizzKill.KillFloaters = function(self)
 end
 
 BlizzKill.KillMenuOptions = function(self)
+	if (ns.IsDragonflight) then
+		return
+	end
 	self:HandleMenuPage(5, "InterfaceOptionsActionBarsPanel")
-	--self:HandleMenuPage(6, "InterfaceOptionsNamesPanel")
-	--self:HandleMenuPage(10, "CompactUnitFrameProfiles")
-	self:HandleMenuOption(true, "InterfaceOptionsCombatPanelTargetOfTarget")
+	self:HandleMenuOption((not ns.IsWrath), "InterfaceOptionsCombatPanelTargetOfTarget")
 end
 
 BlizzKill.KillTimerBars = function(self)
@@ -766,8 +770,6 @@ end
 
 BlizzKill.OnInitialize = function(self)
 
-	-- Note that a lot of these are for dev reasons
-	-- and will be removed once the relevant components are ready.
 	self:KillActionBars()
 	self:KillFloaters()
 	self:KillTimerBars()
@@ -775,11 +777,6 @@ BlizzKill.OnInitialize = function(self)
 	self:KillTutorials()
 	self:KillNPE()
 	self:KillHelpTip()
-
-	-- The interface options menu is changed in Dragonflight,
-	-- so let's not mess with it until I know more.
-	if (not ns.IsDragonflight) then
-		self:KillMenuOptions()
-	end
+	self:KillMenuOptions()
 
 end
