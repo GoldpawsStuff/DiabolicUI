@@ -59,8 +59,11 @@ local unitSelectionType = Private.unitSelectionType
 -- sourced from FrameXML/UnitPowerBarAlt.lua
 local ALTERNATE_POWER_INDEX = Enum.PowerType.Alternate or 10
 local ALTERNATE_POWER_NAME = 'ALTERNATE'
+local GameTooltip = GameTooltip
 
 local function updateTooltip(self)
+	if GameTooltip:IsForbidden() then return end
+
 	local name, tooltip = GetUnitPowerBarStringsByID(self.__barID)
 	GameTooltip:SetText(name or '', 1, 1, 1)
 	GameTooltip:AddLine(tooltip or '', nil, nil, nil, true)
@@ -68,13 +71,16 @@ local function updateTooltip(self)
 end
 
 local function onEnter(self)
-	if(not self:IsVisible()) then return end
+	if GameTooltip:IsForbidden() or not self:IsVisible() then return end
 
+	GameTooltip:ClearAllPoints()
 	GameTooltip_SetDefaultAnchor(GameTooltip, self)
 	self:UpdateTooltip()
 end
 
 local function onLeave()
+	if GameTooltip:IsForbidden() then return end
+
 	GameTooltip:Hide()
 end
 
@@ -82,26 +88,26 @@ local function UpdateColor(self, event, unit, powerType)
 	if(self.unit ~= unit or powerType ~= ALTERNATE_POWER_NAME) then return end
 	local element = self.AlternativePower
 
-	local r, g, b, color
+	local r, g, b, t
 	if(element.colorThreat and not UnitPlayerControlled(unit) and UnitThreatSituation('player', unit)) then
-		color =  self.colors.threat[UnitThreatSituation('player', unit)]
+		t =  self.colors.threat[UnitThreatSituation('player', unit)]
 	elseif(element.colorPower) then
-		color = self.colors.power[ALTERNATE_POWER_INDEX]
+		t = self.colors.power[ALTERNATE_POWER_INDEX]
 	elseif(element.colorClass and UnitIsPlayer(unit))
 		or (element.colorClassNPC and not UnitIsPlayer(unit)) then
 		local _, class = UnitClass(unit)
-		color = self.colors.class[class]
+		t = self.colors.class[class]
 	elseif(element.colorSelection and unitSelectionType(unit, element.considerSelectionInCombatHostile)) then
-		color = self.colors.selection[unitSelectionType(unit, element.considerSelectionInCombatHostile)]
+		t = self.colors.selection[unitSelectionType(unit, element.considerSelectionInCombatHostile)]
 	elseif(element.colorReaction and UnitReaction(unit, 'player')) then
-		color = self.colors.reaction[UnitReaction(unit, 'player')]
+		t = self.colors.reaction[UnitReaction(unit, 'player')]
 	elseif(element.colorSmooth) then
 		local adjust = 0 - (element.min or 0)
 		r, g, b = self:ColorGradient((element.cur or 1) + adjust, (element.max or 1) + adjust, unpack(element.smoothGradient or self.colors.smooth))
 	end
 
-	if(color) then
-		r, g, b = color[1], color[2], color[3]
+	if(t) then
+		r, g, b = t[1], t[2], t[3]
 	end
 
 	if(b) then
@@ -141,12 +147,16 @@ local function Update(self, event, unit, powerType)
 		element:PreUpdate()
 	end
 
-	local cur, max, min
+	local min, max, cur = 0
 	local barInfo = element.__barInfo
 	if(barInfo) then
 		cur = UnitPower(unit, ALTERNATE_POWER_INDEX)
 		max = UnitPowerMax(unit, ALTERNATE_POWER_INDEX)
-		min = barInfo.minPower
+
+		if barInfo.minPower then
+			min = barInfo.minPower
+		end
+
 		element:SetMinMaxValues(min, max)
 		element:SetValue(cur)
 	end
