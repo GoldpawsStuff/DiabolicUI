@@ -46,22 +46,22 @@ local function updateArenaPreparationElements(self, event, elementName, specID)
 			element:UpdateColorArenaPreparation(specID)
 		else
 			-- this section just replicates the color options available to the Health and Power elements
-			local r, g, b, color, _
+			local r, g, b, t, _
 			-- if(element.colorPower and elementName == 'Power') then
 				-- FIXME: no idea if we can get power type here without the unit
 			if(element.colorClass) then
 				local _, _, _, _, _, class = GetSpecializationInfoByID(specID)
-				color = self.colors.class[class]
+				t = self.colors.class[class]
 			elseif(element.colorReaction) then
-				color = self.colors.reaction[2]
+				t = self.colors.reaction[2]
 			elseif(element.colorSmooth) then
 				_, _, _, _, _, _, r, g, b = unpack(element.smoothGradient or self.colors.smooth)
 			elseif(element.colorHealth and elementName == 'Health') then
-				color = self.colors.health
+				t = self.colors.health
 			end
 
-			if(color) then
-				r, g, b = color[1], color[2], color[3]
+			if(t) then
+				r, g, b = t[1], t[2], t[3]
 			end
 
 			if(r or g or b) then
@@ -117,7 +117,9 @@ local function updateArenaPreparation(self, event)
 		end
 	elseif(event == 'PLAYER_ENTERING_WORLD' and not UnitExists(self.unit)) then
 		-- semi-recursive call for when the player zones into an arena
-		updateArenaPreparation(self, 'ARENA_PREP_OPPONENT_SPECIALIZATIONS')
+		if oUF.isRetail then
+			updateArenaPreparation(self, 'ARENA_PREP_OPPONENT_SPECIALIZATIONS')
+		end
 	elseif(event == 'ARENA_PREP_OPPONENT_SPECIALIZATIONS') then
 		if(InCombatLockdown()) then
 			-- prevent calling protected functions if entering arena while in combat
@@ -153,6 +155,7 @@ local function updateArenaPreparation(self, event)
 			if(self.Debuffs) then self.Debuffs:Hide() end
 			if(self.Castbar) then self.Castbar:Hide() end
 			if(self.CombatIndicator) then self.CombatIndicator:Hide() end
+			if(self.PartyIndicator) then self.PartyIndicator:Hide() end
 			if(self.GroupRoleIndicator) then self.GroupRoleIndicator:Hide() end
 			if(self.Portrait) then self.Portrait:Hide() end
 			if(self.PvPIndicator) then self.PvPIndicator:Hide() end
@@ -185,7 +188,9 @@ function oUF:HandleUnit(object, unit)
 		object:RegisterEvent('UNIT_TARGETABLE_CHANGED', object.UpdateAllElements)
 	elseif(unit:match('arena%d?$')) then
 		object:RegisterEvent('ARENA_OPPONENT_UPDATE', object.UpdateAllElements, true)
-		object:RegisterEvent('ARENA_PREP_OPPONENT_SPECIALIZATIONS', updateArenaPreparation, true)
+		if oUF.isRetail then
+			object:RegisterEvent('ARENA_PREP_OPPONENT_SPECIALIZATIONS', updateArenaPreparation, true)
+		end
 		object:SetAttribute('oUF-enableArenaPrep', true)
 		-- the event handler only fires for visible frames, so we have to hook it for arena prep
 		object:HookScript('OnEvent', updateArenaPreparation)
@@ -220,10 +225,6 @@ end
 function oUF:HandleEventlessUnit(object)
 	object.__eventless = true
 
-	-- It's impossible to set onUpdateFrequency before the frame is created, so
-	-- by default all eventless frames are created with the 0.5s timer.
-	-- To change it you'll need to call oUF:HandleEventlessUnit(frame) one more
-	-- time from the layout code after oUF:Spawn(unit) returns the frame.
 	local timer = object.onUpdateFrequency or 0.5
 
 	-- Remove it, in case it's registered with another timer previously
