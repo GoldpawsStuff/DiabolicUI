@@ -45,20 +45,25 @@ local UpdateColor = function(self, event, unit)
 	local element = self.SmartHealth
 
 	local r, g, b, t
-	if (element.colorDisconnected and not UnitIsConnected(unit)) then
+	if(element.colorDisconnected and not UnitIsConnected(unit)) then
 		t = self.colors.disconnected
-	elseif (element.colorTapping and UnitCanAttack("player", unit) and not UnitPlayerControlled(unit) and UnitIsTapDenied(unit)) then
+	elseif(element.colorTapping and UnitCanAttack("player", unit) and not UnitPlayerControlled(unit) and UnitIsTapDenied(unit)) then
 		t = self.colors.tapped
-	elseif (element.colorThreat and not UnitPlayerControlled(unit) and UnitThreatSituation("player", unit)) then
+	elseif(element.colorHappiness and not oUF.isRetail and PlayerClass == "HUNTER" and UnitIsUnit(unit, "pet") and GetPetHappiness()) then
+		t = self.colors.happiness[GetPetHappiness()]
+	elseif(element.colorThreat and not UnitPlayerControlled(unit) and UnitThreatSituation("player", unit)) then
 		t =  self.colors.threat[UnitThreatSituation("player", unit)]
-	elseif (element.colorClass and UnitIsPlayer(unit))
+	elseif(element.colorClass and UnitIsPlayer(unit))
 		or (element.colorClassNPC and not UnitIsPlayer(unit))
-		or (element.colorClassPet and UnitPlayerControlled(unit) and not UnitIsPlayer(unit)) then
+		or ((element.colorClassPet or element.colorPetByUnitClass) and UnitPlayerControlled(unit) and not UnitIsPlayer(unit)) then
+		if element.colorPetByUnitClass then unit = unit == "pet" and "player" or gsub(unit, "pet", "") end
 		local _, class = UnitClass(unit)
 		t = self.colors.class[class]
-	elseif (element.colorReaction and UnitReaction(unit, "player")) then
+	elseif(element.colorReaction and UnitReaction(unit, "player")) then
 		t = self.colors.reaction[UnitReaction(unit, "player")]
-	elseif (element.colorHealth) then
+	elseif(element.colorSmooth) then
+		r, g, b = self:ColorGradient(element.cur or 1, element.max or 1, unpack(element.smoothGradient or self.colors.smooth))
+	elseif(element.colorHealth) then
 		t = self.colors.health
 	end
 
@@ -115,15 +120,20 @@ local Update = function(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
-	-- Different GUID means a different player or NPC,
-	-- so we want updates to be instant, not smoothed.
-	local guid = UnitGUID(unit)
-	local forced = (guid ~= element.guid) or (UnitIsDeadOrGhost(unit))
-	element.guid = guid
-
 	local absorb
 	local cur, max = UnitHealth(unit), UnitHealthMax(unit)
 	local connected = UnitIsConnected(unit)
+
+	-- Different GUID means a different player or NPC,
+	-- so we want updates to be instant, not smoothed.
+	local forced = (event == "ForceUpdate") or (event == "RefreshUnit") or (event == "GROUP_ROSTER_UPDATE")
+	if (not forced) then
+		local guid = UnitGUID(unit)
+		if (guid ~= element.guid) then
+			forced = true
+			element.guid = guid
+		end
+	end
 
 	element:SetMinMaxValues(0, max, forced)
 
