@@ -120,11 +120,11 @@ local function Update(self, event, unit, powerType)
 		cur = mod == 0 and 0 or cur / mod
 
 		-- BUG: Destruction is supposed to show partial soulshards, but Affliction and Demonology should only show full ones
-		if oUF.isRetail and (ClassPowerType == 'SOUL_SHARDS' and GetSpecialization() ~= SPEC_WARLOCK_DESTRUCTION) then
+		if(oUF.isRetail) and (ClassPowerType == 'SOUL_SHARDS' and GetSpecialization() ~= SPEC_WARLOCK_DESTRUCTION) then
 			cur = cur - cur % 1
 		end
 
-		if oUF.isRetail and (PlayerClass == 'ROGUE') then
+		if(oUF.isRetail) and (PlayerClass == 'ROGUE') then
 			chargedPoints = GetUnitChargedPowerPoints(unit)
 
 			-- UNIT_POWER_POINT_CHARGE doesn't provide a power type
@@ -162,10 +162,10 @@ local function Update(self, event, unit, powerType)
 	* max           - the maximum amount of power (number)
 	* hasMaxChanged - indicates whether the maximum amount has changed since the last update (boolean)
 	* powerType     - the active power type (string)
-	* chargedTable  - current chargedPoints table
+	* ...           - the indices of currently charged power points, if any
 	--]]
 	if(element.PostUpdate) then
-		return element:PostUpdate(cur, max, oldMax ~= max, powerType, chargedPoints)  -- ElvUI uses chargedPoints as table
+		return element:PostUpdate(cur, max, oldMax ~= max, powerType, unpack(chargedPoints or {}))
 	end
 end
 
@@ -185,11 +185,11 @@ local function Visibility(self, event, unit)
 	local element = self.ClassPower
 	local shouldEnable
 
-	if oUF.isRetail and UnitHasVehicleUI('player') then
+	if(oUF.isRetail) and (UnitHasVehicleUI('player')) then
 		shouldEnable = PlayerVehicleHasComboPoints()
 		unit = 'vehicle'
 	elseif(ClassPowerID) then
-		if(not RequireSpec or oUF.isRetail and (RequireSpec == GetSpecialization())) then
+		if(not RequireSpec or (oUF.isRetail and RequireSpec == GetSpecialization())) then
 			-- use 'player' instead of unit because 'SPELLS_CHANGED' is a unitless event
 			if(not RequirePower or RequirePower == UnitPowerType('player')) then
 				if(not RequireSpell or IsPlayerSpell(RequireSpell)) then
@@ -259,17 +259,17 @@ do
 		self:RegisterEvent('UNIT_POWER_FREQUENT', Path)
 		self:RegisterEvent('UNIT_MAXPOWER', Path)
 
-		if not oUF.isRetail then
+		if(not oUF.isRetail) then
 			self:RegisterEvent('PLAYER_TARGET_CHANGED', VisibilityPath, true)
 		end
 
-		if oUF.isRetail and (PlayerClass == 'ROGUE') then
+		if(oUF.isRetail) and (PlayerClass == 'ROGUE') then
 			self:RegisterEvent('UNIT_POWER_POINT_CHARGE', Path)
 		end
 
 		self.ClassPower.__isEnabled = true
 
-		if (oUF.isRetail or oUF.isWrath) and UnitHasVehicleUI('player') then
+		if(oUF.isRetail or oUF.isWrath) and (UnitHasVehicleUI('player')) then
 			Path(self, 'ClassPowerEnable', 'vehicle', 'COMBO_POINTS')
 		else
 			Path(self, 'ClassPowerEnable', 'player', ClassPowerType)
@@ -280,7 +280,7 @@ do
 		self:UnregisterEvent('UNIT_POWER_FREQUENT', Path)
 		self:UnregisterEvent('UNIT_MAXPOWER', Path)
 
-		if oUF.isRetail then
+		if(oUF.isRetail) then
 			self:UnregisterEvent('UNIT_POWER_POINT_CHARGE', Path)
 		else
 			self:UnregisterEvent('PLAYER_TARGET_CHANGED', VisibilityPath)
@@ -311,7 +311,7 @@ do
 
 		if(PlayerClass == 'DRUID') then
 			RequirePower = SPELL_POWER_ENERGY
-			RequireSpell = oUF.isRetail and 5221 or 768
+			RequireSpell = oUF.isRetail and 5221 or 768 -- Shred
 		end
 	elseif(PlayerClass == 'MAGE') then
 		ClassPowerID = SPELL_POWER_ARCANE_CHARGES
@@ -357,7 +357,7 @@ local function Disable(self)
 	if(self.ClassPower) then
 		ClassPowerDisable(self)
 
-		if oUF.isRetail or oUF.isWrath then
+		if(oUF.isRetail or oUF.isWrath) then
 			self:UnregisterEvent('PLAYER_TALENT_UPDATE', VisibilityPath)
 		end
 
