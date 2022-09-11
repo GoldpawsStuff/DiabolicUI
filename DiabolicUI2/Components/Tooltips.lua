@@ -534,14 +534,14 @@ Tooltips.OnTooltipSetUnit = function(self, tooltip)
 		end
 
 		local levelText
-		if (not isBoss) then
-			if (unitEffectiveLevel and unitEffectiveLevel > 0) then
-				local r, g, b, colorCode = GetDifficultyColorByLevel(unitEffectiveLevel)
-				levelText = colorCode .. unitEffectiveLevel .. "|r"
-			end
-			if (not levelText) then
-				displayName = BOSS_TEXTURE .. " " .. displayName
-			end
+		if (unitEffectiveLevel and unitEffectiveLevel > 0) then
+			local r, g, b, colorCode = GetDifficultyColorByLevel(unitEffectiveLevel)
+			levelText = colorCode .. unitEffectiveLevel .. "|r"
+		end
+
+		-- Add a skull icon for non-classified boss mobs with undetermined unitlevel
+		if (not isBoss) and (not levelText) then
+			displayName = BOSS_TEXTURE .. " " .. displayName
 		end
 
 		if (levelText) then
