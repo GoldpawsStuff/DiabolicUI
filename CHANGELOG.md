@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-09-11
+### Fixed
+- Now clears the alpha of the "-" prefix of quest lines in the wrath tracker on every update.
+
 ## [2.0.38-RC] 2022-09-11
 ### Added
 - Added the missing and unstyled buttons to the Wrath micro menu.
