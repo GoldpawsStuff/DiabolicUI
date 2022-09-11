@@ -142,12 +142,17 @@ MicroMenu.InitializeMicroMenu = function(self)
 			"TalentMicroButton",
 			"AchievementMicroButton",
 			"QuestLogMicroButton",
+			"SocialsMicroButton",
+			"PVPMicroButton",
+			"LFGMicroButton",
+			"WorldMapMicroButton",
 			"GuildMicroButton",
 			"LFDMicroButton",
 			"CollectionsMicroButton",
 			"EJMicroButton",
 			"StoreMicroButton",
 			"MainMenuMicroButton",
+			"HelpMicroButton"
 		}) do
 			local button = _G[name]
 			if (button) then
@@ -165,12 +170,17 @@ MicroMenu.InitializeMicroMenu = function(self)
 			TalentMicroButton = TALENTS_BUTTON,
 			AchievementMicroButton = ACHIEVEMENT_BUTTON,
 			QuestLogMicroButton = QUESTLOG_BUTTON,
+			SocialsMicroButton = SOCIALS,
+			PVPMicroButton = PLAYER_V_PLAYER,
+			LFGMicroButton = DUNGEONS_BUTTON,
+			WorldMapMicroButton = WORLD_MAP,
 			GuildMicroButton = LOOKINGFORGUILD,
 			LFDMicroButton = DUNGEONS_BUTTON,
 			CollectionsMicroButton = COLLECTIONS,
 			EJMicroButton = ADVENTURE_JOURNAL or ENCOUNTER_JOURNAL,
 			StoreMicroButton = BLIZZARD_STORE,
-			MainMenuMicroButton = MAINMENU_BUTTON
+			MainMenuMicroButton = MAINMENU_BUTTON,
+			HelpMicroButton = HELP_BUTTON
 		}
 
 		self.bar.anchors = {}
