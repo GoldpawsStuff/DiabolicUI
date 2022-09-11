@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-09-11
+## [2.0.38-RC] 2022-09-11
 ### Added
 - Added the missing and unstyled buttons to the Wrath micro menu.
 - Added a skull icon to unit tooltips of non-classified boss mobs whose unit level couldn't be determined.
