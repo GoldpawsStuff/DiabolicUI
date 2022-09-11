@@ -162,7 +162,7 @@ local styleFunc = function(button)
 		local darken = button:CreateTexture(nil, "BACKGROUND", nil, 3)
 		darken:SetAllPoints(icon)
 		darken:SetTexture(maskTexture)
-		darken:SetVertexColor(0, 0, 0, .25)
+		darken:SetVertexColor(0, 0, 0, .1)
 
 		button:SetScript("OnEnter", function(self)
 			darken:SetAlpha(0)
@@ -172,7 +172,7 @@ local styleFunc = function(button)
 		end)
 
 		button:SetScript("OnLeave", function(self)
-			darken:SetAlpha(.25)
+			darken:SetAlpha(.1)
 			if (self.OnLeave) then
 				self:OnLeave()
 			end
