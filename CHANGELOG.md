@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased] 2022-09-11
+### Changed
+- Will no longer change the default nameplate visibility distance in Wrath.
+
 ### Fixed
-- Now clears the alpha of the "-" prefix of quest lines in the wrath tracker on every update.
+- Now clears the alpha of the "-" prefix of quest lines in the Wrath tracker on every update.
 
 ## [2.0.38-RC] 2022-09-11
 ### Added

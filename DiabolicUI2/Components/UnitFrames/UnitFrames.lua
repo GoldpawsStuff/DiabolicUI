@@ -132,7 +132,7 @@ local cvars = {
 	["nameplateSelectedScale"] = 1, -- 1.2
 
 	-- The max distance to show nameplates.
-	["nameplateMaxDistance"] = 60, -- 20 is classic upper limit, 60 is BfA default
+	--["nameplateMaxDistance"] = 60, -- 20 is classic upper limit, 60 is BfA default
 
 	-- The max distance to show the target nameplate when the target is behind the camera.
 	["nameplateTargetBehindMaxDistance"] = 15 -- 15
