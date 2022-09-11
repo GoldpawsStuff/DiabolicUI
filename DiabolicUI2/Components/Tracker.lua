@@ -170,73 +170,89 @@ local UpdateProgressBar = function(_, _, line)
 	end
 end
 
+local StyleWatchFrameLine = function(line)
+	if (not Handled[line]) then
+		--local name = line:GetName()
+		--local icon = _G[name.."Icon"]
+		--local border = _G[name.."Border"]
+		line.text:SetFontObject(GetFont(15,true)) -- default size is 16
+		line.dash:SetAlpha(0)
+
+		Handled[line] = true
+	end
+end
+
+local StyleQuestButton = function(button)
+	local name = button:GetName()
+	local icon = button.icon or _G[name.."IconTexture"]
+	local count = button.Count or _G[name.."Count"]
+	local hotKey = button.HotKey or _G[name.."HotKey"]
+
+	if (not Handled[button]) then
+		button:SetNormalTexture(nil)
+
+		if (icon) then
+			icon:SetDrawLayer("BACKGROUND",0)
+			icon:SetTexCoord(5/64, 59/64, 5/64, 59/64)
+			icon:ClearAllPoints()
+			icon:SetPoint("TOPLEFT", 2, -2)
+			icon:SetPoint("BOTTOMRIGHT", -2, 2)
+
+			local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
+			backdrop:SetPoint("TOPLEFT", icon, -2, 2)
+			backdrop:SetPoint("BOTTOMRIGHT", icon, 2, -2)
+			backdrop:SetColorTexture(0, 0, 0, .75)
+		end
+
+		if (count) then
+			count:ClearAllPoints()
+			count:SetPoint("BOTTOMRIGHT", button, 0, 3)
+			count:SetFontObject(GetFont(12,true))
+		end
+
+		if (hotKey) then
+			hotKey:SetText("")
+			hotKey:SetAlpha(0)
+		end
+
+		if (button.SetHighlightTexture and not button.Highlight) then
+			local Highlight = button:CreateTexture()
+
+			Highlight:SetColorTexture(1, 1, 1, 0.3)
+			Highlight:SetAllPoints(icon)
+
+			button.Highlight = Highlight
+			button:SetHighlightTexture(Highlight)
+		end
+
+		if (button.SetPushedTexture and not button.Pushed) then
+			local Pushed = button:CreateTexture()
+
+			Pushed:SetColorTexture(0.9, 0.8, 0.1, 0.3)
+			Pushed:SetAllPoints(icon)
+
+			button.Pushed = Pushed
+			button:SetPushedTexture(Pushed)
+		end
+
+		if (button.SetCheckedTexture and not button.Checked) then
+			local Checked = button:CreateTexture()
+
+			Checked:SetColorTexture(0, 1, 0, 0.3)
+			Checked:SetAllPoints(icon)
+
+			button.Checked = Checked
+			button:SetCheckedTexture(Checked)
+		end
+
+		Handled[button] = true
+	end
+end
+
 local UpdateQuestItem = function(_, block)
 	local button = block.itemButton
-
 	if (button) then
-		local icon = button.icon
-		local count = button.Count
-		local hotKey = button.HotKey
-
-		if (not Handled[button]) then
-			button:SetNormalTexture(nil)
-
-			if (icon) then
-				icon:SetDrawLayer("BACKGROUND",0)
-				icon:SetTexCoord(5/64, 59/64, 5/64, 59/64)
-				icon:ClearAllPoints()
-				icon:SetPoint("TOPLEFT", 2, -2)
-				icon:SetPoint("BOTTOMRIGHT", -2, 2)
-
-				local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
-				backdrop:SetPoint("TOPLEFT", icon, -2, 2)
-				backdrop:SetPoint("BOTTOMRIGHT", icon, 2, -2)
-				backdrop:SetColorTexture(0, 0, 0, .75)
-			end
-
-			if (count) then
-				count:ClearAllPoints()
-				count:SetPoint("BOTTOMRIGHT", button, 0, 3)
-				count:SetFontObject(GetFont(12,true))
-			end
-
-			if (hotKey) then
-				hotKey:SetText("")
-				hotKey:SetAlpha(0)
-			end
-
-			if (button.SetHighlightTexture and not button.Highlight) then
-				local Highlight = button:CreateTexture()
-
-				Highlight:SetColorTexture(1, 1, 1, 0.3)
-				Highlight:SetAllPoints(icon)
-
-				button.Highlight = Highlight
-				button:SetHighlightTexture(Highlight)
-			end
-
-			if (button.SetPushedTexture and not button.Pushed) then
-				local Pushed = button:CreateTexture()
-
-				Pushed:SetColorTexture(0.9, 0.8, 0.1, 0.3)
-				Pushed:SetAllPoints(icon)
-
-				button.Pushed = Pushed
-				button:SetPushedTexture(Pushed)
-			end
-
-			if (button.SetCheckedTexture and not button.Checked) then
-				local Checked = button:CreateTexture()
-
-				Checked:SetColorTexture(0, 1, 0, 0.3)
-				Checked:SetAllPoints(icon)
-
-				button.Checked = Checked
-				button:SetCheckedTexture(Checked)
-			end
-
-			Handled[button] = true
-		end
+		StyleQuestButton(button)
 	end
 end
 
@@ -370,6 +386,37 @@ Tracker.InitializeWrathTracker = function(self)
 	if (not ns.IsWrath) then
 		return
 	end
+
+	--function WatchFrame_SetWidth(width)
+	--	if ( width == "0" ) then
+	--		WATCHFRAME_EXPANDEDWIDTH = 204;
+	--		WATCHFRAME_MAXLINEWIDTH = 192;
+	--	else
+	--		WATCHFRAME_EXPANDEDWIDTH = 306;
+	--		WATCHFRAME_MAXLINEWIDTH = 294;
+	--	end
+	--	if ( WatchFrame:IsShown() and not WatchFrame.collapsed ) then
+	--		WatchFrame:SetWidth(WATCHFRAME_EXPANDEDWIDTH);
+	--		WatchFrame_Update();
+	--	end
+	--end
+
+	-- Does this taint?
+	local locked
+	hooksecurefunc(WatchFrame, "SetWidth", function()
+		if (not locked) then
+			locked = true
+			-- Don't alter the width if the tracker is collapsed
+			if (WatchFrame:IsShown() and not WatchFrame.collapsed) then
+				WATCHFRAME_EXPANDEDWIDTH = 266
+				WATCHFRAME_MAXLINEWIDTH = WATCHFRAME_EXPANDEDWIDTH - 12
+				WatchFrame:SetWidth(WATCHFRAME_EXPANDEDWIDTH)
+				WatchFrame_Update()
+			end
+			locked = nil
+		end
+	end)
+
 	self:UpdateWrathTracker()
 end
 
@@ -377,7 +424,29 @@ Tracker.UpdateWrathTracker = function(self)
 	if (not ns.IsWrath) then
 		return
 	end
-	SetObjectScale(WatchFrame, 1.25)
+	SetObjectScale(WatchFrame, 1)
+
+	WatchFrameTitle:SetFontObject(GetFont(15,true))
+
+
+	-- Style tracker fonts
+	local UpdateWrathQuestLines = function()
+		for i,line in pairs(WATCHFRAME_QUESTLINES) do
+			StyleWatchFrameLine(line)
+		end
+	end
+	hooksecurefunc("WatchFrame_Update", UpdateWrathQuestLines)
+	UpdateWrathQuestLines()
+
+	-- Style quest buttons
+	local i,item = 1,WatchFrameItem1
+	while (item) do
+		StyleQuestButton(item)
+		i = i + 1
+		item = _G["WatchFrameItem" .. i]
+	end
+
+	hooksecurefunc("WatchFrameItem_OnShow", StyleQuestButton)
 end
 
 Tracker.OnEvent = function(self, event, ...)
