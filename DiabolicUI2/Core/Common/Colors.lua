@@ -38,13 +38,13 @@ local ColorTemplate = {}
 
 -- Utility
 -----------------------------------------------------------------
--- Convert a Blizzard Color or RGB value set 
--- into our own custom color table format. 
+-- Convert a Blizzard Color or RGB value set
+-- into our own custom color table format.
 local createColor = function(...)
 	local tbl
 	if (select("#", ...) == 1) then
 		local old = ...
-		if (old.r) then 
+		if (old.r) then
 			tbl = {}
 			tbl[1] = old.r or 1
 			tbl[2] = old.g or 1
@@ -56,7 +56,7 @@ local createColor = function(...)
 		tbl = { ... }
 	end
 	-- Do NOT use a metatable, just embed.
-	for name,method in pairs(ColorTemplate) do 
+	for name,method in pairs(ColorTemplate) do
 		tbl[name] = method
 	end
 	if (#tbl == 3) then
@@ -69,11 +69,11 @@ end
 -- Convert a whole Blizzard color table
 local createColorGroup = function(group)
 	local tbl = {}
-	for i,v in pairs(group) do 
+	for i,v in pairs(group) do
 		tbl[i] = createColor(v)
-	end 
+	end
 	return tbl
-end 
+end
 
 -- Assign proxies to the color table, for modules to use
 Colors.CreateColor = function(_, ...) return createColor(...) end
@@ -81,11 +81,11 @@ Colors.CreateColorGroup = function(_, ...) return createColorGroup(...) end
 
 -- Color Template
 -----------------------------------------------------------------
--- Emulate some of the Blizzard methods, 
--- since they too do colors this way now. 
--- Goal is not to be fully interchangeable. 
+-- Emulate some of the Blizzard methods,
+-- since they too do colors this way now.
+-- Goal is not to be fully interchangeable.
 ColorTemplate.GetRGB = function(self)
-	return self[1], self[2], self[3]	
+	return self[1], self[2], self[3]
 end
 
 ColorTemplate.GetRGBAsBytes = function(self)
@@ -140,14 +140,14 @@ Colors.quality.WoWToken = Colors.quality[8]
 Colors.quality.Blizard = Colors.quality[8]
 
 -- Unit specifics
-Colors.health = Colors.red
+Colors.health = createColor(255/255, 55/255, 25/255)
 Colors.cast = Colors.quality.Artifact
 Colors.disconnected = createColor(120/255, 120/255, 120/255)
 Colors.tapped = createColor(121/255, 101/255, 96/255)
 Colors.dead = createColor(121/255, 101/255, 96/255)
 
 -- xp, rep and artifact coloring
-Colors.xp = createColor(251/255, 120/255, 29/255) -- xp bar 
+Colors.xp = createColor(251/255, 120/255, 29/255) -- xp bar
 Colors.xpValue = createColor(145/255, 77/255, 229/255) -- xp bar text
 Colors.rested = createColor(251/255, 120/255, 29/255) -- xp bar while being rested
 Colors.restedValue = createColor(203/255, 77/255, 229/255) -- xp bar text while being rested
@@ -171,15 +171,15 @@ Colors.class.DEATHKNIGHT = createColor(176/255, 31/255, 79/255)
 Colors.class.DEMONHUNTER = createColor(163/255, 48/255, 201/255)
 Colors.class.DRUID = createColor(225/255, 125/255, 35/255)
 Colors.class.EVOKER = createColor(51/255, 147/255, 127/255)
-Colors.class.HUNTER = createColor(191/255, 232/255, 115/255) 
+Colors.class.HUNTER = createColor(191/255, 232/255, 115/255)
 Colors.class.MAGE = createColor(105/255, 204/255, 240/255)
 Colors.class.MONK = createColor(0/255, 255/255, 150/255)
 Colors.class.PALADIN = createColor(225/255, 160/255, 226/255)
 Colors.class.PRIEST = createColor(176/255, 200/255, 225/255)
-Colors.class.ROGUE = createColor(255/255, 225/255, 95/255) 
-Colors.class.SHAMAN = createColor(32/255, 122/255, 222/255) 
-Colors.class.WARLOCK = createColor(148/255, 130/255, 201/255) 
-Colors.class.WARRIOR = createColor(229/255, 156/255, 110/255) 
+Colors.class.ROGUE = createColor(255/255, 225/255, 95/255)
+Colors.class.SHAMAN = createColor(32/255, 122/255, 222/255)
+Colors.class.WARLOCK = createColor(148/255, 130/255, 201/255)
+Colors.class.WARRIOR = createColor(229/255, 156/255, 110/255)
 Colors.class.UNKNOWN = createColor(195/255, 202/255, 217/255)
 
 -- Power
@@ -187,22 +187,22 @@ Colors.power = {}
 Colors.power.ENERGY = createColor(254/255, 245/255, 145/255) -- Rogues, Druids, Monks
 Colors.power.FURY = createColor(255/255, 0/255, 111/255) -- Vengeance Demon Hunter
 Colors.power.FOCUS = createColor(125/255, 168/255, 195/255) -- Hunter Pets
-Colors.power.INSANITY = createColor(102/255, 64/255, 204/255) -- Shadow Priests 
-Colors.power.LUNAR_POWER = createColor(121/255, 152/255, 192/255) -- Balance Druid Astral Power 
+Colors.power.INSANITY = createColor(102/255, 64/255, 204/255) -- Shadow Priests
+Colors.power.LUNAR_POWER = createColor(121/255, 152/255, 192/255) -- Balance Druid Astral Power
 Colors.power.MAELSTROM = createColor(0/255, 188/255, 255/255) -- Elemental Shamans
 Colors.power.MANA = createColor(80/255, 116/255, 255/255) -- Druid, Hunter, Mage, Paladin, Priest, Shaman, Warlock
-Colors.power.PAIN = createColor(142/255, 191/255, 0/255) 
+Colors.power.PAIN = createColor(142/255, 191/255, 0/255)
 Colors.power.RAGE = createColor(215/255, 7/255, 7/255) -- Druids, Warriors
 Colors.power.RUNIC_POWER = createColor(0/255, 236/255, 255/255) -- Death Knights
 
 -- Secondary Resource Colors
 Colors.power.ARCANE_CHARGES = createColor(121/255, 152/255, 192/255) -- Arcane Mage
-Colors.power.CHI = createColor(126/255, 255/255, 163/255) -- Monk 
+Colors.power.CHI = createColor(126/255, 255/255, 163/255) -- Monk
 Colors.power.COMBO_POINTS = createColor(255/255, 0/255, 30/255) -- Rogues, Druids
-Colors.power.HOLY_POWER = createColor(245/255, 254/255, 145/255) -- Retribution Paladins 
-Colors.power.RUNES = createColor(100/255, 155/255, 225/255) -- Death Knight 
+Colors.power.HOLY_POWER = createColor(245/255, 254/255, 145/255) -- Retribution Paladins
+Colors.power.RUNES = createColor(100/255, 155/255, 225/255) -- Death Knight
 Colors.power.SOUL_FRAGMENTS = createColor(148/255, 130/255, 201/255) -- Demon Hunter
-Colors.power.SOUL_SHARDS = createColor(148/255, 130/255, 201/255) -- Warlock 
+Colors.power.SOUL_SHARDS = createColor(148/255, 130/255, 201/255) -- Warlock
 
 -- Alternate Power
 Colors.power.ALTERNATE = createColor(70/255, 255/255, 131/255)
@@ -211,12 +211,12 @@ Colors.power.ALTERNATE = createColor(70/255, 255/255, 131/255)
 Colors.power.AMMOSLOT = createColor(204/255, 153/255, 0/255)
 Colors.power.FUEL = createColor(0/255, 140/255, 127/255)
 Colors.power.STAGGER = {}
-Colors.power.STAGGER[1] = createColor(132/255, 255/255, 132/255) 
-Colors.power.STAGGER[2] = createColor(255/255, 250/255, 183/255) 
-Colors.power.STAGGER[3] = createColor(255/255, 107/255, 107/255) 
+Colors.power.STAGGER[1] = createColor(132/255, 255/255, 132/255)
+Colors.power.STAGGER[2] = createColor(255/255, 250/255, 183/255)
+Colors.power.STAGGER[3] = createColor(255/255, 107/255, 107/255)
 
 -- Fallback for the rare cases where an unknown type is requested.
-Colors.power.UNUSED = createColor(195/255, 202/255, 217/255) 
+Colors.power.UNUSED = createColor(195/255, 202/255, 217/255)
 
 -- Allow us to use power type index to get the color
 -- FrameXML/UnitFrame.lua
@@ -240,8 +240,8 @@ Colors.reaction = {}
 Colors.reaction[1] = createColor(205/255, 46/255, 36/255) -- hated
 Colors.reaction[2] = createColor(205/255, 46/255, 36/255) -- hostile
 Colors.reaction[3] = createColor(192/255, 68/255, 0/255) -- unfriendly
---Colors.reaction[4] = createColor(249/255, 188/255, 65/255) -- neutral 
-Colors.reaction[4] = createColor(249/255, 158/255, 55/255) -- neutral 
+--Colors.reaction[4] = createColor(249/255, 188/255, 65/255) -- neutral
+Colors.reaction[4] = createColor(249/255, 158/255, 55/255) -- neutral
 --Colors.reaction[5] = createColor( 64/255, 131/255, 38/255) -- friendly
 Colors.reaction[5] = createColor( 64/255, 101/255, 38/255) -- friendly
 --Colors.reaction[6] = createColor( 64/255, 131/255, 69/255) -- honored
@@ -251,11 +251,11 @@ Colors.reaction[8] = createColor( 64/255, 131/255, 131/255) -- exalted
 Colors.reaction.civilian = createColor(64/255, 131/255, 38/255) -- used for friendly player nameplates
 
 -- Friendship
--- Just using these as pointers to the reaction colors, 
+-- Just using these as pointers to the reaction colors,
 -- so there won't be a need to ever edit these.
 Colors.friendship = {}
 Colors.friendship[1] = Colors.reaction[3] -- Stranger
-Colors.friendship[2] = Colors.reaction[4] -- Acquaintance 
+Colors.friendship[2] = Colors.reaction[4] -- Acquaintance
 Colors.friendship[3] = Colors.reaction[5] -- Buddy
 Colors.friendship[4] = Colors.reaction[6] -- Friend (honored color)
 Colors.friendship[5] = Colors.reaction[7] -- Good Friend (revered color)
@@ -272,11 +272,11 @@ Colors.debuff.Disease = createColor(153/255, 102/255, 0/255)
 Colors.debuff.Poison = createColor(0/255, 153/255, 0/255)
 Colors.debuff[""] = createColor(0/255, 0/255, 0/255)
 
--- faction 
+-- faction
 Colors.faction = {}
 Colors.faction.Alliance = createColor(74/255, 84/255, 232/255)
 Colors.faction.Horde = createColor(229/255, 13/255, 18/255)
-Colors.faction.Neutral = createColor(249/255, 158/255, 35/255) 
+Colors.faction.Neutral = createColor(249/255, 158/255, 35/255)
 
 -- damage feedback
 Colors.feedback = {}
@@ -300,28 +300,28 @@ Colors.timer = {}
 Colors.timer.UNKNOWN = createColor(179/255, 77/255, 0/255) -- fallback for timers and unknowns
 Colors.timer.EXHAUSTION = createColor(179/255, 77/255, 0/255)
 Colors.timer.BREATH = createColor(0/255, 128/255, 255/255)
-Colors.timer.DEATH = createColor(217/255, 90/255, 0/255) 
-Colors.timer.FEIGNDEATH = createColor(217/255, 90/255, 0/255) 
+Colors.timer.DEATH = createColor(217/255, 90/255, 0/255)
+Colors.timer.FEIGNDEATH = createColor(217/255, 90/255, 0/255)
 
 -- threat
 Colors.threat = {}
 Colors.threat[0] = Colors.reaction[4] -- not really on the threat table
-Colors.threat[1] = Colors.reaction[3] -- tanks having lost threat, dps overnuking 
+Colors.threat[1] = Colors.reaction[3] -- tanks having lost threat, dps overnuking
 Colors.threat[2] = Colors.reaction[2] -- tanks about to lose threat, dps getting aggro
-Colors.threat[3] = Colors.reaction[1] -- securely tanking, or totally fucked :) 
+Colors.threat[3] = Colors.reaction[1] -- securely tanking, or totally fucked :)
 
---Colors.threat[1] = createColor(249/255, 158/255, 35/255) -- tanks having lost threat, dps overnuking 
+--Colors.threat[1] = createColor(249/255, 158/255, 35/255) -- tanks having lost threat, dps overnuking
 --Colors.threat[2] = createColor(255/255, 96/255, 12/255) -- tanks about to lose threat, dps getting aggro
---Colors.threat[3] = createColor(255/255, 0/255, 0/255) -- securely tanking, or totally fucked :) 
+--Colors.threat[3] = createColor(255/255, 0/255, 0/255) -- securely tanking, or totally fucked :)
 
 -- zone names
 Colors.zone = {}
 Colors.zone.arena = createColor(175/255, 76/255, 56/255)
-Colors.zone.combat = createColor(175/255, 76/255, 56/255) 
+Colors.zone.combat = createColor(175/255, 76/255, 56/255)
 Colors.zone.contested = createColor(229/255, 159/255, 28/255)
-Colors.zone.friendly = createColor(64/255, 175/255, 38/255) 
-Colors.zone.hostile = createColor(175/255, 76/255, 56/255) 
+Colors.zone.friendly = createColor(64/255, 175/255, 38/255)
+Colors.zone.hostile = createColor(175/255, 76/255, 56/255)
 Colors.zone.sanctuary = createColor(104/255, 204/255, 239/255)
-Colors.zone.unknown = createColor(255/255, 234/255, 137/255) -- instances, bgs, contested zones on pve realms 
+Colors.zone.unknown = createColor(255/255, 234/255, 137/255) -- instances, bgs, contested zones on pve realms
 
 ns.Private.Colors = Colors
