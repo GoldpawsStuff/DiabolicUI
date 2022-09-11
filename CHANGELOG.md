@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-09-11
+### Added
+- Added the missing and unstyled buttons to the Wrath micro menu.
+
+### Changed
+- Adjusted the minimap clock font slightly.
+- Adjusted action button icons to be slightly brighter.
+
 ## [2.0.37-RC] 2022-09-09
 ### Changed
 - Updated oUF fully for Wrath.
