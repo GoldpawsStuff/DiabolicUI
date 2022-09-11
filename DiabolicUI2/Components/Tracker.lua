@@ -170,19 +170,20 @@ local UpdateProgressBar = function(_, _, line)
 	end
 end
 
-local StyleWatchFrameLine = function(line)
+local UpdateWatchFrameLine = function(line)
 	if (not Handled[line]) then
 		--local name = line:GetName()
 		--local icon = _G[name.."Icon"]
 		--local border = _G[name.."Border"]
 		line.text:SetFontObject(GetFont(15,true)) -- default size is 16
-		line.dash:SetAlpha(0)
-
 		Handled[line] = true
 	end
+	-- Always assure this is cleared
+	-- *don't clear the text, it's indent is needed!
+	line.dash:SetAlpha(0)
 end
 
-local StyleQuestButton = function(button)
+local UpdateQuestItemButton = function(button)
 	local name = button:GetName()
 	local icon = button.icon or _G[name.."IconTexture"]
 	local count = button.Count or _G[name.."Count"]
@@ -252,7 +253,7 @@ end
 local UpdateQuestItem = function(_, block)
 	local button = block.itemButton
 	if (button) then
-		StyleQuestButton(button)
+		UpdateQuestItemButton(button)
 	end
 end
 
@@ -432,7 +433,7 @@ Tracker.UpdateWrathTracker = function(self)
 	-- Style tracker fonts
 	local UpdateWrathQuestLines = function()
 		for i,line in pairs(WATCHFRAME_QUESTLINES) do
-			StyleWatchFrameLine(line)
+			UpdateWatchFrameLine(line)
 		end
 	end
 	hooksecurefunc("WatchFrame_Update", UpdateWrathQuestLines)
@@ -441,12 +442,12 @@ Tracker.UpdateWrathTracker = function(self)
 	-- Style quest buttons
 	local i,item = 1,WatchFrameItem1
 	while (item) do
-		StyleQuestButton(item)
+		UpdateQuestItemButton(item)
 		i = i + 1
 		item = _G["WatchFrameItem" .. i]
 	end
 
-	hooksecurefunc("WatchFrameItem_OnShow", StyleQuestButton)
+	hooksecurefunc("WatchFrameItem_OnShow", UpdateQuestItemButton)
 end
 
 Tracker.OnEvent = function(self, event, ...)
