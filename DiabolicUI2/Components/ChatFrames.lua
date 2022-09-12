@@ -53,8 +53,7 @@ local GLOBAL_BUTTONS = {
 	"ChatFrameChannelButton",
 	"ChatFrameToggleVoiceDeafenButton",
 	"ChatFrameToggleVoiceMuteButton",
-	"ChatMenu",
-	"QuickJoinToastButton"
+	"ChatMenu"
 }
 
 -- ChatFrame Texture Suffixes
@@ -525,10 +524,15 @@ ChatFrames.UpdateButtons = function(self, event, ...)
 				end
 
 				if (not Elements[frame].isMouseOver) then
+
 					local buttonFrame = ChatFrame.GetButtonFrame(frame)
-					ChatFrame.GetUpButton(frame):SetParent(buttonFrame)
-					ChatFrame.GetDownButton(frame):SetParent(buttonFrame)
-					ChatFrame.GetToBottomButton(frame):SetParent(buttonFrame)
+					local up = ChatFrame.GetUpButton(frame)
+					local down = ChatFrame.GetDownButton(frame)
+					local bottom = ChatFrame.GetToBottomButton(frame)
+
+					if (up) then up:SetParent(buttonFrame) end
+					if (down) then down:SetParent(buttonFrame) end
+					if (bottom) then bottom:SetParent(buttonFrame) end
 
 					local tabText = ChatFrame.GetTabText(frame)
 					tabText:Show()
@@ -544,9 +548,15 @@ ChatFrames.UpdateButtons = function(self, event, ...)
 			else
 				-- Todo: check out what happens when minimized.
 				if (event == "PLAYER_ENTERING_WORLD") or (Elements[frame].isMouseOver) then
-					ChatFrame.GetUpButton(frame):SetParent(UIHider)
-					ChatFrame.GetDownButton(frame):SetParent(UIHider)
-					ChatFrame.GetToBottomButton(frame):SetParent(UIHider)
+
+					local up = ChatFrame.GetUpButton(frame)
+					local down = ChatFrame.GetDownButton(frame)
+					local bottom = ChatFrame.GetToBottomButton(frame)
+
+					if (up) then up:SetParent(UIHider) end
+					if (down) then down:SetParent(UIHider) end
+					if (bottom) then bottom:SetParent(UIHider) end
+
 					ChatFrame.GetTabText(frame):Hide()
 
 					Elements[frame].isMouseOver = false
@@ -570,6 +580,12 @@ end
 ChatFrames.UpdateClutter = function(self, ...)
 	self:UpdateDockedChatTabs()
 	self:UpdateButtons(...)
+end
+
+ChatFrames.KillToastButton = function(self)
+	if (QuickJoinToastButton) then
+		QuickJoinToastButton:SetParent(UIHider)
+	end
 end
 
 -- Returns an iterator for the global buttons
@@ -607,6 +623,8 @@ ChatFrames.OnEvent = function(self, event, ...)
 			self:SecureHook("FCF_OpenTemporaryWindow", "SetupChatFrames")
 			self:SecureHook("FCF_DockUpdate","UpdateClutter")
 		end
+		self:KillToastButton()
+
 	elseif (event == "UPDATE_CHAT_WINDOWS" or event == "UPDATE_FLOATING_CHAT_WINDOWS") then
 		self:SetupChatFrames()
 		self:UpdateChatPositions()
