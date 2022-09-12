@@ -368,23 +368,25 @@ ChatFrames.StyleChat = function(self, frame)
 		-- Toggle tab text visibility on hover
 		tab:HookScript("OnEnter", function()
 			Elements[frame].isMouseOverTab = true
-			self:UpdateDockedChatTabs()
+			--self:UpdateDockedChatTabs()
+			self:UpdateClutter()
 		end)
 
 		tab:HookScript("OnLeave", function()
 			Elements[frame].isMouseOverTab = false
-			local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(id)
-			if (shown and docked) then
-				tabText:SetAlpha(.9)
-			else
-				tabText:SetAlpha(.5)
-			end
+			--local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(id)
+			--if (shown and docked) then
+			--	tabText:SetAlpha(.9)
+			--else
+			--	tabText:SetAlpha(.5)
+			--end
+			self:UpdateClutter()
 		end)
 
-		tab:HookScript("OnClick", function()
-			self:UpdateClutter()
-			--self:UpdateDockedChatTabs()
-		end)
+		--tab:HookScript("OnClick", function()
+		--	--self:UpdateClutter()
+		--	--self:UpdateDockedChatTabs()
+		--end)
 
 	end
 
@@ -468,8 +470,7 @@ end
 
 ChatFrames.UpdateDockedChatTabs = function(self)
 	local frame = ChatFrame1
-	if (self.frame:IsMouseOver(30,-20,-20,20)) then
-
+	if (self.frame:IsMouseOver(30,0,-30,30)) then
 		for _,frameName in ipairs(_G.CHAT_FRAMES) do
 			local frame = _G[frameName]
 			if (frame) then
@@ -489,7 +490,6 @@ ChatFrames.UpdateDockedChatTabs = function(self)
 		end
 
 	else
-
 		for _,frameName in ipairs(_G.CHAT_FRAMES) do
 			local frame = _G[frameName]
 			if (frame) then
@@ -504,136 +504,72 @@ ChatFrames.UpdateDockedChatTabs = function(self)
 	end
 end
 
-ChatFrames.UpdateClutter = function(self, forced)
+ChatFrames.UpdateButtons = function(self, event, ...)
 
-	self:UpdateDockedChatTabs()
-
-	local frame = ChatFrame1
-	if (self.frame:IsMouseOver(30,-20,-20,20)) then
-		if (not Elements[frame].isMouseOver) then
-			if (not frame.minimized) then
-
-				-- Show primary chatframe buttons
-				local up = ChatFrame.GetUpButton(frame)
-				local down = ChatFrame.GetDownButton(frame)
-				local bottom = ChatFrame.GetToBottomButton(frame)
-
-				if (up) then up:SetAlpha(1) end
-				if (down) then up:SetAlpha(1) end
-				if (bottom) then up:SetAlpha(1) end
-
-				-- Show global buttons
-				for button in self:GetGlobalButtons() do
-					button:SetAlpha(1)
-				end
-
-			end
-			Elements[frame].isMouseOver = true
-		end
-	else
-		if (Elements[frame].isMouseOver) or (forced) then
-			if (not frame.minimized) then
-
-				-- Hide primary chatframe buttons
-				local up = ChatFrame.GetUpButton(frame)
-				local down = ChatFrame.GetDownButton(frame)
-				local bottom = ChatFrame.GetToBottomButton(frame)
-
-				if (up) then up:SetAlpha(0) end
-				if (down) then up:SetAlpha(0) end
-				if (bottom) then up:SetAlpha(0) end
-
-				-- Hide global buttons
-				for button in self:GetGlobalButtons() do
-					button:SetAlpha(0)
-				end
-
-			end
-			Elements[frame].isMouseOver = nil
-		end
-	end
-
-	-- Iterate non-docked frames
+	local atDock
 	for _,frameName in ipairs(_G.CHAT_FRAMES) do
 		local frame = _G[frameName]
 		if (frame) then
 			local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(frame:GetID())
-			if (shown and not docked) then
+			local isMouseOver
 
-				if (frame:IsMouseOver(20,-20,-20,20)) then
-					if (not Elements[frame].isMouseOver) then
+			if (frame == ChatFrame2) then
+				isMouseOver = frame:IsMouseOver(60,0,-30,30)
+			else
+				isMouseOver = frame:IsMouseOver(30,0,-30,30)
+			end
 
-						-- Show frame buttons
-						local up = ChatFrame.GetUpButton(frame)
-						local down = ChatFrame.GetDownButton(frame)
-						local bottom = ChatFrame.GetToBottomButton(frame)
-						local tab = ChatFrame.GetTab(frame)
-						local tabText = ChatFrame.GetTabText(frame)
-
-						if (up) then up:Show() end
-						if (down) then up:Show() end
-						if (bottom) then up:Show() end
-						if (tab) then
-							if (tabText) then
-								tabText:Show()
-							end
-							if (tab:IsMouseOver()) then
-								tabText:SetAlpha(.9)
-							else
-								tabText:SetAlpha(.5)
-							end
-						end
-
-						Elements[frame].isMouseOver = true
-					end
-				else
-					if (Elements[frame].isMouseOver) then
-
-						-- Show frame buttons
-						local up = ChatFrame.GetUpButton(frame)
-						local down = ChatFrame.GetDownButton(frame)
-						local bottom = ChatFrame.GetToBottomButton(frame)
-						local tabText = ChatFrame.GetTabText(frame)
-
-						if (up) then up:Hide() end
-						if (down) then up:Hide() end
-						if (bottom) then up:Hide() end
-						if (tabText) then tabText:Hide() end
-
-						Elements[frame].isMouseOver = false
-					end
+			if (isMouseOver) and (shown and shown ~= 0) and (not frame.minimized) then
+				if (docked) then -- dock position or nil
+					atDock = true
 				end
 
+				if (not Elements[frame].isMouseOver) then
+					local buttonFrame = ChatFrame.GetButtonFrame(frame)
+					ChatFrame.GetUpButton(frame):SetParent(buttonFrame)
+					ChatFrame.GetDownButton(frame):SetParent(buttonFrame)
+					ChatFrame.GetToBottomButton(frame):SetParent(buttonFrame)
+
+					local tabText = ChatFrame.GetTabText(frame)
+					tabText:Show()
+
+					if (ChatFrame.GetTab(frame):IsMouseOver()) then
+						tabText:SetAlpha(.9)
+					else
+						tabText:SetAlpha(.5)
+					end
+
+					Elements[frame].isMouseOver = true
+				end
+			else
+				-- Todo: check out what happens when minimized.
+				if (event == "PLAYER_ENTERING_WORLD") or (Elements[frame].isMouseOver) then
+					ChatFrame.GetUpButton(frame):SetParent(UIHider)
+					ChatFrame.GetDownButton(frame):SetParent(UIHider)
+					ChatFrame.GetToBottomButton(frame):SetParent(UIHider)
+					ChatFrame.GetTabText(frame):Hide()
+
+					Elements[frame].isMouseOver = false
+				end
 			end
 		end
 	end
 
-end
-
-ChatFrames.KillTemporary = function(self)
-	for i,element in ipairs({
-		_G.ChatFrameMenuButton,
-		_G.ChatFrameChannelButton,
-		_G.ChatFrameToggleVoiceDeafenButton,
-		_G.ChatFrameToggleVoiceMuteButton
-	}) do
-		if (element) then
-			element:SetParent(UIHider)
+	if (atDock) then
+		for button in self:GetGlobalButtons() do
+			button:SetAlpha(1)
+		end
+	else
+		for button in self:GetGlobalButtons() do
+			button:SetAlpha(0)
 		end
 	end
 
 end
 
-ChatFrames.KillToastButton = function(self)
-	-- This pops back up on zoning sometimes, so keep removing it
-	-- This was called FriendsMicroButton pre-Legion #uselesstrivia
-	if (_G.QuickJoinToastButton) then
-		QuickJoinToastButton:UnregisterAllEvents()
-		QuickJoinToastButton:Hide()
-		QuickJoinToastButton:SetAlpha(0)
-		QuickJoinToastButton:EnableMouse(false)
-		QuickJoinToastButton:SetParent(UIHider)
-	end
+ChatFrames.UpdateClutter = function(self, ...)
+	self:UpdateDockedChatTabs()
+	self:UpdateButtons(...)
 end
 
 -- Returns an iterator for the global buttons
@@ -661,34 +597,29 @@ ChatFrames.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then
 		local isInitialLogin, isReloadingUi = ...
 		if (isInitialLogin or isReloadingUi) then
-			self:RegisterEvent("UPDATE_CHAT_WINDOWS", "OnEvent")
-			self:RegisterEvent("UPDATE_FLOATING_CHAT_WINDOWS", "OnEvent")
-			self:SecureHook("FCF_OpenTemporaryWindow", "SetupChatFrames")
 			self:SetupChatFrames()
 			self:SetupChatHover()
 			self:SetupDockingLocks()
 			self:UpdateChatPositions()
-			self:UpdateClutter(true)
+			self:UpdateClutter(event, ...)
+			self:RegisterEvent("UPDATE_CHAT_WINDOWS", "OnEvent")
+			self:RegisterEvent("UPDATE_FLOATING_CHAT_WINDOWS", "OnEvent")
+			self:SecureHook("FCF_OpenTemporaryWindow", "SetupChatFrames")
+			self:SecureHook("FCF_DockUpdate","UpdateClutter")
 		end
-		--self:KillToastButton()
-
 	elseif (event == "UPDATE_CHAT_WINDOWS" or event == "UPDATE_FLOATING_CHAT_WINDOWS") then
 		self:SetupChatFrames()
 		self:UpdateChatPositions()
-		self:UpdateClutter(true)
+		self:UpdateClutter(event, ...)
 	end
 end
 
 ChatFrames.OnInitialize = function(self)
-
 	local scaffold = SetObjectScale(CreateFrame("Frame", nil, UIParent))
 	scaffold:SetSize(475,228)
 	scaffold:SetPoint("BOTTOMLEFT", 54, 310)
 	self.frame = scaffold
-
-	--self:KillTemporary()
 	self:SetupChatDefaults()
-
 end
 
 ChatFrames.OnEnable = function(self)
