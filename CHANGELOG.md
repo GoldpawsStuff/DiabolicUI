@@ -4,9 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-09-11
+## [Unreleased] 2022-09-12
 ### Changed
 - Will no longer change the default nameplate visibility distance in Wrath.
+- Chat buttons and tabs should now become visible when the chat window is moused over.
 
 ### Fixed
 - Now clears the alpha of the "-" prefix of quest lines in the Wrath tracker on every update.
