@@ -280,39 +280,60 @@ local Cast_UpdateInterruptible = function(element, unit)
 	end
 end
 
-local Runes_PostUpdate = function(element, runemap, hasVehicle, allReady)
-	for i = 1, #element do
-		local rune = element[i]
-		if (rune:IsShown()) then
-			local value = rune:GetValue()
-			local min, max = rune:GetMinMaxValues()
-			rune:SetAlpha(((value < max) and .5 or 1) * (element.inCombat and 1 or .5))
-		end
-	end
-end
-
 local Rune_OnDisplayValueChanged = function(rune)
 	local value = rune:GetValue()
 	local min, max = rune:GetMinMaxValues()
 
 	-- Base it all on the bar's current color
 	local r, g, b = rune:GetStatusBarColor()
-	point.glow:SetVertexColor(r, g, b, .75)
-	point.slotTexture:SetVertexColor(r*.25, g*.25, b*.25, .85)
+	rune.Glow:SetVertexColor(r, g, b, .75)
+	rune.Slot:SetVertexColor(r*.25, g*.25, b*.25, .85)
 
 	-- Adjust texcoords of the overlay glow to match the bars
-	local c = rune.glow.texCoords
-	rune.glow:SetTexCoord(c[1], c[2], c[4] - (c[4]-c[3]) * ((value-min)/(max-min)), c[4])
+	local c = rune.Glow.texCoords
+	rune.Glow:SetTexCoord(c[1], c[2], c[4] - (c[4]-c[3]) * ((value-min)/(max-min)), c[4])
 end
 
-local PostUpdateRunes = function(self, event, ...)
+local Runes_PostUpdate = function(element, runemap, hasVehicle, allReady)
+	for i = 1, #element do
+		local rune = element[i]
+		if (rune:IsShown()) then
+			local value = rune:GetValue()
+			local min, max = rune:GetMinMaxValues()
+			if (element.inCombat) then
+				rune:SetAlpha(allReady and 1 or (value < max) and .5 or 1)
+			else
+				rune:SetAlpha(allReady and 0 or (value < max) and .5 or 1)
+			end
+		end
+	end
+end
+
+local Runes_PostUpdateColor = function(element, r, g, b, color, rune)
+	local m,color = .5
+	for i,rune in ipairs(element) do
+		color = rune.runeType and element.__owner.colors.runes[rune.runeType] or element.__owner.colors.power.RUNES
+		r, g, b = color[1] * m, color[2] * m, color[3] * m
+		rune:SetStatusBarColor(r, g, b)
+		rune.Glow:SetVertexColor(r, g, b, .75)
+		rune.Slot:SetVertexColor(r * .25, g * .25, b * .25, .85)
+	end
+
+end
+
+local PostUpdate_RunesCombatState = function(self, event, ...)
 	local element = self.Runes
 	if (event == "PLAYER_REGEN_DISABLED") then
-		element.inCombat = true
+		if (not element.inCombat) then
+			element.inCombat = true
+			element:ForceUpdate()
+		end
 	elseif (event == "PLAYER_REGEN_ENABLED") then
-		element.inCombat = false
+		if (element.inCombat) then
+			element.inCombat = false
+			element:ForceUpdate()
+		end
 	end
-	element:PostUpdate()
 end
 
 UnitStyles["Player"] = function(self, unit, id)
@@ -476,6 +497,7 @@ UnitStyles["Player"] = function(self, unit, id)
 		runes:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 300)
 		runes.sortOrder = "ASC"
 		runes.PostUpdate = Runes_PostUpdate
+		runes.PostUpdateColor = Runes_PostUpdateColor
 
 		for i = 1, 6 do
 
@@ -488,7 +510,6 @@ UnitStyles["Player"] = function(self, unit, id)
 			rune:SetOrientation("UP")
 			rune:SetMinMaxValues(0, 1)
 			rune:SetValue(1)
-			rune:SetScript("OnDisplayValueChanged", Rune_OnDisplayValueChanged)
 
 			if (i == 1) then
 				rune:SetPoint("TOPLEFT", runes, "TOPLEFT", 0, 0)
@@ -503,7 +524,7 @@ UnitStyles["Player"] = function(self, unit, id)
 			slot:SetPoint("BOTTOM", 0, 0)
 			slot:SetSize(70,70)
 			slot:SetTexture(GetMedia("diabolic-runes"))
-			slot:SetTexCoord((i-1)*128/1024, id*128/1024, 0/512, 128/512)
+			slot:SetTexCoord((i-1)*128/1024, i*128/1024, 0/512, 128/512)
 			rune.Slot = slot
 
 			-- Overlay glow, aligned to the bar texture
@@ -517,17 +538,19 @@ UnitStyles["Player"] = function(self, unit, id)
 			glow:SetSize(70,70) -- this is overriden by the points above
 			glow:SetBlendMode("ADD")
 			glow:SetTexture(GetMedia("diabolic-runes"))
-			glow:SetTexCoord((i-1)*128/1024, id*128/1024, 256/512, 384/512)
-			glow.texCoords = { (i-1)*128/1024, id*128/1024, 256/512, 384/512 }
+			glow:SetTexCoord((i-1)*128/1024, i*128/1024, 256/512, 384/512)
+			glow.texCoords = { (i-1)*128/1024, i*128/1024, 256/512, 384/512 }
 			rune.Glow = glow
+
+			rune:SetScript("OnDisplayValueChanged", Rune_OnDisplayValueChanged)
 
 			runes[i] = rune
 
 		end
 		self.Runes = runes
 
-		self:RegisterEvent("PLAYER_REGEN_DISABLED", PostUpdateRunes, true)
-		self:RegisterEvent("PLAYER_REGEN_ENABLED", PostUpdateRunes, true)
+		self:RegisterEvent("PLAYER_REGEN_DISABLED", PostUpdate_RunesCombatState, true)
+		self:RegisterEvent("PLAYER_REGEN_ENABLED", PostUpdate_RunesCombatState, true)
 	end
 
 	-- Tags
