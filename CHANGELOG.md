@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-09-13
+## [2.0.40-RC] 2022-09-13
 ### Added
-- Added first draft of Runes for both Retail and Wrath. Untested.
+- Added first draft of Runes for both Retail and Wrath. Based directly on the look of SimpleClassPower. Plan to add some different textures for the Wrath version, as the multi-colored runes calls for a different visual aesthetic than the point driven Retail Rune system requires.
 
 ### Fixed
 - The title of the collapsed Wrath tracker should no longer cover parts of the expand/collapse toggle button.

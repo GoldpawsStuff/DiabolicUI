@@ -310,7 +310,7 @@ local Runes_PostUpdate = function(element, runemap, hasVehicle, allReady)
 end
 
 local Runes_PostUpdateColor = function(element, r, g, b, color, rune)
-	local m,color = .5
+	local m,color = ns.IsWrath and .5 or 1
 	for i,rune in ipairs(element) do
 		color = rune.runeType and element.__owner.colors.runes[rune.runeType] or element.__owner.colors.power.RUNES
 		r, g, b = color[1] * m, color[2] * m, color[3] * m
