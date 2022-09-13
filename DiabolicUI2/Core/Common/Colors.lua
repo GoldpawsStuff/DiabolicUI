@@ -115,6 +115,14 @@ Colors.gray = createColor(128/255, 128/255, 128/255)
 Colors.darkgray = createColor(89/255, 79/255, 69/255)
 Colors.verydarkgray = createColor(69/255, 59/255, 49/255)
 
+-- Only in Wrath
+Colors.runes = {
+	createColor(196/255, 31/255, 60/255), -- blood
+	createColor(73/255, 180/255, 28/255), -- unholy
+	createColor(63/255, 103/255, 154/255), -- frost
+	createColor(173/255, 62/255, 145/255) -- death
+}
+
 -- Item Rarity
 Colors.blizzquality = createColorGroup(ITEM_QUALITY_COLORS)
 Colors.quality = {}
