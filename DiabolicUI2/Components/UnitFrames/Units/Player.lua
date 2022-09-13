@@ -280,6 +280,40 @@ local Cast_UpdateInterruptible = function(element, unit)
 	end
 end
 
+local Runes_PostUpdate = function(element, runemap, hasVehicle, allReady)
+	for i = 1, #element do
+		local rune = element[i]
+		if (rune:IsShown()) then
+			local value = rune:GetValue()
+			local min, max = rune:GetMinMaxValues()
+			rune:SetAlpha(((value < max) and .5 or 1) * (element.inCombat and 1 or .5))
+		end
+	end
+end
+
+local Rune_OnDisplayValueChanged = function(rune)
+	local value = rune:GetValue()
+	local min, max = rune:GetMinMaxValues()
+
+	-- Base it all on the bar's current color
+	local r, g, b = rune:GetStatusBarColor()
+	point.glow:SetVertexColor(r, g, b, .75)
+	point.slotTexture:SetVertexColor(r*.25, g*.25, b*.25, .85)
+
+	-- Adjust texcoords of the overlay glow to match the bars
+	local c = rune.glow.texCoords
+	rune.glow:SetTexCoord(c[1], c[2], c[4] - (c[4]-c[3]) * ((value-min)/(max-min)), c[4])
+end
+
+local PostUpdateRunes = function(self, event, ...)
+	local element = self.Runes
+	if (event == "PLAYER_REGEN_DISABLED") then
+		element.inCombat = true
+	elseif (event == "PLAYER_REGEN_ENABLED") then
+		element.inCombat = false
+	end
+	element:PostUpdate()
+end
 
 UnitStyles["Player"] = function(self, unit, id)
 
@@ -428,16 +462,73 @@ UnitStyles["Player"] = function(self, unit, id)
 
 	-- Classpowers
 	--------------------------------------------
-	if (ns.IsRetail) then
-	elseif (ns.IsWrath) then
-	else
+	local SCP = IsAddOnEnabled("SimpleClassPower")
+	if (not SCP) then
+
 	end
 
 	-- Runes
 	--------------------------------------------
-	if (PlayerClass == "DEATHKNIGHT") then
-	end
+	if (PlayerClass == "DEATHKNIGHT") and ((ns.IsWrath) or (ns.IsRetail and not SCP)) then
 
+		local runes = CreateFrame("Frame", nil, self)
+		runes:SetSize(420,70)
+		runes:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 300)
+		runes.sortOrder = "ASC"
+		runes.PostUpdate = Runes_PostUpdate
+
+		for i = 1, 6 do
+
+			local rune = self:CreateBar()
+			rune:SetSize(70,70)
+			rune:SetStatusBarTexture(GetMedia("diabolic-runes"))
+			rune:GetStatusBarTexture():SetTexCoord((i-1)*128/1024, i*128/1024, 128/512, 256/512)
+			rune:SetSparkTexture(GetMedia("blank"))
+			rune:DisableSmoothing(true) -- Force disable smoothing, it's too inaccurate for this.
+			rune:SetOrientation("UP")
+			rune:SetMinMaxValues(0, 1)
+			rune:SetValue(1)
+			rune:SetScript("OnDisplayValueChanged", Rune_OnDisplayValueChanged)
+
+			if (i == 1) then
+				rune:SetPoint("TOPLEFT", runes, "TOPLEFT", 0, 0)
+			else
+				rune:SetPoint("TOPLEFT", runes[i-1], "TOPRIGHT", 0, 0)
+			end
+
+			-- Empty slot texture
+			local slot = rune:CreateTexture()
+			slot:SetDrawLayer("BACKGROUND", -1)
+			slot:ClearAllPoints()
+			slot:SetPoint("BOTTOM", 0, 0)
+			slot:SetSize(70,70)
+			slot:SetTexture(GetMedia("diabolic-runes"))
+			slot:SetTexCoord((i-1)*128/1024, id*128/1024, 0/512, 128/512)
+			rune.Slot = slot
+
+			-- Overlay glow, aligned to the bar texture
+			-- This needs post updates to adjust its texcoords based on bar value.
+			local glow = rune:CreateTexture()
+			glow:SetDrawLayer("ARTWORK", 1)
+			glow:SetPoint("TOP", rune:GetStatusBarTexture(), "TOP", 0, 0)
+			glow:SetPoint("BOTTOM", 0, 0)
+			glow:SetPoint("LEFT", 0, 0)
+			glow:SetPoint("RIGHT", 0, 0)
+			glow:SetSize(70,70) -- this is overriden by the points above
+			glow:SetBlendMode("ADD")
+			glow:SetTexture(GetMedia("diabolic-runes"))
+			glow:SetTexCoord((i-1)*128/1024, id*128/1024, 256/512, 384/512)
+			glow.texCoords = { (i-1)*128/1024, id*128/1024, 256/512, 384/512 }
+			rune.Glow = glow
+
+			runes[i] = rune
+
+		end
+		self.Runes = runes
+
+		self:RegisterEvent("PLAYER_REGEN_DISABLED", PostUpdateRunes, true)
+		self:RegisterEvent("PLAYER_REGEN_ENABLED", PostUpdateRunes, true)
+	end
 
 	-- Tags
 	--------------------------------------------
