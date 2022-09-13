@@ -32,6 +32,7 @@ local IsAddOnLoaded = IsAddOnLoaded
 local SetOverrideBindingClick = SetOverrideBindingClick
 
 -- Addon API
+local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
@@ -428,7 +429,7 @@ Tracker.UpdateWrathTracker = function(self)
 	SetObjectScale(WatchFrame, 1)
 
 	WatchFrameTitle:SetFontObject(GetFont(15,true))
-
+	WATCHFRAME_COLLAPSEDWIDTH = WatchFrameTitle:GetWidth() + 70
 
 	-- Style tracker fonts
 	local UpdateWrathQuestLines = function()
