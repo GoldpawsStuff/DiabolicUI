@@ -281,7 +281,6 @@ local UpdateArtwork = function(self)
 	end
 end
 
-
 UnitStyles["Target"] = function(self, unit, id)
 
 	self:SetSize(350,75)
