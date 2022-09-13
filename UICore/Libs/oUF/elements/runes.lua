@@ -259,12 +259,6 @@ local function Enable(self, unit)
 			end
 		end
 
-		-- ElvUI block
-		if element.IsObjectType and element:IsObjectType("Frame") then
-			element:Show()
-		end
-		-- end block
-
 		if oUF.isRetail then
 			self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', ColorPath)
 		else
@@ -283,12 +277,6 @@ local function Disable(self)
 		for i = 1, #element do
 			element[i]:Hide()
 		end
-
-		-- ElvUI block
-		if element.IsObjectType and element:IsObjectType("Frame") then
-			element:Hide()
-		end
-		-- end block
 
 		if oUF.isRetail then
 			self:UnregisterEvent('PLAYER_SPECIALIZATION_CHANGED', ColorPath)
