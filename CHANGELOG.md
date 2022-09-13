@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-09-13
+### Added
+- Added first draft of Runes for both Retail and Wrath. Untested.
+
+### Fixed
+- The title of the collapsed Wrath tracker should no longer cover parts of the expand/collapse toggle button.
+
 ## [2.0.39-RC] 2022-09-12
 ### Changed
 - Chat buttons and tabs should now become visible when the chat window is moused over.
