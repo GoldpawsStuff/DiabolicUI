@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Put the Wrath tracker into a higher frame strata to keep it above the Diabolic action bar artwork.
 
+### Fixed
+- The Wrath minimap tracking menu now correctly appears when right-clicking the map.
+- There is no longer a bugged Wrath minimap middle-click shortcut.
+
 ## [2.0.42-RC] 2022-09-15
 ### Fixed
 - Fixed the issue that made the buttons very dark for everybody that did not use the GoldpawEdition.

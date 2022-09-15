@@ -92,10 +92,17 @@ end
 
 local Minimap_OnMouseUp = function(self, button)
 	if (button == "RightButton") then
-		MiniMapTracking_OnMouseDown(MiniMapTracking)
+		if (ns.IsRetail) then
+			MiniMapTracking_OnMouseDown(MiniMapTracking)
+		else
+			ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, "MiniMapTracking", 8, 5)
+			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
+		end
 	elseif (button == "MiddleButton") then
-		if (GarrisonLandingPageMinimapButton:IsShown()) and (not InCombatLockdown()) then
-			GarrisonLandingPage_Toggle()
+		if (ns.IsRetail) then
+			if (GarrisonLandingPageMinimapButton:IsShown()) and (not InCombatLockdown()) then
+				GarrisonLandingPage_Toggle()
+			end
 		end
 	else
 		Minimap_OnClick(self)
