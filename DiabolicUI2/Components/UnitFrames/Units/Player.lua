@@ -314,13 +314,13 @@ local Runes_PostUpdateColor = function(element, r, g, b, color, rune)
 		rune:SetStatusBarColor(r * m, g * m, b * m)
 		rune.fg:SetVertexColor(r * m, g * m, b * m)
 	else
-		if (not oUF.isWrath) then
+		if (not ns.IsWrath) then
 			color = element.__owner.colors.power.RUNES
 			r, g, b = color[1] * m, color[2] * m, color[3] * m
 		end
 		for i = 1, #element do
 			local rune = element[i]
-			if (oUF.isWrath) then
+			if (ns.IsWrath) then
 				color = element.__owner.colors.runes[rune.runeType]
 				r, g, b = color[1] * m, color[2] * m, color[3] * m
 			end
