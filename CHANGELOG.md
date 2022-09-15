@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-09-15
+### Fixed
+- Changed the order of the Wrath Runes color table to match on-screen order, instead of being ordered by runeTypeID. Since we're using oUF which sort by display order for our unitframes, this caused the Unholy and Frost to be mixed up.
+
 ## [2.0.40-RC] 2022-09-13
 ### Added
 - Added first draft of Runes for both Retail and Wrath. Based directly on the look of SimpleClassPower. Plan to add some different textures for the Wrath version, as the multi-colored runes calls for a different visual aesthetic than the point driven Retail Rune system requires.
