@@ -286,12 +286,11 @@ local Rune_OnDisplayValueChanged = function(rune)
 
 	-- Base it all on the bar's current color
 	local r, g, b = rune:GetStatusBarColor()
-	rune.Glow:SetVertexColor(r, g, b, .75)
-	rune.Slot:SetVertexColor(r*.25, g*.25, b*.25, .85)
+	rune.fg:SetVertexColor(r, g, b, .75)
 
 	-- Adjust texcoords of the overlay glow to match the bars
-	local c = rune.Glow.texCoords
-	rune.Glow:SetTexCoord(c[1], c[2], c[4] - (c[4]-c[3]) * ((value-min)/(max-min)), c[4])
+	local c = rune.fg.texCoords
+	rune.fg:SetTexCoord(c[1], c[2], c[4] - (c[4]-c[3]) * ((value-min)/(max-min)), c[4])
 end
 
 local Runes_PostUpdate = function(element, runemap, hasVehicle, allReady)
@@ -310,15 +309,25 @@ local Runes_PostUpdate = function(element, runemap, hasVehicle, allReady)
 end
 
 local Runes_PostUpdateColor = function(element, r, g, b, color, rune)
-	local m,color = ns.IsWrath and .5 or 1
-	for i,rune in ipairs(element) do
-		color = rune.runeType and element.__owner.colors.runes[rune.runeType] or element.__owner.colors.power.RUNES
-		r, g, b = color[1] * m, color[2] * m, color[3] * m
-		rune:SetStatusBarColor(r, g, b)
-		rune.Glow:SetVertexColor(r, g, b, .75)
-		rune.Slot:SetVertexColor(r * .25, g * .25, b * .25, .85)
+	local m = ns.IsWrath and .5 or 1 -- Probably only needed on our current runes
+	if (rune) then
+		rune:SetStatusBarColor(r * m, g * m, b * m)
+		rune.fg:SetVertexColor(r * m, g * m, b * m)
+	else
+		if (not oUF.isWrath) then
+			color = element.__owner.colors.power.RUNES
+			r, g, b = color[1] * m, color[2] * m, color[3] * m
+		end
+		for i = 1, #element do
+			local rune = element[i]
+			if (oUF.isWrath) then
+				color = element.__owner.colors.runes[rune.runeType]
+				r, g, b = color[1] * m, color[2] * m, color[3] * m
+			end
+			rune:SetStatusBarColor(r, g, b)
+			rune.fg:SetVertexColor(r, g, b)
+		end
 	end
-
 end
 
 local PostUpdate_RunesCombatState = function(self, event, ...)
@@ -518,29 +527,31 @@ UnitStyles["Player"] = function(self, unit, id)
 			end
 
 			-- Empty slot texture
-			local slot = rune:CreateTexture()
-			slot:SetDrawLayer("BACKGROUND", -1)
-			slot:ClearAllPoints()
-			slot:SetPoint("BOTTOM", 0, 0)
-			slot:SetSize(70,70)
-			slot:SetTexture(GetMedia("diabolic-runes"))
-			slot:SetTexCoord((i-1)*128/1024, i*128/1024, 0/512, 128/512)
-			rune.Slot = slot
+			local bg = rune:CreateTexture()
+			bg:SetDrawLayer("BACKGROUND", -1)
+			bg:ClearAllPoints()
+			bg:SetPoint("BOTTOM", 0, 0)
+			bg:SetSize(70,70)
+			bg:SetTexture(GetMedia("diabolic-runes"))
+			bg:SetTexCoord((i-1)*128/1024, i*128/1024, 0/512, 128/512)
+			bg.multiplier = .25
+			rune.bg = bg
 
 			-- Overlay glow, aligned to the bar texture
 			-- This needs post updates to adjust its texcoords based on bar value.
-			local glow = rune:CreateTexture()
-			glow:SetDrawLayer("ARTWORK", 1)
-			glow:SetPoint("TOP", rune:GetStatusBarTexture(), "TOP", 0, 0)
-			glow:SetPoint("BOTTOM", 0, 0)
-			glow:SetPoint("LEFT", 0, 0)
-			glow:SetPoint("RIGHT", 0, 0)
-			glow:SetSize(70,70) -- this is overriden by the points above
-			glow:SetBlendMode("ADD")
-			glow:SetTexture(GetMedia("diabolic-runes"))
-			glow:SetTexCoord((i-1)*128/1024, i*128/1024, 256/512, 384/512)
-			glow.texCoords = { (i-1)*128/1024, i*128/1024, 256/512, 384/512 }
-			rune.Glow = glow
+			local fg = rune:CreateTexture()
+			fg:SetDrawLayer("ARTWORK", 1)
+			fg:SetPoint("TOP", rune:GetStatusBarTexture(), "TOP", 0, 0)
+			fg:SetPoint("BOTTOM", 0, 0)
+			fg:SetPoint("LEFT", 0, 0)
+			fg:SetPoint("RIGHT", 0, 0)
+			fg:SetSize(70,70) -- this is overriden by the points above
+			fg:SetBlendMode("ADD")
+			fg:SetTexture(GetMedia("diabolic-runes"))
+			fg:SetTexCoord((i-1)*128/1024, i*128/1024, 256/512, 384/512)
+			fg:SetAlpha(.85)
+			fg.texCoords = { (i-1)*128/1024, i*128/1024, 256/512, 384/512 }
+			rune.fg = fg
 
 			rune:SetScript("OnDisplayValueChanged", Rune_OnDisplayValueChanged)
 
