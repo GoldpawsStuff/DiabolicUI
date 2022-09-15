@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.41-RC] 2022-09-15
+## [2.0.42-RC] 2022-09-15
 ### Fixed
 - Fixed the issue that made the buttons very dark for everybody that did not use the GoldpawEdition.
 - Changed the order of the Wrath Runes color table to match on-screen order, instead of being ordered by runeTypeID. Since we're using oUF which sort by display order for our unitframes, this caused the Unholy and Frost to be mixed up.
