@@ -426,8 +426,10 @@ Tracker.UpdateWrathTracker = function(self)
 	if (not ns.IsWrath) then
 		return
 	end
+
 	SetObjectScale(WatchFrame, 1)
 
+	WatchFrame:SetFrameStrata("MEDIUM")
 	WatchFrameTitle:SetFontObject(GetFont(15,true))
 	WATCHFRAME_COLLAPSEDWIDTH = WatchFrameTitle:GetWidth() + 70
 

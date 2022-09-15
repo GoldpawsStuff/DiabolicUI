@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-09-15
+### Changed
+- Put the Wrath tracker into a higher frame strata to keep it above the Diabolic action bar artwork.
+
 ## [2.0.42-RC] 2022-09-15
 ### Fixed
 - Fixed the issue that made the buttons very dark for everybody that did not use the GoldpawEdition.
