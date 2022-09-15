@@ -58,15 +58,6 @@ ns.Private.IsRetail = ns.Private.ClientMajor >= 9
 ns.Private.IsShadowlands = ns.Private.ClientMajor == 9
 ns.Private.IsDragonflight = ns.Private.ClientMajor == 10
 
--- Give oUF access to client version constants
-local oUF = ns.oUF
-oUF.isClassic = ns.Private.IsClassic
-oUF.isTBC = ns.Private.IsTBC
-oUF.isWrath = ns.Private.IsWrath
-oUF.isRetail = ns.Private.IsRetail
-oUF.isShadowlands = ns.Private.IsShadowlands
-oUF.isDragonflight = ns.Private.IsDragonflight
-
 -- Prefix for frame names
 ------------------------------------------------------
 ns.Private.Prefix = string.gsub(Addon, "UI(%d*)", "")
