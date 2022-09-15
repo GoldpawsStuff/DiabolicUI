@@ -73,7 +73,7 @@ ActionBars:RegisterStyle("StanceButton", function(button)
 
 	button.normalTexture = button:GetNormalTexture()
 	button.normalTexture:SetTexture("")
-	
+
 	button.checkedTexture = button:GetCheckedTexture()
 	button.checkedTexture:SetTexture("")
 
@@ -111,7 +111,7 @@ ActionBars:RegisterStyle("StanceButton", function(button)
 			if (type(v) == "function") then
 				local method = v
 				if (i == "SetTexture") then
-					icon[i] = function(icon, ...) 
+					icon[i] = function(icon, ...)
 						method(icon, ...)
 						method(desaturator, ...)
 						desaturator:SetDesaturated(true)
@@ -119,17 +119,17 @@ ActionBars:RegisterStyle("StanceButton", function(button)
 						desaturator:SetAlpha(desaturator.alpha or .2)
 					end
 				elseif (i == "SetVertexColor") then
-					icon[i] = function(icon, r, g, b, a) 
+					icon[i] = function(icon, r, g, b, a)
 						method(icon, r, g, b, a)
 						method(desaturator, r, g, b)
 					end
 				elseif (i == "SetAlpha") then
-					icon[i] = function(icon, ...) 
+					icon[i] = function(icon, ...)
 						method(icon, ...)
 						desaturator:SetAlpha(desaturator.alpha or .2)
 					end
 				elseif (i ~= "SetDesaturated") then
-					icon[i] = function(icon, ...) 
+					icon[i] = function(icon, ...)
 						method(icon, ...)
 						method(desaturator, ...)
 					end
@@ -144,14 +144,14 @@ ActionBars:RegisterStyle("StanceButton", function(button)
 
 		icon:SetAlpha(.85)
 
-		button:SetScript("OnEnter", function(self) 
+		button:SetScript("OnEnter", function(self)
 			darken:SetAlpha(0)
 			if (self.OnEnter) then
 				self:OnEnter()
 			end
 		end)
 
-		button:SetScript("OnLeave", function(self) 
+		button:SetScript("OnLeave", function(self)
 			darken:SetAlpha(.25)
 			if (self.OnLeave) then
 				self:OnLeave()
@@ -166,21 +166,21 @@ ActionBars:RegisterStyle("StanceButton", function(button)
 		cooldown:SetSwipeTexture(maskTexture)
 		cooldown:SetSwipeColor(0, 0, 0, .75)
 		cooldown:SetDrawSwipe(true)
-		cooldown:SetBlingTexture(blankTexture, 0, 0, 0, 0) 
+		cooldown:SetBlingTexture(blankTexture, 0, 0, 0, 0)
 		cooldown:SetDrawBling(false)
 		cooldown:SetEdgeTexture(blankTexture)
 		cooldown:SetDrawEdge(false)
-		cooldown:SetHideCountdownNumbers(true) 
+		cooldown:SetHideCountdownNumbers(true)
 
 		-- Attempting to fix the issue with too opaque swipe textures
-		cooldown:HookScript("OnShow", function() 
+		cooldown:HookScript("OnShow", function()
 			cooldown:SetSwipeColor(0, 0, 0, .75)
 			cooldown:SetDrawSwipe(true)
-			cooldown:SetBlingTexture(GetMedia("blank"), 0, 0, 0 , 0) 
+			cooldown:SetBlingTexture(GetMedia("blank"), 0, 0, 0 , 0)
 			cooldown:SetDrawBling(true)
 			cooldown:SetHideCountdownNumbers(true)
 		end)
-		
+
 
 		local cooldownCount = overlayFrame:CreateFontString()
 		cooldownCount:SetDrawLayer("ARTWORK", 1)
@@ -252,5 +252,5 @@ ActionBars:RegisterStyle("StanceButton", function(button)
 
 	ns.StanceButtons[button] = true
 
-	return button	
+	return button
 end)
