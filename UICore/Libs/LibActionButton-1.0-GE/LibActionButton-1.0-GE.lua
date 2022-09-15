@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 	LibActionButton-1.0 Goldpaw Edition
 
-	Based directly on LibActionButton-1.0.81,
+	Based directly on LibActionButton-1.0.81:84,
 	with the following modifications:
 
 		* Disabled most of the standard button elements by default
@@ -47,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0-GoldpawEdition"
-local MINOR_VERSION = 84
+local MINOR_VERSION = 85
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -1185,7 +1185,7 @@ end
 function UpdateUsable(self)
 
 	local r, g, b = .4, .36, .32
-	if (UnitIsDeadOrGhost("player")) or (UnitOnTaxi("player")) then
+	if (UnitIsDeadOrGhost("player")) then
 		self.icon:SetDesaturated(true)
 		self.icon:SetVertexColor(r, g, b)
 
@@ -1211,7 +1211,9 @@ function UpdateUsable(self)
 		local isLevelLinkLocked = C_LevelLink.IsActionLocked(self._state_action)
 		if not self.icon:IsDesaturated() then
 			self.icon:SetDesaturated(isLevelLinkLocked)
-			self.icon:SetVertexColor(r, g, b)
+			if isLevelLinkLocked then
+				self.icon:SetVertexColor(r, g, b)
+			end
 		end
 
 		if self.LevelLinkLockIcon then
