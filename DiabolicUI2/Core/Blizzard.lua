@@ -249,7 +249,7 @@ end
 BlizzKill.KillActionBars = function(self)
 
 	-- Dragonflight
-	if (ns.ClientVersion >= 10000) then
+	if (ns.ClientVersion >= 100000) then
 
 		self:HandleActionBar(MultiBarBottomLeft, true)
 		self:HandleActionBar(MultiBarBottomRight, true)
@@ -299,7 +299,7 @@ BlizzKill.KillActionBars = function(self)
 	end
 
 	-- Shadowlands, Wrath, Vanilla
-	if (ns.ClientVersion < 10000) then
+	if (ns.ClientVersion < 100000) then
 
 		MultiBarBottomLeft:SetParent(UIHider)
 		MultiBarBottomRight:SetParent(UIHider)
