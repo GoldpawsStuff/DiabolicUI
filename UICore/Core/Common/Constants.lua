@@ -42,14 +42,15 @@ ns.Private.IsRelease = string.find(version, "%-Release$")
 
 -- WoW client version
 ------------------------------------------------------
-local patch, build, _, tocversion = GetBuildInfo()
+local patch, build, date, version = GetBuildInfo()
 local major, minor = string.split(".", patch)
 
+ns.Private.ClientVersion = version
+ns.Private.ClientDate = date
 ns.Private.ClientPatch = patch
 ns.Private.ClientMajor = tonumber(major)
 ns.Private.ClientMinor = tonumber(minor)
 ns.Private.ClientBuild = tonumber(build)
-ns.Private.ClientVersion = tocversion
 
 -- Simple flags for client version checks
 ns.Private.IsClassic = ns.Private.ClientMajor == 1
