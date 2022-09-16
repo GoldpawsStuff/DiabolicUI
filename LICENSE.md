@@ -1,4 +1,4 @@
-# Custom License
+# MIT License
 
 Copyright (c) 2022 Lars Norberg
 
