@@ -372,6 +372,7 @@ BlizzKill.KillActionBars = function(self)
 		self:HandleActionBar(PossessBarFrame, false, true)
 		self:HandleActionBar(MultiCastActionBarFrame, false, false, true)
 		self:HandleActionBar(PetActionBarFrame, true, true)
+		self:HandleActionBar(OverrideActionBar, true)
 		ShowPetActionBar = function() end
 
 		--BonusActionBarFrame:UnregisterAllEvents()
