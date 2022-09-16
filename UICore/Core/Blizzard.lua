@@ -24,7 +24,7 @@
 
 --]]
 local Addon, ns = ...
-local BlizzKill = ns:NewModule("BlizzKill", "LibMoreEvents-1.0")
+local BlizzKill = ns:NewModule("BlizzKill", "LibMoreEvents-1.0", "AceHook-3.0")
 
 -- Lua API
 local ipairs = ipairs
