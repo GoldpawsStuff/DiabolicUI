@@ -231,207 +231,247 @@ BlizzKill.HandleUnitFrame = function(self, baseName, doNotReparent)
 end
 
 BlizzKill.NPE_LoadUI = function(self)
-	if not (Tutorials) then
-		return
-	end
+	if not (Tutorials and Tutorials.AddSpellToActionBar) then return end
 
-	-- Disable various tutorials conflicting with our systems.
-	for _,element in ipairs({
-		-- Action Bar drag tutorials
-		"AddSpellToActionBar",
-		"AddClassSpellToActionBar",
-		-- These tutorials rely on finding
-		-- valid action bar buttons, and error otherwise
-		"Intro_CombatTactics"
-	}) do
-		local widget = Tutorials[element]
-		if (widget) then
-			widget.Disable(Tutorials)
-		end
-	end
+	-- Action Bar drag tutorials
+	Tutorials.AddSpellToActionBar:Disable()
+	Tutorials.AddClassSpellToActionBar:Disable()
 
-	-- Enable spell pushing because the drag tutorial is turned off.
-	if (Tutorials.AutoPushSpellWatcher) then
-		Tutorials.AutoPushSpellWatcher:Complete()
-	end
+	-- these tutorials rely on finding valid action bar buttons, and error otherwise
+	Tutorials.Intro_CombatTactics:Disable()
+
+	-- enable spell pushing because the drag tutorial is turned off
+	Tutorials.AutoPushSpellWatcher:Complete()
 end
 
 -- Kill
 ---------------------------------------------------------
 BlizzKill.KillActionBars = function(self)
 
-	local bar
-	for _,global in ipairs({
-		"MultiBarBottomLeft",
-		"MultiBarBottomRight",
-		"MultiBarRight",
-		"MultiBarRight"
-	}) do
-		bar = _G[global]
-		if (bar) then
-			bar:SetParent(UIHider)
+	-- Dragonflight
+	if (ns.ClientVersion >= 10000) then
+
+		self:HandleActionBar(MultiBarBottomLeft, true)
+		self:HandleActionBar(MultiBarBottomRight, true)
+		self:HandleActionBar(MultiBarLeft, true)
+		self:HandleActionBar(MultiBarRight, true)
+
+		-- Hide MultiBar Buttons, but keep the bars alive
+		for i=1,12 do
+			_G["ActionButton" .. i]:Hide()
+			_G["ActionButton" .. i]:UnregisterAllEvents()
+			_G["ActionButton" .. i]:SetAttribute("statehidden", true)
+
+			_G["MultiBarBottomLeftButton" .. i]:Hide()
+			_G["MultiBarBottomLeftButton" .. i]:UnregisterAllEvents()
+			_G["MultiBarBottomLeftButton" .. i]:SetAttribute("statehidden", true)
+
+			_G["MultiBarBottomRightButton" .. i]:Hide()
+			_G["MultiBarBottomRightButton" .. i]:UnregisterAllEvents()
+			_G["MultiBarBottomRightButton" .. i]:SetAttribute("statehidden", true)
+
+			_G["MultiBarRightButton" .. i]:Hide()
+			_G["MultiBarRightButton" .. i]:UnregisterAllEvents()
+			_G["MultiBarRightButton" .. i]:SetAttribute("statehidden", true)
+
+			_G["MultiBarLeftButton" .. i]:Hide()
+			_G["MultiBarLeftButton" .. i]:UnregisterAllEvents()
+			_G["MultiBarLeftButton" .. i]:SetAttribute("statehidden", true)
+		end
+
+		--MainMenuBar:UnregisterAllEvents()
+		MainMenuBar:SetParent(UIHider)
+		MainMenuBar:Hide()
+		--MainMenuBar:EnableMouse(false)
+
+		self:HandleActionBar(MicroButtonAndBagsBar, false, false, true)
+		self:HandleActionBar(StanceBar, true)
+		self:HandleActionBar(PossessActionBar, true)
+		self:HandleActionBar(MultiCastActionBarFrame, false, false, true)
+		self:HandleActionBar(PetActionBar, true)
+		self:HandleActionBar(StatusTrackingBarManager, false)
+
+		if (IsAddOnLoaded("Blizzard_NewPlayerExperience")) then
+			self:NPE_LoadUI()
+		elseif (NPE_LoadUI ~= nil) then
+			self:SecureHook("NPE_LoadUI")
 		end
 	end
 
-	local button
-	for _,global in ipairs({
-		"ActionButton",
-		"MultiBarBottomLeftButton",
-		"MultiBarBottomRightButton",
-		"MultiBarRightButton",
-		"MultiBarRightButton"
-	}) do
-		for i = 1,12 do
-			button = _G[global..i]
-			if (button) then
-				button:Hide()
-				button:UnregisterAllEvents()
-				button:SetAttribute("statehidden", true)
-			end
-		end
-	end
+	-- Shadowlands, Wrath, Vanilla
+	if (ns.ClientVersion < 10000) then
 
-	if (UIPARENT_MANAGED_FRAME_POSITIONS) then
+		MultiBarBottomLeft:SetParent(UIHider)
+		MultiBarBottomRight:SetParent(UIHider)
+		MultiBarLeft:SetParent(UIHider)
+		MultiBarRight:SetParent(UIHider)
+
+		-- Hide MultiBar Buttons, but keep the bars alive
+		for i=1,12 do
+			_G["ActionButton" .. i]:Hide()
+			_G["ActionButton" .. i]:UnregisterAllEvents()
+			_G["ActionButton" .. i]:SetAttribute("statehidden", true)
+
+			_G["MultiBarBottomLeftButton" .. i]:Hide()
+			_G["MultiBarBottomLeftButton" .. i]:UnregisterAllEvents()
+			_G["MultiBarBottomLeftButton" .. i]:SetAttribute("statehidden", true)
+
+			_G["MultiBarBottomRightButton" .. i]:Hide()
+			_G["MultiBarBottomRightButton" .. i]:UnregisterAllEvents()
+			_G["MultiBarBottomRightButton" .. i]:SetAttribute("statehidden", true)
+
+			_G["MultiBarRightButton" .. i]:Hide()
+			_G["MultiBarRightButton" .. i]:UnregisterAllEvents()
+			_G["MultiBarRightButton" .. i]:SetAttribute("statehidden", true)
+
+			_G["MultiBarLeftButton" .. i]:Hide()
+			_G["MultiBarLeftButton" .. i]:UnregisterAllEvents()
+			_G["MultiBarLeftButton" .. i]:SetAttribute("statehidden", true)
+		end
 		UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil
 		UIPARENT_MANAGED_FRAME_POSITIONS["StanceBarFrame"] = nil
 		UIPARENT_MANAGED_FRAME_POSITIONS["PossessBarFrame"] = nil
 		UIPARENT_MANAGED_FRAME_POSITIONS["MultiCastActionBarFrame"] = nil
 		UIPARENT_MANAGED_FRAME_POSITIONS["PETACTIONBAR_YPOS"] = nil
 		UIPARENT_MANAGED_FRAME_POSITIONS["ExtraAbilityContainer"] = nil
-	end
 
-	MainMenuBar:EnableMouse(false)
-	MainMenuBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
-	MainMenuBar:UnregisterEvent("UI_SCALE_CHANGED")
+		--MainMenuBar:UnregisterAllEvents()
+		--MainMenuBar:SetParent(UIHider)
+		--MainMenuBar:Hide()
+		MainMenuBar:EnableMouse(false)
+		MainMenuBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
+		MainMenuBar:UnregisterEvent("UI_SCALE_CHANGED")
 
-	self:HandleActionBar(MainMenuBar.BorderArt)
-	self:HandleActionBar(MainMenuBar.Background)
-	self:HandleActionBar(MainMenuBar.EndCaps)
-	self:HandleActionBar(MainMenuBar.ActionBarPageNumber)
-	self:HandleActionBar(MainMenuBarArtFrame, false, true)
-	self:HandleActionBar(MainMenuBarArtFrameBackground)
-	self:HandleActionBar(MainMenuBarMaxLevelBar, true, false, true)
-	self:HandleActionBar(MainMenuBarPerformanceBarFrame, true, false, true)
-	self:HandleActionBar(MainMenuBarVehicleLeaveButton, true, false, true)
-	self:HandleActionBar(MainMenuExpBar, true, false, true)
-	self:HandleActionBar(MicroButtonAndBagsBar, false, false, true)
-	self:HandleActionBar(MultiCastActionBarFrame, true, true)
-	self:HandleActionBar(OverrideActionBar, true, false, true)
-	self:HandleActionBar(PetActionBarFrame, true, true)
-	self:HandleActionBar(PossessBarFrame, false, true)
-	self:HandleActionBar(ReputationWatchBar, true, false, true)
-	self:HandleActionBar(StanceBarFrame, true, true)
 
-	self:HandleManagedFrame(ExtraAbilityContainer)
-	self:HandleManagedFrame(MainMenuBarVehicleLeaveButton)
-	self:HandleManagedFrame(MultiCastActionBarFrame)
-	self:HandleManagedFrame(PetActionBarFrame)
-	self:HandleManagedFrame(PossessBarFrame)
-	self:HandleManagedFrame(StanceBarFrame)
-	self:HandleManagedFrame(TutorialFrameAlertButton)
-
-	if (StatusTrackingBarManager) then
-		StatusTrackingBarManager:Hide()
-		StatusTrackingBarManager:UnregisterAllEvents()
-	end
-
-	local animations = { OverrideActionBar.slideOut:GetAnimations() }
-	if (animations[1] and animations[1].SetOffset) then
+		local animations = {MainMenuBar.slideOut:GetAnimations()}
 		animations[1]:SetOffset(0,0)
-	end
 
-	local animations = { MainMenuBar.slideOut:GetAnimations() }
-	if (animations[1] and animations[1].SetOffset) then
-		animations[1]:SetOffset(0,0)
-	end
+		if (OverrideActionBar) then -- classic doesn't have this
+			animations = {OverrideActionBar.slideOut:GetAnimations()}
+			animations[1]:SetOffset(0,0)
 
-	ShowPetActionBar = function() end
+			-- when blizzard vehicle is turned off, we need to manually fix the state since the OverrideActionBar animation wont run
+			hooksecurefunc("BeginActionBarTransition", function(bar, animIn)
+				if (bar == OverrideActionBar) then
+					OverrideActionBar.slideOut:Stop()
+					MainMenuBar:Show()
+				end
+			end)
+		end
 
-	if (PlayerTalentFrame) then
-		PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-	elseif (TalentFrame_LoadUI) then
-		hooksecurefunc("TalentFrame_LoadUI", function()
-			PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-		end)
+		self:HandleActionBar(MainMenuBarArtFrame, false, true)
+		self:HandleActionBar(MainMenuBarArtFrameBackground)
+		self:HandleActionBar(MicroButtonAndBagsBar, false, false, true)
+
+		if StatusTrackingBarManager then
+			StatusTrackingBarManager:Hide()
+			--StatusTrackingBarManager:SetParent(UIHider)
+		end
+
+		self:HandleActionBar(StanceBarFrame, true, true)
+		self:HandleActionBar(PossessBarFrame, false, true)
+		self:HandleActionBar(MultiCastActionBarFrame, false, false, true)
+		self:HandleActionBar(PetActionBarFrame, true, true)
+		ShowPetActionBar = function() end
+
+		--BonusActionBarFrame:UnregisterAllEvents()
+		--BonusActionBarFrame:Hide()
+		--BonusActionBarFrame:SetParent(UIHider)
+
+		if (not ns.IsClassic) then
+			if (PlayerTalentFrame) then
+				PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+			else
+				hooksecurefunc("TalentFrame_LoadUI", function() PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED") end)
+			end
+		end
+
+		self:HandleActionBar(MainMenuBarPerformanceBarFrame, false, false, true)
+		self:HandleActionBar(MainMenuExpBar, false, false, true)
+		self:HandleActionBar(ReputationWatchBar, false, false, true)
+		self:HandleActionBar(MainMenuBarMaxLevelBar, false, false, true)
+
+		if (IsAddOnLoaded("Blizzard_NewPlayerExperience")) then
+			self:NPE_LoadUI()
+		elseif (NPE_LoadUI ~= nil) then
+			self:SecureHook("NPE_LoadUI")
+		end
+
+		-- Attempt to hook the bag bar to the bags
+		-- Retrieve the first slot button and the backpack
+		local backpack = ContainerFrame1
+		local firstSlot = CharacterBag0Slot
+		local reagentSlot = CharacterReagentBag0Slot
+
+		-- Try to avoid the potential error with Shadowlands anima deposit animations.
+		-- Just give it a simplified version of the default position it is given,
+		-- it will be replaced by UpdateContainerFrameAnchors() later on anyway.
+		if (not backpack:GetPoint()) then
+			backpack:SetPoint("BOTTOMRIGHT", backpack:GetParent(), "BOTTOMRIGHT", -14, 93 )
+		end
+
+		-- These should always exist, but Blizz do have a way of changing things,
+		-- and I prefer having functionality not be applied in a future update
+		-- rather than having the UI break from nil bugs.
+		if (firstSlot and backpack) then
+			firstSlot:ClearAllPoints()
+			firstSlot:SetPoint("TOPRIGHT", backpack, "BOTTOMRIGHT", -6, 0)
+
+			local strata = backpack:GetFrameStrata()
+			local level = backpack:GetFrameLevel()
+
+			-- Rearrange slots
+			-- *Dragonflight features a reagent bag slot
+			local slotSize = reagentSlot and 24 or 30
+			local previous
+			for _,slotName in ipairs({
+				"CharacterBag0Slot",
+				"CharacterBag1Slot",
+				"CharacterBag2Slot",
+				"CharacterBag3Slot",
+				"CharacterReagentBag0Slot"
+			}) do
+
+				-- Always check for existence,
+				-- because nothing is ever guaranteed.
+				local slot = _G[slotName]
+				if (slot) then
+					slot:SetParent(backpack)
+					slot:SetSize(slotSize,slotSize)
+					slot:SetFrameStrata(strata)
+					slot:SetFrameLevel(level)
+
+					-- Remove that fugly outer border
+					local tex = _G[slotName.."NormalTexture"]
+					if (tex) then
+						tex:SetTexture("")
+						tex:SetAlpha(0)
+					end
+
+					-- Re-anchor the slots to remove space
+					if (not previous) then
+						slot:ClearAllPoints()
+						slot:SetPoint("TOPRIGHT", backpack, "BOTTOMRIGHT", -6, 4)
+					else
+						slot:ClearAllPoints()
+						slot:SetPoint("RIGHT", previous, "LEFT", 0, 0)
+					end
+
+					previous = slot
+				end
+			end
+		end
+
 	end
 
 	-- Disable annoying yellow popup alerts.
-	local HideAlerts = function()
-		if (HelpTip) then
-			HelpTip:HideAllSystem("MicroButtons")
-		end
-	end
-	hooksecurefunc("MainMenuMicroButton_ShowAlert", HideAlerts)
-
-	if (IsAddOnLoaded("Blizzard_NewPlayerExperience")) then
-		self:NPE_LoadUI()
-	elseif (NPE_LoadUI ~= nil) then
-		hooksecurefunc("NPE_LoadUI", function() self:NPE_LoadUI() end)
-	end
-
-	-- Attempt to hook the bag bar to the bags
-	-- Retrieve the first slot button and the backpack
-	local backpack = ContainerFrame1
-	local firstSlot = CharacterBag0Slot
-	local reagentSlot = CharacterReagentBag0Slot
-
-	-- Try to avoid the potential error with Shadowlands anima deposit animations.
-	-- Just give it a simplified version of the default position it is given,
-	-- it will be replaced by UpdateContainerFrameAnchors() later on anyway.
-	if (not backpack:GetPoint()) then
-		backpack:SetPoint("BOTTOMRIGHT", backpack:GetParent(), "BOTTOMRIGHT", -14, 93 )
-	end
-
-	-- These should always exist, but Blizz do have a way of changing things,
-	-- and I prefer having functionality not be applied in a future update
-	-- rather than having the UI break from nil bugs.
-	if (firstSlot and backpack) then
-		firstSlot:ClearAllPoints()
-		firstSlot:SetPoint("TOPRIGHT", backpack, "BOTTOMRIGHT", -6, 0)
-
-		local strata = backpack:GetFrameStrata()
-		local level = backpack:GetFrameLevel()
-
-		-- Rearrange slots
-		-- *Dragonflight features a reagent bag slot
-		local slotSize = reagentSlot and 24 or 30
-		local previous
-		for _,slotName in ipairs({
-			"CharacterBag0Slot",
-			"CharacterBag1Slot",
-			"CharacterBag2Slot",
-			"CharacterBag3Slot",
-			"CharacterReagentBag0Slot"
-		}) do
-
-			-- Always check for existence,
-			-- because nothing is ever guaranteed.
-			local slot = _G[slotName]
-			if (slot) then
-				slot:SetParent(backpack)
-				slot:SetSize(slotSize,slotSize)
-				slot:SetFrameStrata(strata)
-				slot:SetFrameLevel(level)
-
-				-- Remove that fugly outer border
-				local tex = _G[slotName.."NormalTexture"]
-				if (tex) then
-					tex:SetTexture("")
-					tex:SetAlpha(0)
-				end
-
-				-- Re-anchor the slots to remove space
-				if (not previous) then
-					slot:ClearAllPoints()
-					slot:SetPoint("TOPRIGHT", backpack, "BOTTOMRIGHT", -6, 4)
-				else
-					slot:ClearAllPoints()
-					slot:SetPoint("RIGHT", previous, "LEFT", 0, 0)
-				end
-
-				previous = slot
+	if (MainMenuMicroButton_ShowAlert) then
+		local HideAlerts = function()
+			if (HelpTip) then
+				HelpTip:HideAllSystem("MicroButtons")
 			end
 		end
+		hooksecurefunc("MainMenuMicroButton_ShowAlert", HideAlerts)
 	end
 
 end
