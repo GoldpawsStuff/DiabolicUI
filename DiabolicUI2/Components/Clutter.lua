@@ -123,7 +123,7 @@ Clutter.HandleTopCenterWidgets = function(self)
 		return
 	end
 
-	local scaffold = SetObjectScale(CreateFrame("Frame", nil, UIParent), 14/12)
+	local scaffold = SetObjectScale(CreateFrame("Frame", ns.Prefix.."TopCenterWidgets", UIParent), 14/12)
 	scaffold:SetFrameStrata("BACKGROUND")
 	scaffold:SetFrameLevel(10)
 	scaffold:SetPoint("TOP", 0, -10)
