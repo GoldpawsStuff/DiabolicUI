@@ -67,12 +67,9 @@ ns.Private.Prefix = string.gsub(Addon, "UI(%d*)", "")
 -- Player constants
 ------------------------------------------------------
 local _,playerClass = UnitClass("player")
-local playerRealm = GetRealmName()
-local playerName = UnitNameUnmodified("player")
-
-ns.Private.PlayerClass = PlayerClass
-ns.Private.PlayerRealm = PlayerRealm
-ns.Private.PlayerName = PlayerName
+ns.Private.PlayerClass = playerClass
+ns.Private.PlayerRealm = GetRealmName()
+ns.Private.PlayerName = UnitNameUnmodified("player")
 
 -- Scaling Constants
 ------------------------------------------------------
