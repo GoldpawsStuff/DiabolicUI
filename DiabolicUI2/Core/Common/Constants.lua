@@ -64,6 +64,16 @@ ns.Private.IsDragonflight = ns.Private.ClientMajor == 10
 ------------------------------------------------------
 ns.Private.Prefix = string.gsub(Addon, "UI(%d*)", "")
 
+-- Player constants
+------------------------------------------------------
+local _,playerClass = UnitClass("player")
+local playerRealm = GetRealmName()
+local playerName = UnitNameUnmodified("player")
+
+ns.Private.PlayerClass = PlayerClass
+ns.Private.PlayerRealm = PlayerRealm
+ns.Private.PlayerName = PlayerName
+
 -- Scaling Constants
 ------------------------------------------------------
 ns.UIScale = 768/1080
