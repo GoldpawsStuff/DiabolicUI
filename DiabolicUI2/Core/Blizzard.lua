@@ -379,6 +379,8 @@ BlizzKill.KillActionBars = function(self)
 			end
 		end
 
+
+		self:HandleActionBar(MainMenuBarVehicleLeaveButton, true)
 		self:HandleActionBar(MainMenuBarPerformanceBarFrame, false, false, true)
 		self:HandleActionBar(MainMenuExpBar, false, false, true)
 		self:HandleActionBar(ReputationWatchBar, false, false, true)
