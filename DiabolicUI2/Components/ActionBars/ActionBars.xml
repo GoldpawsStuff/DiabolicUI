@@ -13,5 +13,6 @@
 	<Script file="Elements\StanceBar.lua"/>
 	<Script file="Elements\StatusBars.lua"/>
 	<Script file="Elements\MicroMenu.lua"/>
+	<Script file="Elements\MultiCast.lua"/>
 
 </Ui>

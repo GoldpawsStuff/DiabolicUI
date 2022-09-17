@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.44-RC] 2022-09-17
+### Added
+- Added the Wrath Shaman totem bar.
+
 ## [2.0.43-RC] 2022-09-16
 ### Changed
 - Put the Wrath tracker into a higher frame strata to keep it above the Diabolic action bar artwork.
