@@ -708,8 +708,16 @@ BlizzKill.KillMenuOptions = function(self)
 	self:HandleMenuOption((not ns.IsWrath), "InterfaceOptionsCombatPanelTargetOfTarget")
 end
 
-BlizzKill.KillTimerBars = function(self)
+BlizzKill.KillTimerBars = function(self, event, ...)
 	local UIHider = UIHider
+	if (event == "ADDON_LOADED") then
+		local addon = ...
+		if (addon == "Blizzard_UIWidgets") then
+			self:UnregisterEvent("ADDON_LOADED", "KillTimerBars")
+			UIWidgetPowerBarContainerFrame:SetParent(UIHider)
+		end
+		return
+	end
 
 	for i = 1,MIRRORTIMER_NUMTIMERS do
 		local timer = _G["MirrorTimer"..i]
@@ -737,6 +745,12 @@ BlizzKill.KillTimerBars = function(self)
 		end
 	end
 
+	if (ns.IsRetail) then
+		local bar = UIWidgetPowerBarContainerFrame
+		if (not bar) then
+			return self:RegisterEvent("ADDON_LOADED", "KillTimerBars")
+		end
+	end
 end
 
 BlizzKill.KillTimeManager = function(self, event, ...)
