@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.45-RC] 2022-09-19
+### Added
+- Added mirror timers for things like breath, fatigue and feign death.
+- Added retail timer trackers, for things like dungeon and battleground countdowns.
+
 ## [2.0.44-RC] 2022-09-17
 ### Added
 - Added the Wrath Shaman totem bar.
