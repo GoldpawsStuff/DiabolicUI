@@ -429,9 +429,15 @@ Tracker.UpdateWrathTracker = function(self)
 
 	SetObjectScale(WatchFrame, 1)
 
-	WatchFrame:SetFrameStrata("MEDIUM")
+	WatchFrame:SetFrameStrata("LOW")
+	WatchFrame:SetFrameLevel(50)
 	WatchFrameTitle:SetFontObject(GetFont(15,true))
-	WATCHFRAME_COLLAPSEDWIDTH = WatchFrameTitle:GetWidth() + 70
+
+	WATCHFRAME_COLLAPSEDWIDTH = WatchFrameTitle:GetWidth() + 36
+
+	if (WatchFrame:IsShown() and WatchFrame.collapsed) then
+		WatchFrame:SetWidth(WATCHFRAME_COLLAPSEDWIDTH)
+	end
 
 	-- Style tracker fonts
 	local UpdateWrathQuestLines = function()

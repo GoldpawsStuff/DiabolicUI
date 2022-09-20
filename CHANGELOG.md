@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.46-RC] 2022-09-20
+### Added
+- Added the `/calendar`chat command to Wrath.
+- Added a full buff display, accessible by clicking a plus icon in the bottom left corner of the screen. The icon is invisible until hovered, or by holding down the `Shift`+`Ctrl` modifier keys. Beware that this is just the first draft, expect upgrades to the display in the upcoming days, like timer bars.
+
+### Changed
+- Changed the Wrath tracker frame strata to be below the default Immersion setting, as this was interfering with the ability to click the dialogs.
+
+### Fixed
+- Fixed the distance between the tracker title and its collapse button in Wrath when the tracker was collapsed when logging on or after a reload.
+
 ## [2.0.45-RC] 2022-09-19
 ### Added
 - Added mirror timers for things like breath, fatigue and feign death.

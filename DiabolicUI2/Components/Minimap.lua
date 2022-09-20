@@ -774,6 +774,14 @@ Bigmap.OnInitialize = function(self)
 
 	self:RegisterChatCommand("setclock", "SetClock")
 
+	if (not SlashCmdList["CALENDAR"]) then
+		self:RegisterChatCommand("calendar", function()
+			if (ToggleCalendar) then
+				ToggleCalendar()
+			end
+		end)
+	end
+
 	self.Addons = {}
 
 	local addons, queued = { "MBB", "Narcissus" }
