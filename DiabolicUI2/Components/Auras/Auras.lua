@@ -74,15 +74,50 @@ Aura.UpdateAura = function(aura, index)
 
 	local name, icon, count, dispelType, duration, expirationTime, source, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitAura(aura:GetParent():GetAttribute("unit"), index, aura.filter)
 
-	aura.icon:SetTexture(icon)
+	if (name) then
+		aura:SetAlpha(1)
+		aura.icon:SetTexture(icon)
+		aura.count:SetText((count and count > 1) and count or "")
+
+		if (duration and duration > 0) then
+			aura.cd:SetCooldown(expirationTime - duration, duration)
+			aura.cd:Show()
+		else
+			aura.cd:Hide()
+			aura.bar:Show()
+		end
+	else
+		aura.icon:SetTexture(nil)
+		aura.count:SetText("")
+		aura.cd:Hide()
+	end
 
 end
 
-Aura.UpdateTempEnchant = function(aura, index)
-	local Enchant = (slot == 16 and 2) or 6
-	local Expiration = select(Enchant, GetWeaponEnchantInfo())
-	local Icon = GetInventoryItemTexture("player", slot)
+Aura.UpdateTempEnchant = function(aura, slot)
+	local enchant = (slot == 16 and 2) or 6
+	local expiration = select(enchant, GetWeaponEnchantInfo())
+	local icon = GetInventoryItemTexture("player", slot)
 
+	if (icon) then
+		aura:SetAlpha(1)
+		aura.icon:SetTexture(icon)
+		aura.count:SetText("")
+
+		if (expiration) then
+			aura.cd:SetCooldown(GetTime(), expiration / 1e3)
+			aura.cd:Show()
+		else
+			aura.cd:Hide()
+		end
+	else
+		-- sometimes empty temp enchants are shown
+		-- this is a bug in the secure aura headers
+		aura:SetAlpha(0)
+		aura.icon:SetTexture(nil)
+		aura.count:SetText("")
+		aura.cd:Hide()
+	end
 end
 
 Aura.Style = function(aura)
@@ -118,6 +153,7 @@ Aura.Style = function(aura)
 	bar:SetPoint("RIGHT", aura, "RIGHT", -1, 0)
 	bar:SetHeight(6)
 	bar:SetStatusBarTexture(GetMedia("bar-small"))
+	bar:SetStatusBarColor(Colors.xp[1], Colors.xp[2], Colors.xp[3])
 	bar.bg = bar:CreateTexture(nil, "BACKGROUND", -7)
 	bar.bg:SetPoint("TOPLEFT", -1, 1)
 	bar.bg:SetPoint("BOTTOMRIGHT", 1, -1)
@@ -134,7 +170,6 @@ Aura.Style = function(aura)
 	aura:SetScript("OnEnter", Aura.Secure_OnEnter)
 	aura:SetScript("OnLeave", Aura.Secure_OnLeave)
 	aura:SetScript("OnAttributeChanged", Aura.OnAttributeChanged)
-
 
 end
 
@@ -168,7 +203,7 @@ Auras.CreateHeader = function(self, name, parent)
 	header:SetAttribute("wrapAfter", 4)
 	header:SetAttribute("wrapYOffset", 51)
 	header:SetAttribute("sortMethod", "TIME")
-	header:SetAttribute("sortDirection", "-")
+	header:SetAttribute("sortDirection", "+")
 
 	RegisterAttributeDriver(header, "unit", "[vehicleui] vehicle; player")
 
@@ -228,17 +263,12 @@ Auras.OnInitialize = function(self)
 	toggle:SetScript("OnLeave", function(self) self.mouseOver = nil; self:UpdateAlpha() end)
 	toggle:SetScript("OnEvent", toggle.UpdateAlpha)
 
-	toggle.Window = window
-
 	toggle.Texture = toggle:CreateTexture(nil, "ARTWORK", nil, 0)
 	toggle.Texture:SetSize(64,64)
 	toggle.Texture:SetPoint("CENTER")
 	toggle.Texture:SetTexture(GetMedia("button-toggle-plus"))
 
-
-
 	window:HookScript("OnHide", function() toggle:UpdateAlpha() end)
-
 
 	self.headers = { window }
 

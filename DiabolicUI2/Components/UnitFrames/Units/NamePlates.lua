@@ -53,12 +53,36 @@ local AuraFilter = function(element, unit, button, name, texture,
 	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
 	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
 
-	return nameplateShowAll or (nameplateShowSelf and (caster == "player" or caster == "pet" or caster == "vehicle"))
+	button.spell = name
+	button.duration = duration
+	button.expiration = expiration
+	button.noDuration = (not duration or duration == 0)
+
+	if (isBossDebuff) then
+		return true
+	elseif (isStealable) then
+		return true
+	elseif (nameplateShowAll) then
+		return true
+	elseif (nameplateShowSelf and (caster == "player" or caster == "pet" or caster == "vehicle")) then
+		return true
+	elseif (caster == "player" or caster == "pet" or caster == "vehicle") then
+		if (button.isDebuff) then
+			return (not button.noDuration and duration < 61) -- show most ticking DoTs
+		else
+			return (not button.noDuration and duration < 31) -- show short buffs, like HoTs
+		end
+	end
 end
 
 local AuraFilter_Wrath = function(element, unit, button, name, texture,
 	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
 	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
+
+	button.spell = name
+	button.duration = duration
+	button.expiration = expiration
+	button.noDuration = (not duration or duration == 0)
 
 	if (isBossDebuff) then
 		return true
@@ -66,13 +90,11 @@ local AuraFilter_Wrath = function(element, unit, button, name, texture,
 		return true
 	elseif (caster == "player" or caster == "pet" or caster == "vehicle") then
 		if (button.isDebuff) then
-			return (duration and duration < 300) -- Faerie Fire is 5 mins
+			return (not button.noDuration and duration < 301) -- Faerie Fire is 5 mins
 		else
-			return (duration and duration < 30) -- don't show long buffs
+			return (not button.noDuration and duration < 31) -- show short buffs, like HoTs
 		end
 	end
-
-	return nameplateShowAll or (nameplateShowSelf and (caster == "player" or caster == "pet" or caster == "vehicle"))
 end
 
 -- Callbacks

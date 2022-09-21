@@ -153,7 +153,7 @@ local Aura_BuffFilter = function(element, unit, button, name, texture,
 	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
 	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
 
-	button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
+	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = name
 	button.duration = duration
 	button.expiration = expiration
@@ -170,7 +170,7 @@ local Aura_DebuffFilter = function(element, unit, button, name, texture,
 	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
 	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
 
-	button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
+	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = name
 	button.duration = duration
 	button.expiration = expiration
