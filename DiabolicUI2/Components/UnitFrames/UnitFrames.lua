@@ -489,22 +489,22 @@ UnitFrames.SetNamePlateSizes = function()
 	C_NamePlate.SetNamePlateSelfSize(w,h)
 end
 
-UnitFrames.SetNamePlateDistance = function(self, event, ...)
-	if (InCombatLockdown()) then
-		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "SetNamePlateDistance")
-	end
-	if (event == "PLAYER_REGEN_ENABLED") then
-		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "SetNamePlateDistance")
-	end
-	local _, instanceType = IsInInstance()
-	if (instanceType == "none") then
-		SetCVar("nameplateMaxDistance", 30)
-		SetCVar("nameplateMaxScaleDistance", 15)
-	else
-		SetCVar("nameplateMaxDistance", 45)
-		SetCVar("nameplateMaxScaleDistance", 30)
-	end
-end
+--UnitFrames.SetNamePlateDistance = function(self, event, ...)
+--	if (InCombatLockdown()) then
+--		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "SetNamePlateDistance")
+--	end
+--	if (event == "PLAYER_REGEN_ENABLED") then
+--		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "SetNamePlateDistance")
+--	end
+--	local _, instanceType = IsInInstance()
+--	if (instanceType == "none") then
+--		SetCVar("nameplateMaxDistance", 30)
+--		SetCVar("nameplateMaxScaleDistance", 15)
+--	else
+--		SetCVar("nameplateMaxDistance", 45)
+--		SetCVar("nameplateMaxScaleDistance", 30)
+--	end
+--end
 
 UnitFrames.UpdateScale = function(self)
 	for namePlate in pairs(ns.NamePlates) do
