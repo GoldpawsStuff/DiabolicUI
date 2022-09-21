@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.47-RC] 2022-09-21
+### Added
+- Added Druid/Rogue/Vehicle Combo Points, Mage Arcane Charges, Monk Chi, Paladin Holy Power and Warlock Soul Shards.
+- Added Monk Stagger.
+
 ## [2.0.46-RC] 2022-09-20
 ### Added
 - Added the `/calendar`chat command to Wrath.
