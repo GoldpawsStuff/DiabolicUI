@@ -40,12 +40,39 @@ local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 
+-- * element     - the widget holding the aura buttons
+-- * unit        - the unit on which the aura is cast (string)
+-- * button      - the updated aura button (Button)
+-- * index       - the index of the aura (number)
+-- * position    - the actual position of the aura button (number)
+-- * duration    - the aura duration in seconds (number?)
+-- * expiration  - the point in time when the aura will expire. Comparable to GetTime() (number)
+-- * debuffType  - the debuff type of the aura (string?)['Curse', 'Disease', 'Magic', 'Poison']
+-- * isStealable - whether the aura can be stolen or purged (boolean)
 local AuraFilter = function(element, unit, button, name, texture,
 	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
 	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
 
-	return nameplateShowAll or
-		   (nameplateShowSelf and (caster == "player" or caster == "pet" or caster == "vehicle"))
+	return nameplateShowAll or (nameplateShowSelf and (caster == "player" or caster == "pet" or caster == "vehicle"))
+end
+
+local AuraFilter_Wrath = function(element, unit, button, name, texture,
+	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
+	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
+
+	if (isBossDebuff) then
+		return true
+	elseif (isStealable) then
+		return true
+	elseif (caster == "player" or caster == "pet" or caster == "vehicle") then
+		if (button.isDebuff) then
+			return (duration and duration < 300) -- Faerie Fire is 5 mins
+		else
+			return (duration and duration < 30) -- don't show long buffs
+		end
+	end
+
+	return nameplateShowAll or (nameplateShowSelf and (caster == "player" or caster == "pet" or caster == "vehicle"))
 end
 
 -- Callbacks
@@ -95,10 +122,10 @@ local Aura_CreateIcon = function(element, position)
 	time:SetPoint("TOPLEFT", aura, "TOPLEFT", -3, 3)
 	aura.time = time
 
-	-- Using a virtual cooldown element with the timer attached, 
+	-- Using a virtual cooldown element with the timer attached,
 	-- allowing them to piggyback on the back-end's cooldown updates.
 	aura.cd = ns.Widgets.RegisterCooldown(time)
-	
+
 	return aura
 end
 
@@ -188,7 +215,7 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 
 	self:SetSize(75,45) -- 90,45
 	self.colors = ns.Colors
-	
+
 	-- Health
 	--------------------------------------------
 	local health = self:CreateBar()
@@ -221,7 +248,7 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	-- Power
 	--------------------------------------------
 	local power = self:CreateBar()
-	power:SetSize(75,5) 
+	power:SetSize(75,5)
 	power:SetPoint("CENTER", health, 0, -10)
 	power:SetStatusBarTexture(GetMedia("bar-small"))
 	power:SetSparkTexture(GetMedia("blank"))
@@ -266,7 +293,7 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	--------------------------------------------
 	local cast = self:CreateBar()
 	cast:Hide()
-	cast:SetSize(75,5) 
+	cast:SetSize(75,5)
 	cast:SetPoint("CENTER", health, 0, -10)
 	cast:SetStatusBarTexture(GetMedia("bar-small"))
 	cast:SetSparkTexture(GetMedia("blank"))
@@ -323,7 +350,7 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	auras.disableMouse = true
 	auras.disableCooldown = false
 	auras.onlyShowPlayer = false
-	auras.showStealableBuffs = false 
+	auras.showStealableBuffs = false
 	auras.initialAnchor = "BOTTOMLEFT"
 	auras["spacing-x"] = 4
 	auras["spacing-y"] = 4
@@ -332,9 +359,9 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	auras.sortMethod = "TIME_REMAINING"
 	auras.sortDirection = "ASCENDING"
 
+	auras.CustomFilter = ns.IsWrath and AuraFilter_Wrath or AuraFilter
 	auras.CreateIcon = Aura_CreateIcon
 	auras.PostUpdateIcon = Aura_PostUpdateIcon
-	auras.CustomFilter = AuraFilter
 	auras.PreSetPosition = AuraSorting
 
 	self.Auras = auras
