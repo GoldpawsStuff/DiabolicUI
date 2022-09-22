@@ -2,11 +2,6 @@
 
 	<Script file="ActionBars.lua"/>
 
-	<Script file="Structure\StanceBar.lua"/>
-	<Script file="Structure\StanceButton.lua"/>
-
-	<Script file="Common\Buttons.lua"/>
-
 	<Script file="Elements\Bars.lua"/>
 	<Script file="Elements\ExtraButtons.lua"/>
 	<Script file="Elements\PetBar.lua"/>
