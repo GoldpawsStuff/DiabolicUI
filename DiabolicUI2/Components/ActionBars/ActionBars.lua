@@ -26,23 +26,6 @@
 local Addon, ns = ...
 local ActionBars = ns:NewModule("ActionBars", "LibMoreEvents-1.0")
 
--- Lua API
-local ipairs = ipairs
-local pairs = pairs
-local select = select
-
-
-ActionBars.GetStyle = function(self, style)
-	return self.styles and self.styles[style]
-end
-
-ActionBars.RegisterStyle = function(self, style, func)
-	if (not self.styles) then
-		self.styles = {}
-	end
-	self.styles[style] = func
-end
-
 ActionBars.HasSecondaryBar = function(self)
 	local Bars = self:GetModule("Bars", true)
 	return Bars and Bars:HasSecondaryBar()
