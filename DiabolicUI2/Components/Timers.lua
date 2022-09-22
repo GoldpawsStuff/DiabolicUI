@@ -65,6 +65,7 @@ Timers.UpdateMirrorTimers = function(self)
 			if (not Handled[bar]) then
 
 				SetObjectScale(timer)
+
 				if (i == 1) then
 					timer:ClearAllPoints()
 					timer:SetPoint("TOP", 0, -300)
@@ -80,17 +81,24 @@ Timers.UpdateMirrorTimers = function(self)
 					end
 				end
 				oldborder:SetTexture(nil)
+				timer:DisableDrawLayer("BACKGROUND")
 
-				bar:SetStatusBarTexture(GetMedia("bar-progress"))
+				bar:SetStatusBarTexture(GetMedia("plain")) -- GetMedia("bar-progress")
 				bar:GetStatusBarTexture():SetDrawLayer("BORDER", 0)
-				--bar:DisableDrawLayer("BACKGROUND")
-				bar:SetHeight(18)
+				--bar:SetHeight(18)
+				bar:SetSize(220,2)
 				bar:ClearAllPoints()
-				bar:SetPoint("TOP", 0, 3)
+				bar:SetPoint("TOP", 0, -13)
 
+				label:SetFontObject(GetFont(13,true))
+				label:SetTextColor(unpack(Colors.offwhite))
+				label:SetAlpha(.85)
 				label:ClearAllPoints()
-				label:SetPoint("CENTER", bar, 0,0)
-				label:SetFontObject(GetFont(12,true))
+				label:SetPoint("BOTTOM", bar, "TOP", 0, 6)
+
+				--label:ClearAllPoints()
+				--label:SetPoint("CENTER", bar, 0,0)
+				--label:SetFontObject(GetFont(12,true))
 
 				local border = bar:CreateTexture(nil, "BORDER", nil, -2)
 				border:SetDrawLayer("BORDER", -2)
@@ -105,7 +113,7 @@ Timers.UpdateMirrorTimers = function(self)
 
 				Handled[bar] = true
 			end
-			bar:SetStatusBarColor(Colors.quest.red[1], Colors.quest.red[2], Colors.quest.red[3])
+			bar:SetStatusBarColor(Colors.darkred[1], Colors.darkred[2], Colors.darkred[3])
 		end
 
 	end
@@ -117,26 +125,29 @@ Timers.UpdateTimerTrackers = function(self, event, ...)
 		if (bar) then
 			if (not Handled[bar]) then
 
+				SetObjectScale(timer)
+
 				for i = 1, bar:GetNumRegions() do
 					local region = select(i, bar:GetRegions())
 					if (region:GetObjectType() == "Texture") then
 						region:SetTexture(nil)
 					elseif (region:GetObjectType() == "FontString") then
-						-- Should only be one
+						-- Should only be one, and it's the time, not the label.
+						region:SetFontObject(GetFont(15,true))
+						region:SetTextColor(unpack(Colors.offwhite))
+						region:SetAlpha(.85)
 						region:ClearAllPoints()
-						region:SetPoint("CENTER", bar, 0,0)
-						region:SetFontObject(GetFont(12,true))
+						region:SetPoint("LEFT", bar, "RIGHT", 8, 0)
 					end
 				end
 
-				SetObjectScale(timer)
-
-				bar:SetStatusBarTexture(GetMedia("bar-progress"))
+				--bar:SetStatusBarTexture(GetMedia("bar-progress"))
+				bar:SetStatusBarTexture(GetMedia("plain"))
 				bar:GetStatusBarTexture():SetDrawLayer("BORDER", 0)
-				--bar:DisableDrawLayer("BACKGROUND")
-				bar:SetHeight(18)
+				bar:DisableDrawLayer("BACKGROUND")
+				bar:SetSize(220,2) -- 18
 				bar:ClearAllPoints()
-				bar:SetPoint("TOP", 0, 3)
+				bar:SetPoint("TOP", 0, -15) -- 3
 
 				local border = bar:CreateTexture(nil, "BORDER", nil, -2)
 				border:SetDrawLayer("BORDER", -2)
@@ -151,7 +162,7 @@ Timers.UpdateTimerTrackers = function(self, event, ...)
 
 				Handled[bar] = true
 			end
-			bar:SetStatusBarColor(Colors.quest.red[1], Colors.quest.red[2], Colors.quest.red[3])
+			bar:SetStatusBarColor(Colors.darkred[1], Colors.darkred[2], Colors.darkred[3])
 		end
 	end
 end

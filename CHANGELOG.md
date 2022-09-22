@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Changed the Wrath nameplate aura filter to include actual auras.
-- Reversed the order of the full buff display to show timeless buffs first, then ordered by remaining time.
 - Tweaked the retail nameplate aura display to also show short buffs like HoTs.
-- Added code to adjust the backdrop of the micro menu when blizzard change visible buttons.
+- Reversed the order of the full buff display to show timeless buffs first, then ordered by remaining time.
+- The micro menu backdrop will now adjust itself when blizzard change visible buttons.
+- Tweaked the look of the instance countdown timers as well as the mirror timers (fatigue, breath, etc) to look more like our castbars. Not the prettiest.
 
 ## [2.0.47-RC] 2022-09-21
 ### Added
