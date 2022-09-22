@@ -42,6 +42,28 @@ local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
 
+-- Callbacks
+--------------------------------------------
+local Toggle_UpdateAlpha = function(self)
+	if (self.mouseOver) or (IsShiftKeyDown() and IsControlKeyDown()) or (self.Window:IsShown()) then
+		self:SetAlpha(1)
+	else
+		self:SetAlpha(0)
+	end
+end
+
+local Toggle_OnEnter = function(self)
+	self.mouseOver = true
+	self:UpdateAlpha()
+end
+
+local Toggle_OnLeave = function(self)
+	self.mouseOver = nil
+	self:UpdateAlpha()
+end
+
+-- Aura Template
+--------------------------------------------
 local Aura = {}
 
 Aura.Secure_UpdateTooltip = function(self)
@@ -64,9 +86,9 @@ end
 
 Aura.OnAttributeChanged = function(self, attribute, value)
 	if (attribute == "index") then
-		return Aura.UpdateAura(self, value)
+		return self:UpdateAura(value)
 	elseif(attribute == "target-slot") then
-		return Aura.UpdateTempEnchant(self, value)
+		return self:UpdateTempEnchant(value)
 	end
 end
 
@@ -164,60 +186,51 @@ Aura.Style = function(aura)
 	-- allowing them to piggyback on oUF's cooldown updates.
 	aura.cd = ns.Widgets.RegisterCooldown(bar, time)
 
-	-- Replacing oUF's aura tooltips, as they are not secure.
-	aura.UpdateTooltip = Aura.Secure_UpdateTooltip
-	aura.filter = aura:GetParent():GetAttribute("filter")
-	aura:SetScript("OnEnter", Aura.Secure_OnEnter)
-	aura:SetScript("OnLeave", Aura.Secure_OnLeave)
-	aura:SetScript("OnAttributeChanged", Aura.OnAttributeChanged)
-
 end
 
+-- Module API
+--------------------------------------------
 Auras.UpdateAllAuras = function(self)
-	for _,header in pairs(self.headers) do
-		local child = header:GetAttribute("child1")
-		local i = 1
-		while (child) do
-			Aura.UpdateAura(child, child:GetID())
-			i = i + 1
-			child = header:GetAttribute("child" .. i)
-		end
+	local window = self.Window
+	if (not window) then
+		return
+	end
+	local child = window:GetAttribute("child1")
+	local i = 1
+	while (child) do
+		Aura.UpdateAura(child, child:GetID())
+		i = i + 1
+		child = window:GetAttribute("child" .. i)
 	end
 end
 
-Auras.StyleAura = function(self, aura)
-	Aura.Style(aura)
+Auras.Embed = function(self, aura)
+	for method,func in pairs(Aura) do
+		aura[method] = func
+	end
 end
 
-Auras.CreateHeader = function(self, name, parent)
+Auras.SpawnFrames = function(self, name, parent)
 
-	local header = SetObjectScale(CreateFrame("Frame", name, parent or UIParent, "SecureAuraHeaderTemplate"))
-	header:SetAttribute("template", "DiabolicAuraTemplate")
-	header:SetAttribute("weaponTemplate", "DiabolicAuraTemplate")
-	header:SetSize(40, 40)
-	header:SetAttribute("minHeight", 40)
-	header:SetAttribute("minWidth", 40)
-	header:SetAttribute("point", "BOTTOMLEFT")
-	header:SetAttribute("xOffset", 44)
-	header:SetAttribute("yOffset", 0)
-	header:SetAttribute("wrapAfter", 4)
-	header:SetAttribute("wrapYOffset", 51)
-	header:SetAttribute("sortMethod", "TIME")
-	header:SetAttribute("sortDirection", "+")
-
-	RegisterAttributeDriver(header, "unit", "[vehicleui] vehicle; player")
-
-	return header
-end
-
-Auras.OnInitialize = function(self)
-
-	local window = self:CreateHeader(ns.Prefix.."BuffHeader", UIParent)
-	window:SetFrameStrata("MEDIUM")
+	local window = SetObjectScale(CreateFrame("Frame", ns.Prefix.."BuffHeader", UIParent, "SecureAuraHeaderTemplate"))
 	window:SetFrameLevel(10)
+	window:SetSize(40, 40)
 	window:SetPoint("BOTTOMLEFT", 60, 76)
+	window:SetAttribute("weaponTemplate", "DiabolicAuraTemplate")
+	window:SetAttribute("template", "DiabolicAuraTemplate")
+	window:SetAttribute("minHeight", 40)
+	window:SetAttribute("minWidth", 40)
+	window:SetAttribute("point", "BOTTOMLEFT")
+	window:SetAttribute("xOffset", 44)
+	window:SetAttribute("yOffset", 0)
+	window:SetAttribute("wrapAfter", 4)
+	window:SetAttribute("wrapYOffset", 51)
 	window:SetAttribute("filter", "HELPFUL")
 	window:SetAttribute("includeWeapons", 1)
+	window:SetAttribute("sortMethod", "TIME")
+	window:SetAttribute("sortDirection", "+")
+	window:HookScript("OnHide", function() self.Toggle:UpdateAlpha() end)
+	RegisterAttributeDriver(window, "unit", "[vehicleui] vehicle; player")
 
 	local backdrop = CreateFrame("Frame", ns.Prefix.."BuffHeaderBackdrop", window, ns.BackdropTemplate)
 	backdrop:SetPoint("TOPLEFT", -18, 22)
@@ -233,8 +246,15 @@ Auras.OnInitialize = function(self)
 	backdrop:SetBackdropColor(.05, .05, .05, .95)
 
 	local toggle = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
+	toggle.UpdateAlpha = Toggle_UpdateAlpha
 	toggle:SetSize(48,48)
 	toggle:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 11, 24)
+	toggle:RegisterEvent("MODIFIER_STATE_CHANGED")
+	toggle:RegisterEvent("PLAYER_ENTERING_WORLD")
+	toggle:RegisterForClicks("AnyUp")
+	toggle:SetScript("OnEnter", Toggle_OnEnter)
+	toggle:SetScript("OnLeave", Toggle_OnLeave)
+	toggle:SetScript("OnEvent", Toggle_UpdateAlpha)
 	toggle:SetFrameRef("Window", window)
 	toggle:SetAttribute("_onclick", [[
 		local window = self:GetFrameRef("Window");
@@ -248,30 +268,21 @@ Auras.OnInitialize = function(self)
 		end
 	]])
 
-	toggle.UpdateAlpha = function(self)
-		if (self.mouseOver) or (IsShiftKeyDown() and IsControlKeyDown()) or (window:IsShown()) then
-			self:SetAlpha(1)
-		else
-			self:SetAlpha(0)
-		end
-	end
+	local texture = toggle:CreateTexture(nil, "ARTWORK", nil, 0)
+	texture:SetSize(64,64)
+	texture:SetPoint("CENTER")
+	texture:SetTexture(GetMedia("button-toggle-plus"))
 
-	toggle:RegisterEvent("MODIFIER_STATE_CHANGED")
-	toggle:RegisterEvent("PLAYER_ENTERING_WORLD")
-	toggle:RegisterForClicks("AnyUp")
-	toggle:SetScript("OnEnter", function(self) self.mouseOver = true; self:UpdateAlpha() end)
-	toggle:SetScript("OnLeave", function(self) self.mouseOver = nil; self:UpdateAlpha() end)
-	toggle:SetScript("OnEvent", toggle.UpdateAlpha)
+	self.Window = window
+	self.Window.Backdrop = backdrop
+	self.Toggle = toggle
+	self.Toggle.Window = window
+	self.Toggle.Texture = texture
 
-	toggle.Texture = toggle:CreateTexture(nil, "ARTWORK", nil, 0)
-	toggle.Texture:SetSize(64,64)
-	toggle.Texture:SetPoint("CENTER")
-	toggle.Texture:SetTexture(GetMedia("button-toggle-plus"))
+end
 
-	window:HookScript("OnHide", function() toggle:UpdateAlpha() end)
-
-	self.headers = { window }
-
+Auras.OnInitialize = function(self)
+	self:SpawnFrames()
 end
 
 Auras.OnEnable = function(self)

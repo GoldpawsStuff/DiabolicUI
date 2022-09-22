@@ -6,20 +6,17 @@
 		</Attributes>
 		<Scripts>
 			<OnLoad>
-				local Auras = DiabolicUI2:GetModule("Auras")
-				Auras:StyleAura(self)
+				-- Embed Lua template
+				DiabolicUI2:GetModule("Auras"):Embed(self)
+				-- Setup the aura
+				self.filter = self:GetParent():GetAttribute("filter")
+				self:Style()
+				self.UpdateTooltip = self.Secure_UpdateTooltip
+				self:SetScript("OnEnter", self.Secure_OnEnter)
+				self:SetScript("OnLeave", self.Secure_OnLeave)
+				self:SetScript("OnAttributeChanged", self.OnAttributeChanged)
 				self:RegisterForClicks("RightButtonUp")
 			</OnLoad>
-			<OnEnter>
-				local GameTooltip = GameTooltip
-				GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT", 5, 5)
-				if (self:GetAttribute("index")) then
-					GameTooltip:SetUnitAura(SecureButton_GetUnit(self:GetParent()), self:GetID(), self.filter)
-				elseif (self:GetAttribute("target-slot")) then
-					GameTooltip:SetInventoryItem("player", self:GetID())
-				end
-			</OnEnter>
-			<OnLeave function="GameTooltip_Hide" />
 		</Scripts>
 	</Button>
 </Ui>
