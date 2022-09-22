@@ -45,6 +45,33 @@ local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
 local IsAddOnEnabled = ns.API.IsAddOnEnabled
 
+MicroMenu.UpdateButtonLayout = function(self, event)
+	if (InCombatLockdown()) then
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateButtonLayout")
+	end
+	if (event == "PLAYER_REGEN_ENABLED") then
+		self:UnregisterEvent(event, "UpdateButtonLayout")
+	end
+	local visible = 0
+	local first, last
+	for i,v in ipairs(self.bar.buttons) do
+		local b = self.bar.custom[v]
+		if (v and v:IsShown()) then
+			b:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -26, 64 + 30*visible)
+			visible = visible + 1
+			if (not first) then
+				first = b
+			end
+			last = b
+		end
+
+	end
+	self.bar.backdrop:SetPoint("RIGHT", first, "RIGHT", 10, 0)
+	self.bar.backdrop:SetPoint("BOTTOM", first, "BOTTOM", 0, -18)
+	self.bar.backdrop:SetPoint("LEFT", first, "LEFT", -10, 0)
+	self.bar.backdrop:SetPoint("TOP", last, "TOP", 0, 18)
+end
+
 MicroMenu.UpdateMicroButtonsParent = function(self, parent)
 	if (parent == self.bar) then
 		self.ownedByUI = false
@@ -59,9 +86,12 @@ MicroMenu.UpdateMicroButtonsParent = function(self, parent)
 	self:MicroMenuBarShow()
 end
 
-MicroMenu.MicroMenuBarShow = function(self)
+MicroMenu.MicroMenuBarShow = function(self, event)
 	if (InCombatLockdown()) then
-		return
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "MicroMenuBarShow")
+	end
+	if (event == "PLAYER_REGEN_ENABLED") then
+		self:UnregisterEvent(event, "MicroMenuBarShow")
 	end
 	if (not self.ownedByUI) then
 
@@ -81,8 +111,9 @@ MicroMenu.MicroMenuBarShow = function(self)
 			-- Update button layout
 			v:ClearAllPoints()
 			v:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 0, 0)
-
 		end
+
+		self:UpdateButtonLayout()
 	end
 end
 
@@ -186,7 +217,7 @@ MicroMenu.InitializeMicroMenu = function(self)
 		self.bar.anchors = {}
 		self.bar.custom = {}
 
-		for i,v in pairs(self.bar.buttons) do
+		for i,v in ipairs(self.bar.buttons) do
 			self.bar.anchors[i] = { v:GetPoint() }
 
 			v.OnEnter = v:GetScript("OnEnter")
@@ -226,7 +257,7 @@ MicroMenu.InitializeMicroMenu = function(self)
 		self.bar.backdrop:ClearAllPoints()
 		self.bar.backdrop:SetPoint("RIGHT", self.bar.custom[self.bar.buttons[1]], "RIGHT", 10, 0)
 		self.bar.backdrop:SetPoint("BOTTOM", self.bar.custom[self.bar.buttons[1]], "BOTTOM", 0, -18)
-		self.bar.backdrop:SetPoint("LEFT", self.bar.custom[self.bar.buttons[#self.bar.buttons]], "LEFT", -10, 0)
+		self.bar.backdrop:SetPoint("LEFT", self.bar.custom[self.bar.buttons[1]], "LEFT", -10, 0)
 		self.bar.backdrop:SetPoint("TOP", self.bar.custom[self.bar.buttons[#self.bar.buttons]], "TOP", 0, 18)
 		self.bar:SetAllPoints(self.bar.backdrop)
 
@@ -309,7 +340,6 @@ MicroMenu.InitializeMicroMenu = function(self)
 		toggle.Texture:SetSize(64,64)
 		toggle.Texture:SetPoint("CENTER")
 		toggle.Texture:SetTexture(GetMedia("button-toggle-plus"))
-
 
 	end
 

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-09-21
+## [Unreleased] 2022-09-22
 ### Added
 - Added timer bars and text to the full buff display.
 
@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed the Wrath nameplate aura filter to include actual auras.
 - Reversed the order of the full buff display to show timeless buffs first, then ordered by remaining time.
 - Tweaked the retail nameplate aura display to also show short buffs like HoTs.
+- Added code to adjust the backdrop of the micro menu when blizzard change visible buttons.
 
 ## [2.0.47-RC] 2022-09-21
 ### Added
