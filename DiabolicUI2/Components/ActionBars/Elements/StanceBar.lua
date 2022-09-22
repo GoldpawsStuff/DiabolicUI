@@ -637,7 +637,7 @@ end
 
 StanceBar.OnInitialize = function(self)
 	-- Currently only allowing this for git versions in development mode
-	if (not ns.db.global.core.enableDevelopmentMode and ns.IsDevelopment) then
+	if (not ns.db.global.core.enableDevelopmentMode or not ns.IsDevelopment) then
 		self:Disable()
 		return
 	end
