@@ -255,7 +255,6 @@ end
 local Bar = CreateFrame("Button")
 local Bar_MT = {__index = Bar}
 
-
 Bar.Create = function(self, id, name, parent)
 
 	local bar = setmetatable(SetObjectScale(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate")), Bar_MT)

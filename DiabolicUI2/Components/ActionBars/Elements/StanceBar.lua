@@ -62,34 +62,16 @@ local noop = ns.Noop
 
 local style = function(button)
 
-	local bSize,bPad = 51,1
-
-	--button:DisableDragNDrop(true)
-	--button:SetAttribute("buttonLock", true)
-	button:SetSize(bSize,bSize)
-
-	--local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
-	--backdrop:SetSize(64,64)
-	--backdrop:SetPoint("CENTER")
-	--backdrop:SetTexture(GetMedia("button-big-circular"))
-	--backdrop:SetVertexColor(.8, .76, .72)
-	--backdrop:SetTexture(GetMedia("button-big"))
-
-	local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetSize(64,64)
-	backdrop:SetPoint("CENTER")
-	backdrop:SetTexture(GetMedia("button-big"))
-
-	local name = button:GetName()
 	local blankTexture = GetMedia("blank")
 	--local maskTexture = GetMedia("actionbutton-mask-circular")
 	local maskTexture = GetMedia("actionbutton-mask-square-rounded")
-
+	local name = button:GetName()
 	local cooldown = _G[name.."Cooldown"]
 	local count = _G[name.."Count"]
 	local flash	= _G[name.."Flash"]
 	local hotkey = _G[name.."HotKey"]
 	local icon = _G[name.."Icon"]
+	local bSize,bPad = 51,1
 
 	button.backdrop = backdrop
 	button.cooldown = cooldown
@@ -97,6 +79,8 @@ local style = function(button)
 	button.flash = flash
 	button.hotkey = hotkey
 	button.icon = icon
+
+	button:SetSize(bSize,bSize)
 
 	button.normalTexture = button:GetNormalTexture()
 	button.normalTexture:SetTexture("")
@@ -106,6 +90,13 @@ local style = function(button)
 
 	button.highlightTexture = button:GetHighlightTexture()
 	button.highlightTexture:SetTexture("")
+
+	local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
+	backdrop:SetSize(64,64)
+	backdrop:SetPoint("CENTER")
+	--backdrop:SetTexture(GetMedia("button-big-circular"))
+	backdrop:SetTexture(GetMedia("button-big"))
+	backdrop:SetVertexColor(.8, .76, .72)
 
 	local overlayFrame = CreateFrame("Frame", nil, button)
 	overlayFrame:SetFrameLevel(button:GetFrameLevel() + 2)
@@ -208,7 +199,6 @@ local style = function(button)
 			cooldown:SetHideCountdownNumbers(true)
 		end)
 
-
 		local cooldownCount = overlayFrame:CreateFontString()
 		cooldownCount:SetDrawLayer("ARTWORK", 1)
 		cooldownCount:SetPoint("CENTER", 1, 0)
@@ -264,18 +254,12 @@ local style = function(button)
 	button:GetCheckedTexture():SetBlendMode("ADD")
 	button:GetCheckedTexture():SetDrawLayer("ARTWORK", 1) -- must be updated after pushed texture has been set
 
-
 	local highlightTexture = button:CreateTexture()
 	highlightTexture:SetDrawLayer("BACKGROUND", 1)
 	highlightTexture:SetTexture(maskTexture)
 	highlightTexture:SetAllPoints(icon)
 	highlightTexture:SetVertexColor(1, 1, 1, .1)
 	button:SetHighlightTexture(highlightTexture)
-
-
-	-- We don't want direct external styling of these buttons.
-	--button.AddToButtonFacade = noop
-	--button.AddToMasque = noop
 
 	ns.StanceButtons[button] = true
 
@@ -382,7 +366,6 @@ Button.GetHotkey = function(self)
 	local key = GetBindingKey(format("SHAPESHIFTBUTTON%d", self:GetID()))
 	return key and KeyBound:ToShortKey(key)
 end
-
 
 
 Bar.Create = function(self, name, parent)
@@ -498,16 +481,11 @@ Bar.UpdateStates = function(self)
 	RegisterStateDriver(self, "vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show")
 end
 
-StanceBar.Create = function(self)
+StanceBar.SpawnBar = function(self)
 	if (not self.Bar) then
 		local bar = SetObjectScale(ns.StanceBar:Create(ns.Prefix.."StanceBar", UIParent))
 		bar:Hide()
 		bar:SetFrameStrata("MEDIUM")
-
-		-- Embed our custom methods.
-		--for method,func in pairs(Bar) do
-		--	bar[method] = func
-		--end
 
 		local button
 		for i = 1,10 do
@@ -655,7 +633,7 @@ StanceBar.OnInitialize = function(self)
 		self:Disable()
 		return
 	end
-	self:Create()
+	self:SpawnBar()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 	self:RegisterEvent("UPDATE_BONUS_ACTIONBAR", "OnEvent")
 	self:RegisterEvent("ACTIONBAR_PAGE_CHANGED", "OnEvent")
