@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-09-23
+### Added
+- Added the updated version of TaintLess.xml from Sep 15th 2022.
+
 ## [2.0.48-RC] 2022-09-22
 ### Added
 - Added timer bars and text to the full buff display.
