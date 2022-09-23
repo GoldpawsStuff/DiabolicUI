@@ -342,7 +342,6 @@ BlizzKill.KillActionBars = function(self)
 		MainMenuBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
 		MainMenuBar:UnregisterEvent("UI_SCALE_CHANGED")
 
-
 		local animations = {MainMenuBar.slideOut:GetAnimations()}
 		animations[1]:SetOffset(0,0)
 
@@ -378,7 +377,6 @@ BlizzKill.KillActionBars = function(self)
 				hooksecurefunc("TalentFrame_LoadUI", function() PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED") end)
 			end
 		end
-
 
 		self:HandleActionBar(MainMenuBarVehicleLeaveButton, true)
 		self:HandleActionBar(MainMenuBarPerformanceBarFrame, false, false, true)
