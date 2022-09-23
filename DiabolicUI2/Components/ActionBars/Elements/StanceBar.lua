@@ -26,6 +26,7 @@
 local Addon, ns = ...
 local ActionBars = ns:GetModule("ActionBars")
 local StanceBar = ActionBars:NewModule("StanceBar", "LibMoreEvents-1.0")
+local KeyBound = LibStub("LibKeyBound-1.0")
 
 -- Lua API
 local getmetatable = getmetatable
@@ -273,8 +274,8 @@ local style = function(button)
 
 
 	-- We don't want direct external styling of these buttons.
-	button.AddToButtonFacade = noop
-	button.AddToMasque = noop
+	--button.AddToButtonFacade = noop
+	--button.AddToMasque = noop
 
 	ns.StanceButtons[button] = true
 
@@ -365,6 +366,25 @@ end
 Button.UpdateHotkeys = function(self)
 end
 
+Button.UpdateHotkeys = function(self)
+	local key = self:GetHotkey() or ""
+	local hotkey = self.hotkey
+
+	if key == "" or self.parent.config.hidehotkey then
+		hotkey:Hide()
+	else
+		hotkey:SetText(key)
+		hotkey:Show()
+	end
+end
+
+Button.GetHotkey = function(self)
+	local key = GetBindingKey(format("SHAPESHIFTBUTTON%d", self:GetID()))
+	return key and KeyBound:ToShortKey(key)
+end
+
+
+
 Bar.Create = function(self, name, parent)
 	local bar = setmetatable(SetObjectScale(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate")), Bar_MT)
 	bar:SetFrameStrata("BACKGROUND")
@@ -416,13 +436,7 @@ Bar.Disable = function(self)
 end
 
 Bar.IsEnabled = function(self)
-	if (self.enabled) then
-		return true
-	elseif (self.enabled == false) then
-		return false
-	else
-		return nil
-	end
+	return self.enabled
 end
 
 Bar.UpdateBackdrop = function(self)
@@ -545,7 +559,7 @@ StanceBar.Create = function(self)
 		local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
 		backdrop:SetSize(32,32)
 		backdrop:SetPoint("CENTER")
-		backdrop:SetTexture(GetMedia("plus"))
+		--backdrop:SetTexture(GetMedia("plus"))
 		button.Backdrop = backdrop
 
 		-- Called after secure click handler, I think.
@@ -613,7 +627,7 @@ StanceBar.OnEvent = function(self, event, ...)
 		self:ForAll("Update")
 
 	elseif (event == "PLAYER_REGEN_ENABLED") then
-		if (self.updateStateOnCombatLeave) and (not InCombatLockdown()) then
+		if (self.updateStateOnCombatLeave) then
 			self.updateStateOnCombatLeave = nil
 			self:UpdateStanceButtons()
 		end
