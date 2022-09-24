@@ -137,7 +137,10 @@ local styleFunc = function(button)
 						method(icon, ...)
 						method(desaturator, ...)
 						desaturator:SetDesaturated(true)
-						desaturator:SetVertexColor(icon:GetVertexColor())
+						local r,g,b = icon:GetVertexColor()
+						if (r and g and b) then
+							desaturator:SetVertexColor(r,g,b)
+						end
 						desaturator:SetAlpha(desaturator.alpha or .2)
 					end
 				elseif (i == "SetVertexColor") then
