@@ -100,7 +100,8 @@ local Minimap_OnMouseUp = function(self, button)
 		end
 	elseif (button == "MiddleButton") then
 		if (ns.IsRetail) then
-			if (GarrisonLandingPageMinimapButton:IsShown()) and (not InCombatLockdown()) then
+			local GLP = GarrisonLandingPageMinimapButton
+			if (GLP and GLP:IsShown()) and (not InCombatLockdown()) then
 				GarrisonLandingPage_Toggle()
 			end
 		end
@@ -546,12 +547,15 @@ Bigmap.InitializeMinimap = function(self)
 	end
 
 	if (not ns.IsWrath) then
-		self:SecureHook(GarrisonLandingPageMinimapButton.MinimapLoopPulseAnim, "Play", self.StartHighlight)
-		self:SecureHook(GarrisonLandingPageMinimapButton.MinimapLoopPulseAnim, "Stop", self.StopHighlight)
-		self:SecureHook(GarrisonLandingPageMinimapButton.MinimapPulseAnim, "Play", self.StartHighlight)
-		self:SecureHook(GarrisonLandingPageMinimapButton.MinimapPulseAnim, "Stop", self.StopHighlight)
-		self:SecureHook(GarrisonLandingPageMinimapButton.MinimapAlertAnim, "Play", self.StartHighlight)
-		self:SecureHook(GarrisonLandingPageMinimapButton.MinimapAlertAnim, "Stop", self.StopHighlight)
+		local GLP = GarrisonLandingPageMinimapButton
+		if (GLP) then
+			self:SecureHook(GLP.MinimapLoopPulseAnim, "Play", self.StartHighlight)
+			self:SecureHook(GLP.MinimapLoopPulseAnim, "Stop", self.StopHighlight)
+			self:SecureHook(GLP.MinimapPulseAnim, "Play", self.StartHighlight)
+			self:SecureHook(GLP.MinimapPulseAnim, "Stop", self.StopHighlight)
+			self:SecureHook(GLP.MinimapAlertAnim, "Play", self.StartHighlight)
+			self:SecureHook(GLP.MinimapAlertAnim, "Stop", self.StopHighlight)
+		end
 	end
 
 
@@ -575,47 +579,52 @@ Bigmap.InitializeMinimap = function(self)
 	--------------------------------------------------------
 	-- Order Hall / Garrison / Covenant Sanctum
 	if (not ns.IsWrath) then
-		GarrisonLandingPageMinimapButton:ClearAllPoints()
-		GarrisonLandingPageMinimapButton:SetPoint("TOP", UIParent, "TOP", 0, 200) -- off-screen
+		if (ns.ClientVersion < 10) then
 
-		---- They change the position of the button through a local function named "ApplyGarrisonTypeAnchor".
-		---- Only way we can override it without messing with method nooping, is to hook into the global function calling it.
-		hooksecurefunc("GarrisonLandingPageMinimapButton_UpdateIcon", function()
-			GarrisonLandingPageMinimapButton:ClearAllPoints()
-			GarrisonLandingPageMinimapButton:SetPoint("TOP", UIParent, "TOP", 0, 200)
-		end)
+			local GLP = GarrisonLandingPageMinimapButton
+			if (GLP) then
+				GLP:ClearAllPoints()
+				GLP:SetPoint("TOP", UIParent, "TOP", 0, 200) -- off-screen
 
-		-- Blob Textures
-		-- These alpha values range from 0 to 255, for some obscure reason,
-		-- so a value of 127 would be 127/255 ≃ 0.5ish in the normal API.
-		local blobInside, blobOutside, ringOutside, ringInside = 0,96,0,0
-		Minimap:SetQuestBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
-		Minimap:SetQuestBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
-		Minimap:SetQuestBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
-		Minimap:SetQuestBlobRingScalar(ringInside) -- ring texture inside quest areas?
-		Minimap:SetArchBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
-		Minimap:SetArchBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
-		Minimap:SetArchBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
-		Minimap:SetArchBlobRingScalar(ringInside) -- ring texture inside quest areas?
-		Minimap:SetTaskBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
-		Minimap:SetTaskBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
-		Minimap:SetTaskBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
-		Minimap:SetTaskBlobRingScalar(ringInside) -- ring texture inside quest areas?
+				---- They change the position of the button through a local function named "ApplyGarrisonTypeAnchor".
+				---- Only way we can override it without messing with method nooping, is to hook into the global function calling it.
+				hooksecurefunc("GarrisonLandingPageMinimapButton_UpdateIcon", function()
+					GLP:ClearAllPoints()
+					GLP:SetPoint("TOP", UIParent, "TOP", 0, 200)
+				end)
+			end
 
-		-- Warning: Setting to blank fully kills it!
-		-- Also note that these methods only accepts Blizzard textures,
-		-- not any custom ones found in addon folders.
-		local blank = [[Interface\MINIMAP\UI-QuestBlobMinimap-Inside]]
-		Minimap:SetArchBlobRingTexture(blank)
-		Minimap:SetQuestBlobInsideTexture(blank)
-		Minimap:SetQuestBlobOutsideSelectedTexture([[Interface\MINIMAP\UI-QuestBlobMinimap-Outside]])
-		Minimap:SetQuestBlobRingTexture(blank)
-		Minimap:SetTaskBlobInsideTexture(blank)
-		Minimap:SetTaskBlobOutsideSelectedTexture([[Interface\MINIMAP\UI-BonusObjectiveBlob-Outside]])
-		Minimap:SetTaskBlobRingTexture(blank)
-		Minimap:SetStaticPOIArrowTexture(blank)
-		Minimap:SetPOIArrowTexture(blank)
+			-- Blob Textures
+			-- These alpha values range from 0 to 255, for some obscure reason,
+			-- so a value of 127 would be 127/255 ≃ 0.5ish in the normal API.
+			local blobInside, blobOutside, ringOutside, ringInside = 0,96,0,0
+			Minimap:SetQuestBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
+			Minimap:SetQuestBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
+			Minimap:SetQuestBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
+			Minimap:SetQuestBlobRingScalar(ringInside) -- ring texture inside quest areas?
+			Minimap:SetArchBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
+			Minimap:SetArchBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
+			Minimap:SetArchBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
+			Minimap:SetArchBlobRingScalar(ringInside) -- ring texture inside quest areas?
+			Minimap:SetTaskBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
+			Minimap:SetTaskBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
+			Minimap:SetTaskBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
+			Minimap:SetTaskBlobRingScalar(ringInside) -- ring texture inside quest areas?
 
+			-- Warning: Setting to blank fully kills it!
+			-- Also note that these methods only accepts Blizzard textures,
+			-- not any custom ones found in addon folders.
+			local blank = [[Interface\MINIMAP\UI-QuestBlobMinimap-Inside]]
+			Minimap:SetArchBlobRingTexture(blank)
+			Minimap:SetQuestBlobInsideTexture(blank)
+			Minimap:SetQuestBlobOutsideSelectedTexture([[Interface\MINIMAP\UI-QuestBlobMinimap-Outside]])
+			Minimap:SetQuestBlobRingTexture(blank)
+			Minimap:SetTaskBlobInsideTexture(blank)
+			Minimap:SetTaskBlobOutsideSelectedTexture([[Interface\MINIMAP\UI-BonusObjectiveBlob-Outside]])
+			Minimap:SetTaskBlobRingTexture(blank)
+			Minimap:SetStaticPOIArrowTexture(blank)
+			Minimap:SetPOIArrowTexture(blank)
+		end
 	end
 
 	-- Blip Textures
@@ -659,35 +668,39 @@ Bigmap.InitializeMinimap = function(self)
 
 	else
 
-		local eyeTexture = QueueStatusMinimapButton.Eye:CreateTexture()
-		eyeTexture:SetDrawLayer("ARTWORK", 1)
-		eyeTexture:SetPoint("CENTER", 0, 0)
-		eyeTexture:SetSize(64,64)
-		eyeTexture:SetTexture(GetMedia("group-finder-eye-orange"))
-		eyeTexture:SetVertexColor(.8, .76, .72)
-		self.eyeTexture = eyeTexture
+		if (ns.ClientVersion < 10) then
 
-		QueueStatusMinimapButton:SetHighlightTexture("")
+			local eyeTexture = QueueStatusMinimapButton.Eye:CreateTexture()
+			eyeTexture:SetDrawLayer("ARTWORK", 1)
+			eyeTexture:SetPoint("CENTER", 0, 0)
+			eyeTexture:SetSize(64,64)
+			eyeTexture:SetTexture(GetMedia("group-finder-eye-orange"))
+			eyeTexture:SetVertexColor(.8, .76, .72)
+			self.eyeTexture = eyeTexture
 
-		QueueStatusMinimapButtonBorder:SetAlpha(0)
-		QueueStatusMinimapButtonBorder:SetTexture(nil)
-		QueueStatusMinimapButtonGroupSize:SetFontObject(GetFont(15,true))
-		QueueStatusMinimapButtonGroupSize:ClearAllPoints()
-		QueueStatusMinimapButtonGroupSize:SetPoint("BOTTOMRIGHT", 0, 0)
+			QueueStatusMinimapButton:SetHighlightTexture("")
 
-		QueueStatusMinimapButton:SetParent(eyeFrame)
-		QueueStatusMinimapButton:ClearAllPoints()
-		QueueStatusMinimapButton:SetPoint("CENTER", 0, 0)
+			QueueStatusMinimapButtonBorder:SetAlpha(0)
+			QueueStatusMinimapButtonBorder:SetTexture(nil)
+			QueueStatusMinimapButtonGroupSize:SetFontObject(GetFont(15,true))
+			QueueStatusMinimapButtonGroupSize:ClearAllPoints()
+			QueueStatusMinimapButtonGroupSize:SetPoint("BOTTOMRIGHT", 0, 0)
 
-		QueueStatusMinimapButton.Eye:SetSize(64,64)
-		QueueStatusMinimapButton.Eye.texture:SetParent(UIHider)
-		QueueStatusMinimapButton.Eye.texture:SetAlpha(0)
+			QueueStatusMinimapButton:SetParent(eyeFrame)
+			QueueStatusMinimapButton:ClearAllPoints()
+			QueueStatusMinimapButton:SetPoint("CENTER", 0, 0)
 
-		QueueStatusMinimapButton.Highlight:SetAlpha(0)
-		QueueStatusMinimapButton.Highlight:SetTexture(nil)
+			QueueStatusMinimapButton.Eye:SetSize(64,64)
+			QueueStatusMinimapButton.Eye.texture:SetParent(UIHider)
+			QueueStatusMinimapButton.Eye.texture:SetAlpha(0)
 
-		QueueStatusFrame:ClearAllPoints()
-		QueueStatusFrame:SetPoint("TOPRIGHT", QueueStatusMinimapButton, "BOTTOMLEFT", 0, 0)
+			QueueStatusMinimapButton.Highlight:SetAlpha(0)
+			QueueStatusMinimapButton.Highlight:SetTexture(nil)
+
+			QueueStatusFrame:ClearAllPoints()
+			QueueStatusFrame:SetPoint("TOPRIGHT", QueueStatusMinimapButton, "BOTTOMLEFT", 0, 0)
+		end
+
 	end
 
 
