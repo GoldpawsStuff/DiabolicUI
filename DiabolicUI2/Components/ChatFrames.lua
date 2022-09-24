@@ -164,7 +164,7 @@ end
 
 ChatFrame.GetTabText = function(self)
 	if (not Elements[self].tabText) then
-		Elements[self].tabText = _G[self:GetName().."TabText"]
+		Elements[self].tabText = _G[self:GetName().."TabText"] or _G[self:GetName().."Tab"].Text -- 10.0.0
 	end
 	return Elements[self].tabText
 end
@@ -239,7 +239,6 @@ ChatFrame.GetEditBoxTextures = function(self)
 		end
 	end
 end
-
 
 -- Returns an iterator for the tab textures
 ChatFrame.GetTabTextures = function(self)
