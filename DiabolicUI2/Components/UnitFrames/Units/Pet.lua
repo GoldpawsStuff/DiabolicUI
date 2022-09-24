@@ -52,7 +52,7 @@ UnitStyles["Pet"] = function(self, unit, id)
 	health.colorReaction = true
 	self.SmartHealth = health
 
-	local healthBg = health:CreateTexture(nil, "BACKGROUND", -7)
+	local healthBg = health:CreateTexture(nil, "BACKGROUND", nil, -7)
 	healthBg:SetPoint("TOPLEFT", -1, 1)
 	healthBg:SetPoint("BOTTOMRIGHT", 1, -1)
 	healthBg:SetColorTexture(.05, .05, .05, .85)
@@ -77,7 +77,7 @@ UnitStyles["Pet"] = function(self, unit, id)
 	portrait:SetAlpha(.85)
     self.Portrait = portrait
 
-	local backdrop = portrait:CreateTexture(nil, "BACKGROUND", -7)
+	local backdrop = portrait:CreateTexture(nil, "BACKGROUND", nil, -7)
 	backdrop:SetIgnoreParentAlpha(true)
 	backdrop:SetAllPoints()
 	backdrop:SetColorTexture(.05, .05, .05, .85)
@@ -91,7 +91,7 @@ UnitStyles["Pet"] = function(self, unit, id)
 	border:SetPoint("BOTTOMRIGHT", 13, -13)
 	border:SetFrameLevel(self:GetFrameLevel() + 2)
 	self.Portrait.Border = border
-	
+
 	local cast = self:CreateBar()
 	cast:Hide()
 	cast:SetFrameLevel(health:GetFrameLevel() + 1)
