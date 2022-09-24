@@ -71,6 +71,9 @@ button.isPlayer - indicates if the aura caster is the player or their vehicle (b
 
 local _, ns = ...
 local oUF = ns.oUF
+if (oUF.clientMajor < 10) then
+	return
+end
 
 local function UpdateTooltip(self)
 	if(GameTooltip:IsForbidden()) then return end
