@@ -61,6 +61,7 @@ local str_match, format, tinsert, tremove = string.match, format, tinsert, tremo
 local WoWClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local WoWBCC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 local WoWWrath = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
+local WoW10 = select(4, GetBuildInfo()) >= 100000
 
 local KeyBound = LibStub("LibKeyBound-1.0", true)
 local CBH = LibStub("CallbackHandler-1.0")
@@ -174,7 +175,11 @@ function lib:CreateButton(id, name, header, config)
 
 	local button = setmetatable(CreateFrame("CheckButton", name, header, "SecureActionButtonTemplate, ActionButtonTemplate"), Generic_MT)
 	button:RegisterForDrag("LeftButton", "RightButton")
-	button:RegisterForClicks("AnyUp")
+	if WoW10 then
+		button:RegisterForClicks("AnyDown", "AnyUp")
+	else
+		button:RegisterForClicks("AnyUp")
+	end
 
 	-- Frame Scripts
 	button:SetScript("OnEnter", Generic.OnEnter)
@@ -232,6 +237,32 @@ function SetupSecureSnippets(button)
 			local action_field = (type == "pet") and "action" or type
 			self:SetAttribute(action_field, action)
 			self:SetAttribute("action_field", action_field)
+		end
+		if IsPressHoldReleaseSpell then
+			local pressAndHold = false
+			if type == "action" then
+				self:SetAttribute("typerelease", "actionrelease")
+				local actionType, id = GetActionInfo(action)
+				if actionType == "spell" then
+					pressAndHold = IsPressHoldReleaseSpell(id)
+				elseif actionType == "macro" then
+					-- GetMacroSpell is not in the restricted environment
+					--[=[
+						local spellID = GetMacroSpell(id)
+						if spellID then
+							pressAndHold = IsPressHoldReleaseSpell(spellID)
+						end
+					]=]
+				end
+			elseif type == "spell" then
+				self:SetAttribute("typerelease", nil)
+				-- XXX: while we can query this attribute, there is no corresponding action to release a spell button, only "actionrelease" exists
+				pressAndHold = IsPressHoldReleaseSpell(action)
+			else
+				self:SetAttribute("typerelease", nil)
+			end
+
+			self:SetAttribute("pressAndHoldAction", pressAndHold)
 		end
 		local onStateChanged = self:GetAttribute("OnStateChanged")
 		if onStateChanged then
@@ -652,7 +683,9 @@ function Generic:UpdateConfig(config)
 	UpdateHotkeys(self)
 	UpdateGrid(self)
 	Update(self)
-	self:RegisterForClicks(self.config.clickOnDown and "AnyDown" or "AnyUp")
+	if not WoW10 then
+		self:RegisterForClicks(self.config.clickOnDown and "AnyDown" or "AnyUp")
+	end
 end
 
 -----------------------------------------------------------
@@ -1369,52 +1402,115 @@ function UpdateOverlayGlow(self)
 end
 
 -- Hook UpdateFlyout so we can use the blizzy templates
-hooksecurefunc("ActionButton_UpdateFlyout", function(self, ...)
-	if ButtonRegistry[self] then
-		UpdateFlyout(self)
-	end
-end)
-
-function UpdateFlyout(self)
-	-- disabled FlyoutBorder/BorderShadow, those are not handled by LBF and look terrible
-	self.FlyoutBorder:Hide()
-	self.FlyoutBorderShadow:Hide()
-	if self._state_type == "action" then
-		-- based on ActionButton_UpdateFlyout in ActionButton.lua
-		local actionType = GetActionInfo(self._state_action)
-		if actionType == "flyout" then
-			-- Update border and determine arrow position
-			local arrowDistance
-			if (SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self) or GetMouseFocus() == self then
-				arrowDistance = 5
-			else
-				arrowDistance = 2
-			end
-
-			-- Update arrow
-			self.FlyoutArrow:Show()
-			self.FlyoutArrow:ClearAllPoints()
-			local direction = self:GetAttribute("flyoutDirection");
-			if direction == "LEFT" then
-				self.FlyoutArrow:SetPoint("LEFT", self, "LEFT", -arrowDistance, 0)
-				SetClampedTextureRotation(self.FlyoutArrow, 270)
-			elseif direction == "RIGHT" then
-				self.FlyoutArrow:SetPoint("RIGHT", self, "RIGHT", arrowDistance, 0)
-				SetClampedTextureRotation(self.FlyoutArrow, 90)
-			elseif direction == "DOWN" then
-				self.FlyoutArrow:SetPoint("BOTTOM", self, "BOTTOM", 0, -arrowDistance)
-				SetClampedTextureRotation(self.FlyoutArrow, 180)
-			else
-				self.FlyoutArrow:SetPoint("TOP", self, "TOP", 0, arrowDistance)
-				SetClampedTextureRotation(self.FlyoutArrow, 0)
-			end
-
-			-- return here, otherwise flyout is hidden
-			return
+if ActionButton_UpdateFlyout then
+	hooksecurefunc("ActionButton_UpdateFlyout", function(self, ...)
+		if ButtonRegistry[self] then
+			UpdateFlyout(self)
 		end
+	end)
+
+	function UpdateFlyout(self)
+		-- disabled FlyoutBorder/BorderShadow, those are not handled by LBF and look terrible
+		if self.FlyoutBorder then
+			self.FlyoutBorder:Hide()
+		end
+		self.FlyoutBorderShadow:Hide()
+		if self._state_type == "action" then
+			-- based on ActionButton_UpdateFlyout in ActionButton.lua
+			local actionType = GetActionInfo(self._state_action)
+			if actionType == "flyout" then
+
+				local isFlyoutShown = SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self
+				local arrowDistance = isFlyoutShown and 1 or 4
+
+				-- Update arrow
+				self.FlyoutArrow:Show()
+				self.FlyoutArrow:ClearAllPoints()
+				local direction = self:GetAttribute("flyoutDirection")
+				if direction == "LEFT" then
+					self.FlyoutArrow:SetPoint("LEFT", self, "LEFT", -arrowDistance, 0)
+					SetClampedTextureRotation(self.FlyoutArrow, isFlyoutShown and 90 or 270)
+				elseif direction == "RIGHT" then
+					self.FlyoutArrow:SetPoint("RIGHT", self, "RIGHT", arrowDistance, 0)
+					SetClampedTextureRotation(self.FlyoutArrow, isFlyoutShown and 270 or 90)
+				elseif direction == "DOWN" then
+					self.FlyoutArrow:SetPoint("BOTTOM", self, "BOTTOM", 0, -arrowDistance)
+					SetClampedTextureRotation(self.FlyoutArrow, isFlyoutShown and 0 or 180)
+				else
+					self.FlyoutArrow:SetPoint("TOP", self, "TOP", 0, arrowDistance)
+					SetClampedTextureRotation(self.FlyoutArrow, isFlyoutShown and 180 or 0)
+				end
+
+				-- return here, otherwise flyout is hidden
+				return
+			end
+		end
+		self.FlyoutArrow:Hide()
 	end
-	self.FlyoutArrow:Hide()
+else
+	function UpdateFlyout(self, isButtonDownOverride)
+		self.FlyoutBorderShadow:Hide()
+		if self._state_type == "action" then
+			-- based on ActionButton_UpdateFlyout in ActionButton.lua
+			local actionType = GetActionInfo(self._state_action)
+			if actionType == "flyout" then
+				local isMouseOverButton =  GetMouseFocus() == self;
+
+				local isButtonDown
+				if (isButtonDownOverride ~= nil) then
+					isButtonDown = isButtonDownOverride
+				else
+					isButtonDown = self:GetButtonState() == "PUSHED"
+				end
+
+				local flyoutArrowTexture = self.FlyoutArrowContainer.FlyoutArrowNormal
+
+				if (isButtonDown) then
+					flyoutArrowTexture = self.FlyoutArrowContainer.FlyoutArrowPushed
+
+					self.FlyoutArrowContainer.FlyoutArrowNormal:Hide()
+					self.FlyoutArrowContainer.FlyoutArrowHighlight:Hide()
+				elseif (isMouseOverButton) then
+					flyoutArrowTexture = self.FlyoutArrowContainer.FlyoutArrowHighlight
+
+					self.FlyoutArrowContainer.FlyoutArrowNormal:Hide()
+					self.FlyoutArrowContainer.FlyoutArrowPushed:Hide()
+				else
+					self.FlyoutArrowContainer.FlyoutArrowHighlight:Hide()
+					self.FlyoutArrowContainer.FlyoutArrowPushed:Hide()
+				end
+
+				local isFlyoutShown = SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self
+				local arrowDistance = isFlyoutShown and 1 or 4
+
+				-- Update arrow
+				self.FlyoutArrowContainer:Show()
+				flyoutArrowTexture:Show()
+				flyoutArrowTexture:ClearAllPoints()
+
+				local direction = self:GetAttribute("flyoutDirection")
+				if direction == "LEFT" then
+					SetClampedTextureRotation(flyoutArrowTexture, isFlyoutShown and 90 or 270)
+					flyoutArrowTexture:SetPoint("LEFT", self, "LEFT", -arrowDistance, 0)
+				elseif direction == "RIGHT" then
+					SetClampedTextureRotation(flyoutArrowTexture, isFlyoutShown and 270 or 90)
+					flyoutArrowTexture:SetPoint("RIGHT", self, "RIGHT", arrowDistance, 0)
+				elseif direction == "DOWN" then
+					SetClampedTextureRotation(flyoutArrowTexture, isFlyoutShown and 0 or 180)
+					flyoutArrowTexture:SetPoint("BOTTOM", self, "BOTTOM", 0, -arrowDistance)
+				else
+					SetClampedTextureRotation(flyoutArrowTexture, isFlyoutShown and 180 or 0)
+					flyoutArrowTexture:SetPoint("TOP", self, "TOP", 0, arrowDistance)
+				end
+
+				-- return here, otherwise flyout is hidden
+				return
+			end
+		end
+		self.FlyoutArrowContainer:Hide()
+	end
 end
+Generic.UpdateFlyout = UpdateFlyout
 
 function UpdateRangeTimer()
 	rangeTimer = -1
@@ -1498,6 +1594,7 @@ end
 Generic.SetTooltip              = function(self) return nil end
 Generic.GetSpellId              = function(self) return nil end
 Generic.GetLossOfControlCooldown = function(self) return 0, 0 end
+Generic.GetPassiveCooldownSpellID = function(self) return nil end
 
 -----------------------------------------------------------
 --- Action Button
@@ -1524,6 +1621,23 @@ Action.GetSpellId              = function(self)
 	end
 end
 Action.GetLossOfControlCooldown = function(self) return GetActionLossOfControlCooldown(self._state_action) end
+if C_UnitAuras then
+	Action.GetPassiveCooldownSpellID = function(self)
+		local _actionType, actionID = GetActionInfo(self._state_action)
+		local onEquipPassiveSpellID
+		if actionID then
+			onEquipPassiveSpellID = C_ActionBar.GetItemActionOnEquipSpellID(self._state_action)
+		end
+		if onEquipPassiveSpellID then
+			return C_UnitAuras.GetCooldownAuraBySpellID(onEquipPassiveSpellID)
+		else
+			local spellID = self:GetSpellId()
+			if spellID then
+				return C_UnitAuras.GetCooldownAuraBySpellID(spellID)
+			end
+		end
+	end
+end
 
 -- Classic overrides for item count breakage
 if WoWClassic then
@@ -1560,6 +1674,13 @@ Spell.IsUnitInRange           = function(self, unit) return IsSpellInRange(FindS
 Spell.SetTooltip              = function(self) return GameTooltip:SetSpellByID(self._state_action) end
 Spell.GetSpellId              = function(self) return self._state_action end
 Spell.GetLossOfControlCooldown = function(self) return GetSpellLossOfControlCooldown(self._state_action) end
+if C_UnitAuras then
+	Spell.GetPassiveCooldownSpellID = function(self)
+		if self._state_action then
+			return C_UnitAuras.GetCooldownAuraBySpellID(self._state_action)
+		end
+	end
+end
 
 -----------------------------------------------------------
 --- Item Button
@@ -1582,6 +1703,7 @@ Item.IsConsumableOrStackable = function(self) return IsConsumableItem(self._stat
 Item.IsUnitInRange           = function(self, unit) return IsItemInRange(self._state_action, unit) end
 Item.SetTooltip              = function(self) return GameTooltip:SetHyperlink(self._state_action) end
 Item.GetSpellId              = function(self) return nil end
+Item.GetPassiveCooldownSpellID = function(self) return nil end
 
 -----------------------------------------------------------
 --- Macro Button
@@ -1601,6 +1723,7 @@ Macro.IsConsumableOrStackable = function(self) return nil end
 Macro.IsUnitInRange           = function(self, unit) return nil end
 Macro.SetTooltip              = function(self) return nil end
 Macro.GetSpellId              = function(self) return nil end
+Macro.GetPassiveCooldownSpellID = function(self) return nil end
 
 -----------------------------------------------------------
 --- Custom Button
@@ -1620,6 +1743,7 @@ Custom.IsUnitInRange           = function(self, unit) return nil end
 Custom.SetTooltip              = function(self) return GameTooltip:SetText(self._state_action.tooltip) end
 Custom.GetSpellId              = function(self) return nil end
 Custom.RunCustom               = function(self, unit, button) return self._state_action.func(self, unit, button) end
+Custom.GetPassiveCooldownSpellID = function(self) return nil end
 
 --- WoW Classic overrides
 --if WoWClassic or WoWBCC or WoWWrath then
