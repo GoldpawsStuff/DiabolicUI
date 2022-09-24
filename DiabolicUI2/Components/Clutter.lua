@@ -171,7 +171,7 @@ Clutter.HandleBelowMinimapWidgets = function(self)
 	scaffold:SetSize(128, 40)
 	scaffold:SetPoint("TOP", Minimap, "BOTTOM", 0, -40)
 
-	hooksecurefunc(container, "SetPoint", function(_, _, anchor)
+	hooksecurefunc(container, "SetPoint", function(self, _, anchor)
 		if (anchor) and (anchor ~= scaffold) then
 			self:SetParent(scaffold)
 			self:ClearAllPoints()
