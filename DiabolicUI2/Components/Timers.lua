@@ -176,6 +176,9 @@ Timers.UpdateAll = function(self)
 end
 
 Timers.OnInitialize = function(self)
+	if (ns.ClientVersion >= 10) then
+		return self:Disable()
+	end
 
 	-- Reset scripts and events
 	for i = 1, MIRRORTIMER_NUMTIMERS do
