@@ -83,9 +83,12 @@ local UpdateObjectiveTracker = function()
 				if (not Handled[module]) then
 					local minimize = header.MinimizeButton
 					minimize.SetCollapsed = function() return end
-					minimize:DisableDrawLayer(minimize:GetNormalTexture():SetTexture(nil))
-					minimize:DisableDrawLayer(minimize:GetPushedTexture():SetTexture(nil))
-					minimize:DisableDrawLayer(minimize:GetHighlightTexture():SetTexture(nil))
+					minimize:GetNormalTexture():SetTexture(nil)
+					minimize:GetPushedTexture():SetTexture(nil)
+					minimize:GetHighlightTexture():SetTexture(nil)
+					minimize:DisableDrawLayer(minimize:GetNormalTexture():GetDrawLayer())
+					minimize:DisableDrawLayer(minimize:GetPushedTexture():GetDrawLayer())
+					minimize:DisableDrawLayer(minimize:GetHighlightTexture():GetDrawLayer())
 					minimize:ClearAllPoints()
 					minimize:SetAllPoints(header)
 
