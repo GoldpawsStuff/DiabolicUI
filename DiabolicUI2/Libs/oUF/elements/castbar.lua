@@ -394,6 +394,12 @@ local function Enable(self, unit)
 		if (oUF.isRetail) then
 			self:RegisterEvent('UNIT_SPELLCAST_INTERRUPTIBLE', CastInterruptible)
 			self:RegisterEvent('UNIT_SPELLCAST_NOT_INTERRUPTIBLE', CastInterruptible)
+
+			if (oUF.clientMajor >= 10) then
+				self:RegisterEvent('UNIT_SPELLCAST_EMPOWER_START', CastStart)
+				self:RegisterEvent('UNIT_SPELLCAST_EMPOWER_STOP', CastStop)
+				self:RegisterEvent('UNIT_SPELLCAST_EMPOWER_UPDATE', CastUpdate)
+			end
 		end
 
 		element.holdTime = 0
@@ -401,8 +407,14 @@ local function Enable(self, unit)
 		element:SetScript('OnUpdate', element.OnUpdate or onUpdate)
 
 		if(self.unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
-			CastingBarFrame_SetUnit(CastingBarFrame, nil)
-			CastingBarFrame_SetUnit(PetCastingBarFrame, nil)
+			if (oUF.clientMajor >= 10) then
+				PlayerCastingBarFrame:SetUnit(nil)
+				PetCastingBarFrame:SetUnit(nil)
+				PetCastingBarFrame:UnregisterEvent('UNIT_PET')
+			else
+				CastingBarFrame_SetUnit(CastingBarFrame, nil)
+				CastingBarFrame_SetUnit(PetCastingBarFrame, nil)
+			end
 		end
 
 		if(element:IsObjectType('StatusBar') and not element:GetStatusBarTexture()) then
@@ -447,12 +459,22 @@ local function Disable(self)
 		if (oUF.isRetail) then
 			self:UnregisterEvent('UNIT_SPELLCAST_INTERRUPTIBLE', CastInterruptible)
 			self:UnregisterEvent('UNIT_SPELLCAST_NOT_INTERRUPTIBLE', CastInterruptible)
+
+			if (oUF.clientMajor >= 10) then
+				self:UnregisterEvent('UNIT_SPELLCAST_EMPOWER_START', CastStart)
+				self:UnregisterEvent('UNIT_SPELLCAST_EMPOWER_STOP', CastStop)
+				self:UnregisterEvent('UNIT_SPELLCAST_EMPOWER_UPDATE', CastUpdate)
+			end
 		end
 
 		element:SetScript('OnUpdate', nil)
 
 		if(self.unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
-			CastingBarFrame_OnLoad(CastingBarFrame, 'player', true, false)
+			if (oUF.clientMajor >= 10) then
+				PlayerCastingBarFrame:OnLoad()
+			else
+				CastingBarFrame_OnLoad(CastingBarFrame, 'player', true, false)
+			end
 			PetCastingBarFrame_OnLoad(PetCastingBarFrame)
 		end
 	end
