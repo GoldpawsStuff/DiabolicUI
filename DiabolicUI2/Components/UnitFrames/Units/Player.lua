@@ -101,6 +101,8 @@ end
 
 -- Element Callbacks
 --------------------------------------------
+local Aura_BuffFilter, Aura_DebuffFilter, Aura_PostUpdateIcon
+
 local Aura_Sort = function(a, b)
 	if (a and b) then
 		if (a:IsShown() and b:IsShown()) then
@@ -149,38 +151,77 @@ local Aura_Sort = function(a, b)
 	end
 end
 
-local Aura_BuffFilter = function(element, unit, button, name, texture,
-	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
-	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
+if (ns.ClientMajor < 10) then
 
-	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
-	button.spell = name
-	button.duration = duration
-	button.expiration = expiration
-	button.noDuration = (not duration or duration == 0)
+	Aura_BuffFilter = function(element, unit, button, name, texture,
+		count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
+		canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
 
-	if (isBossDebuff) then
+		--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
+		button.spell = name
+		button.duration = duration
+		button.expiration = expiration
+		button.noDuration = (not duration or duration == 0)
+		--button.isPlayer = data.isFromPlayerOrPlayerPet
+
+		if (isBossDebuff) then
+			return true
+		end
+
+		return (not button.noDuration and duration < 301) or (count > 1)
+	end
+
+	Aura_DebuffFilter = function(element, unit, button, name, texture,
+		count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
+		canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
+
+		--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
+		button.spell = name
+		button.duration = duration
+		button.expiration = expiration
+		button.noDuration = (not duration or duration == 0)
+
+		if (isBossDebuff) then
+			return true
+		end
+
 		return true
 	end
 
-	return (not button.noDuration and duration < 301) or (count > 1)
-end
+else
 
-local Aura_DebuffFilter = function(element, unit, button, name, texture,
-	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
-	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
+	Aura_BuffFilter = function(element, unit, data)
 
-	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
-	button.spell = name
-	button.duration = duration
-	button.expiration = expiration
-	button.noDuration = (not duration or duration == 0)
+		--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
+		button.spell = data.name
+		button.duration = data.duration
+		button.expiration = data.expiration
+		button.noDuration = (not data.duration or data.duration == 0)
+		button.isPlayer = data.isFromPlayerOrPlayerPet
 
-	if (isBossDebuff) then
+		if (data.isBossDebuff) then
+			return true
+		end
+
+		return (not button.noDuration and data.duration < 301) or (data.count > 1)
+	end
+
+	Aura_DebuffFilter = function(element, unit, data)
+
+		--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
+		button.spell = data.name
+		button.duration = data.duration
+		button.expiration = data.expiration
+		button.noDuration = (not data.duration or data.duration == 0)
+		button.isPlayer = data.isFromPlayerOrPlayerPet
+
+		if (data.isBossDebuff) then
+			return true
+		end
+
 		return true
 	end
 
-	return true
 end
 
 local Aura_BuffSorting = function(element, max)
@@ -254,7 +295,7 @@ local Aura_CreateIcon = function(element, position)
 	bar:SetPoint("RIGHT", aura, "RIGHT", -1, 0)
 	bar:SetHeight(6)
 	bar:SetStatusBarTexture(GetMedia("bar-small"))
-	bar.bg = bar:CreateTexture(nil, "BACKGROUND", -7)
+	bar.bg = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
 	bar.bg:SetPoint("TOPLEFT", -1, 1)
 	bar.bg:SetPoint("BOTTOMRIGHT", 1, -1)
 	bar.bg:SetColorTexture(.05, .05, .05, .85)
@@ -273,31 +314,66 @@ local Aura_CreateIcon = function(element, position)
 	return aura
 end
 
-local Aura_PostUpdateIcon = function(element, unit, button, index, position, duration, expiration, debuffType, isStealable)
+if (ns.ClientMajor < 10) then
 
-	-- Stealable buffs
-	if(not button.isDebuff and isStealable and element.showStealableBuffs and not UnitIsUnit("player", unit)) then
+	Aura_PostUpdateIcon = function(element, unit, button, index, position, duration, expiration, debuffType, isStealable)
+
+		-- Stealable buffs
+		if(not button.isDebuff and isStealable and element.showStealableBuffs and not UnitIsUnit("player", unit)) then
+		end
+
+		-- Border Coloring
+		local color
+		if (button.isDebuff and element.showDebuffType) or (not button.isDebuff and element.showBuffType) or (element.showType) then
+			color = Colors.debuff[debuffType] or Colors.debuff.none
+		else
+			color = Colors.xp
+		end
+		if (color) then
+			button.border:SetBackdropBorderColor(color[1], color[2], color[3])
+			button.bar:SetStatusBarColor(color[1], color[2], color[3])
+		end
+
+		-- Icon Coloring
+		if (button.isPlayer) then
+			button.icon:SetDesaturated(false)
+			button.icon:SetVertexColor(1, 1, 1)
+		else
+			button.icon:SetDesaturated(true)
+			button.icon:SetVertexColor(.6, .6, .6)
+		end
+
 	end
 
-	-- Border Coloring
-	local color
-	if (button.isDebuff and element.showDebuffType) or (not button.isDebuff and element.showBuffType) or (element.showType) then
-		color = Colors.debuff[debuffType] or Colors.debuff.none
-	else
-		color = Colors.xp
-	end
-	if (color) then
-		button.border:SetBackdropBorderColor(color[1], color[2], color[3])
-		button.bar:SetStatusBarColor(color[1], color[2], color[3])
-	end
+else
 
-	-- Icon Coloring
-	if (button.isPlayer) then
-		button.icon:SetDesaturated(false)
-		button.icon:SetVertexColor(1, 1, 1)
-	else
-		button.icon:SetDesaturated(true)
-		button.icon:SetVertexColor(.6, .6, .6)
+	Aura_PostUpdateIcon = function(element, button, unit, data, position)
+
+		-- Stealable buffs
+		if(not button.isDebuff and data.isStealable and element.showStealableBuffs and not UnitIsUnit("player", unit)) then
+		end
+
+		-- Border Coloring
+		local color
+		if (button.isDebuff and element.showDebuffType) or (not button.isDebuff and element.showBuffType) or (element.showType) then
+			color = Colors.debuff[debuffType] or Colors.debuff.none
+		else
+			color = Colors.xp
+		end
+		if (color) then
+			button.border:SetBackdropBorderColor(color[1], color[2], color[3])
+			button.bar:SetStatusBarColor(color[1], color[2], color[3])
+		end
+
+		-- Icon Coloring
+		if (data.isFromPlayerOrPlayerPet) then
+			button.icon:SetDesaturated(false)
+			button.icon:SetVertexColor(1, 1, 1)
+		else
+			button.icon:SetDesaturated(true)
+			button.icon:SetVertexColor(.6, .6, .6)
+		end
+
 	end
 
 end
