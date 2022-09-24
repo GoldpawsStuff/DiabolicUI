@@ -53,10 +53,10 @@ ns.Private.ClientMinor = tonumber(minor)
 ns.Private.ClientBuild = tonumber(build)
 
 -- Simple flags for client version checks
-ns.Private.IsClassic = ns.Private.ClientMajor == 1
-ns.Private.IsTBC = ns.Private.ClientMajor == 2
-ns.Private.IsWrath = ns.Private.ClientMajor == 3
-ns.Private.IsRetail = ns.Private.ClientMajor >= 9
+ns.Private.IsRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
+ns.Private.IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
+ns.Private.IsTBC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
+ns.Private.IsWrath = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
 ns.Private.IsShadowlands = ns.Private.ClientMajor == 9
 ns.Private.IsDragonflight = ns.Private.ClientMajor == 10
 
