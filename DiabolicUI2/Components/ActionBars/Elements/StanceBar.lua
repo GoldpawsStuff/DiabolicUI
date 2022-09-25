@@ -133,7 +133,10 @@ local style = function(button)
 						method(icon, ...)
 						method(desaturator, ...)
 						desaturator:SetDesaturated(true)
-						desaturator:SetVertexColor(icon:GetVertexColor())
+						local r,g,b = icon:GetVertexColor()
+						if (r and g and b) then
+							desaturator:SetVertexColor(r,g,b)
+						end
 						desaturator:SetAlpha(desaturator.alpha or .2)
 					end
 				elseif (i == "SetVertexColor") then
@@ -354,7 +357,7 @@ Button.UpdateHotkeys = function(self)
 	local key = self:GetHotkey() or ""
 	local hotkey = self.hotkey
 
-	if key == "" or self.parent.config.hidehotkey then
+	if key == "" or self.hidehotkey then
 		hotkey:Hide()
 	else
 		hotkey:SetText(key)
