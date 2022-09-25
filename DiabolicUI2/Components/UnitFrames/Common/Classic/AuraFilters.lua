@@ -44,7 +44,7 @@ ns.AuraFilters.PlayerBuffFilter = function(element, unit, button, name, texture,
 		return true
 	end
 
-	return (not button.noDuration and duration < 301) or (count > 1)
+	return (not button.noDuration and duration < 301) or (expiration and expiration > 0 and expiration < 31) or (count > 1)
 end
 
 ns.AuraFilters.PlayerDebuffFilter = function(element, unit, button, name, texture,

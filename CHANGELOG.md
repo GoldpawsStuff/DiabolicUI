@@ -4,9 +4,17 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-09-23
+## [2.0.49-RC] 2022-09-25
 ### Added
+- Added general Dragonflight support. But don't report bugs yet, I have not officially started on this, this is just a bonus.
 - Added the updated version of TaintLess.xml from Sep 15th 2022.
+
+### Changed
+- The player filtered aura display above the actionbars now shows buffs that will expire in 30 seconds or less.
+- Integrated Player Alternate Power into the normal power orb. This is an experimental feature and I might add a temporary text tracking the standard power while the Player Alternate Power is visible.
+
+### Fixed
+- Fixed various texture creation syntax errors that Retail and Classic ignores but Dragonflight really have an issue with.
 
 ## [2.0.48-RC] 2022-09-22
 ### Added
