@@ -349,11 +349,15 @@ Bigmap.UpdateZone = function(self)
 	zoneName:SetText(minimapZoneName)
 end
 
+Bigmap.UpdatePosition = function(self)
+	MinimapCluster:ClearAllPoints()
+	MinimapCluster:SetPoint("TOPRIGHT", -60, -40) -- not happening in DF?
+end
+
 Bigmap.InitializeMinimap = function(self)
 
 	local MinimapCluster = SetObjectScale(_G.MinimapCluster)
 	local Minimap = _G.Minimap
-
 
 	-- Clear Clutter
 	--------------------------------------------------------
@@ -426,6 +430,8 @@ Bigmap.InitializeMinimap = function(self)
 		end
 
 		MinimapCluster.Minimap = dummy
+
+		--MinimapCluster.IsInDefaultPosition = function() return true end
 	end
 
 	-- The cluster is the parent to everything.
@@ -436,7 +442,7 @@ Bigmap.InitializeMinimap = function(self)
 	MinimapCluster:EnableMouse(false)
 	MinimapCluster:SetSize(320,380) -- default size 192,192
 	MinimapCluster:ClearAllPoints()
-	MinimapCluster:SetPoint("TOPRIGHT", -60, -40)
+	MinimapCluster:SetPoint("TOPRIGHT", -60, -40) -- not happening in DF?
 	MinimapCluster.defaultHeight = 340
 
 	Minimap:SetFrameStrata("MEDIUM")
@@ -594,7 +600,6 @@ Bigmap.InitializeMinimap = function(self)
 			self:SecureHook(GLP.MinimapAlertAnim, "Stop", self.StopHighlight)
 		end
 	end
-
 
 	-- Compass
 	local compassFrame = CreateFrame("Frame", nil, Minimap)
@@ -814,22 +819,38 @@ Bigmap.SetClock = function(self, input)
 	end
 end
 
+Bigmap.OnEvent = function(self, event)
+	if (event == "PLAYER_ENTERING_WORLD") then
+		self:UpdateZone()
+		self:UpdateMail()
+		self:UpdateTimers()
+		self:UpdatePosition()
+
+	elseif (event == "VARIABLES_LOADED") then
+		self:UpdateTimers()
+		self:UpdatePosition()
+
+	elseif (event == "CVAR_UPDATE") then
+		self:UpdateTimers()
+
+	elseif (event == "UPDATE_PENDING_MAIL") then
+		self:UpdateMail()
+
+	elseif (event == "ZONE_CHANGED") or (event == "ZONE_CHANGED_INDOORS") or (event == "ZONE_CHANGED_NEW_AREA") then
+		self:UpdateZone()
+	end
+end
+
 Bigmap.OnInitialize = function(self)
 
 	self:InitializeMinimap()
-
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateMail")
-	self:RegisterEvent("UPDATE_PENDING_MAIL", "UpdateMail")
-
-	self:RegisterEvent("CVAR_UPDATE", "UpdateTimers")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateTimers")
-	self:RegisterEvent("VARIABLES_LOADED", "UpdateTimers")
-
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateZone")
-	self:RegisterEvent("ZONE_CHANGED", "UpdateZone")
-	self:RegisterEvent("ZONE_CHANGED_INDOORS", "UpdateZone")
-	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateZone")
-
+	self:RegisterEvent("CVAR_UPDATE", "OnEvent")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	self:RegisterEvent("UPDATE_PENDING_MAIL", "OnEvent")
+	self:RegisterEvent("VARIABLES_LOADED", "OnEvent")
+	self:RegisterEvent("ZONE_CHANGED", "OnEvent")
+	self:RegisterEvent("ZONE_CHANGED_INDOORS", "OnEvent")
+	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
 	self:RegisterChatCommand("setclock", "SetClock")
 
 	if (not SlashCmdList["CALENDAR"]) then
