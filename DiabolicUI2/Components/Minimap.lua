@@ -84,25 +84,33 @@ local noop = ns.Noop
 
 local Minimap_OnMouseWheel = function(self, delta)
 	if (delta > 0) then
-		MinimapZoomIn:Click()
+		Minimap.ZoomIn:Click()
 	elseif (delta < 0) then
-		MinimapZoomOut:Click()
+		Minimap.ZoomOut:Click()
 	end
 end
 
 local Minimap_OnMouseUp = function(self, button)
 	if (button == "RightButton") then
 		if (ns.IsRetail) then
-			MiniMapTracking_OnMouseDown(MiniMapTracking)
+			if (ns.ClientMajor < 10) then
+				MiniMapTracking_OnMouseDown(MiniMapTracking)
+			else
+				MinimapCluster.Tracking.Button:OnMouseDown()
+			end
 		else
 			ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, "MiniMapTracking", 8, 5)
 			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
 		end
 	elseif (button == "MiddleButton") then
 		if (ns.IsRetail) then
-			local GLP = GarrisonLandingPageMinimapButton
+			local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
 			if (GLP and GLP:IsShown()) and (not InCombatLockdown()) then
-				GarrisonLandingPage_Toggle()
+				if (GLP.ToggleLandingPage) then
+					GLP:ToggleLandingPage()
+				else
+					GarrisonLandingPage_Toggle()
+				end
 			end
 		end
 	else
@@ -181,7 +189,6 @@ local Time_OnClick = function(self, mouseButton)
 		ToggleCalendar()
 	end
 end
-
 
 Bigmap.UpdateCompass = function(self)
 	local compassFrame = self.compassFrame
@@ -353,63 +360,93 @@ Bigmap.InitializeMinimap = function(self)
 	for _,object in pairs({
 		"MinimapCluster",
 		"MiniMapInstanceDifficulty",
-		--"GarrisonLandingPageMinimapButton",
 		"GameTimeFrame"
 	}) do
 		if (_G[object]) then
 			_G[object]:UnregisterAllEvents()
 		end
 	end
-	for _,object in pairs({
-		"GameTimeFrame",
-		--"MinimapCluster",
-			"MinimapBorderTop",
-			"MinimapZoneTextButton",
-			"MiniMapInstanceDifficulty",
-			"GuildInstanceDifficulty",
-			"MiniMapChallengeMode",
-			--"Minimap",
-				"MiniMapMailFrame",
-					--"MiniMapMailBorder",
-				"MinimapBackdrop",
-					--"MinimapBorder",
-					--"MinimapNorthTag",
-					--"MinimapCompassTexture",
-					--"MiniMapWorldMapButton",
-					--"MiniMapTracking",
-						--"MiniMapTrackingFrame",
-						--"MiniMapTrackingButton",
-					--"MinimapZoomIn",
-					--"MinimapZoomOut",
-					--"GarrisonLandingPageMinimapButton",
-	}) do
-		if (_G[object]) then
-			_G[object]:SetParent(UIHider)
+	if (ns.ClientMajor < 10) then
+		for _,object in pairs({
+			"GameTimeFrame",
+			--"MinimapCluster",
+				"MinimapBorderTop",
+				"MinimapZoneTextButton",
+				"MiniMapInstanceDifficulty",
+				"GuildInstanceDifficulty",
+				"MiniMapChallengeMode",
+				--"Minimap",
+					"MiniMapMailFrame",
+						--"MiniMapMailBorder",
+					"MinimapBackdrop",
+						--"MinimapBorder",
+						--"MinimapNorthTag",
+						--"MinimapCompassTexture",
+						--"MiniMapWorldMapButton",
+						--"MiniMapTracking",
+							--"MiniMapTrackingFrame",
+							--"MiniMapTrackingButton",
+						--"MinimapZoomIn",
+						--"MinimapZoomOut",
+						--"GarrisonLandingPageMinimapButton",
+		}) do
+			if (_G[object]) then
+				_G[object]:SetParent(UIHider)
+			end
 		end
+
+		Minimap.ZoomIn = MinimapZoomIn
+		Minimap.ZoomOut = MinimapZoomOut
+
+	else
+		GameTimeFrame:SetParent(UIHider)
+		MinimapCluster.BorderTop:SetParent(UIHider)
+		MinimapCluster.ZoneTextButton:SetParent(UIHider)
+		MinimapCluster.Tracking:SetParent(UIHider)
+		MinimapCluster.MailFrame:SetParent(UIHider)
+		MinimapCluster.BorderTop:SetParent(UIHider)
+		Minimap.ZoomIn:SetParent(UIHider)
+		Minimap.ZoomOut:SetParent(UIHider)
+		MinimapBackdrop:SetParent(UIHider)
 	end
 
 
 	-- Setup Main Frames
 	--------------------------------------------------------
+
+	if (ns.ClientMajor >= 10) then
+		local dummy = CreateFrame("Frame", nil, MinimapCluster)
+		dummy:SetPoint(Minimap:GetPoint())
+
+		-- Sourced from FrameXML/Minimap.lua#264
+		dummy.defaultFramePoints = {};
+		for i = 1, dummy:GetNumPoints() do
+			local point, relativeTo, relativePoint, offsetX, offsetY = dummy:GetPoint(i);
+			dummy.defaultFramePoints[i] = { point = point, relativeTo = relativeTo, relativePoint = relativePoint, offsetX = offsetX, offsetY = offsetY };
+		end
+
+		MinimapCluster.Minimap = dummy
+	end
+
 	-- The cluster is the parent to everything.
 	-- This prevents the default zone text from being updated,
 	-- as well as disables its tooltip.
 	MinimapCluster:UnregisterAllEvents()
 	MinimapCluster:SetScript("OnEvent", noop)
+	MinimapCluster:EnableMouse(false)
 	MinimapCluster:SetSize(320,380) -- default size 192,192
-	MinimapCluster.defaultHeight = 340
 	MinimapCluster:ClearAllPoints()
 	MinimapCluster:SetPoint("TOPRIGHT", -60, -40)
+	MinimapCluster.defaultHeight = 340
 
 	Minimap:SetFrameStrata("MEDIUM")
 	Minimap:ClearAllPoints()
-	Minimap:SetSize(280,280) -- default is 140,140
 	Minimap:SetPoint("CENTER", MinimapCluster, "TOP", 20, -160)
+	Minimap:SetSize(280,280) -- default is 140,140
 	Minimap:SetMaskTexture(GetMedia("minimap-mask-transparent"))
 	Minimap:EnableMouseWheel(true)
 	Minimap:SetScript("OnMouseWheel", Minimap_OnMouseWheel)
 	Minimap:SetScript("OnMouseUp", Minimap_OnMouseUp)
-
 
 	-- Custom Widgets
 	--------------------------------------------------------
@@ -547,7 +584,7 @@ Bigmap.InitializeMinimap = function(self)
 	end
 
 	if (not ns.IsWrath) then
-		local GLP = GarrisonLandingPageMinimapButton
+		local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
 		if (GLP) then
 			self:SecureHook(GLP.MinimapLoopPulseAnim, "Play", self.StartHighlight)
 			self:SecureHook(GLP.MinimapLoopPulseAnim, "Stop", self.StopHighlight)
@@ -579,20 +616,28 @@ Bigmap.InitializeMinimap = function(self)
 	--------------------------------------------------------
 	-- Order Hall / Garrison / Covenant Sanctum
 	if (not ns.IsWrath) then
-		if (ns.ClientVersion < 10) then
 
-			local GLP = GarrisonLandingPageMinimapButton
-			if (GLP) then
-				GLP:ClearAllPoints()
-				GLP:SetPoint("TOP", UIParent, "TOP", 0, 200) -- off-screen
+		local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
+		if (GLP) then
+			GLP:ClearAllPoints()
+			GLP:SetPoint("TOP", UIParent, "TOP", 0, 200) -- off-screen
 
-				---- They change the position of the button through a local function named "ApplyGarrisonTypeAnchor".
-				---- Only way we can override it without messing with method nooping, is to hook into the global function calling it.
+			---- They change the position of the button through a local function named "ApplyGarrisonTypeAnchor".
+			---- Only way we can override it without messing with method nooping, is to hook into the global function calling it.
+			if (GarrisonLandingPageMinimapButton_UpdateIcon) then
 				hooksecurefunc("GarrisonLandingPageMinimapButton_UpdateIcon", function()
 					GLP:ClearAllPoints()
 					GLP:SetPoint("TOP", UIParent, "TOP", 0, 200)
 				end)
+			elseif (ExpansionLandingPageMinimapButton and ExpansionLandingPageMinimapButton.UpdateIcon) then
+				hooksecurefunc(ExpansionLandingPageMinimapButton, "UpdateIcon", function()
+					GLP:ClearAllPoints()
+					GLP:SetPoint("TOP", UIParent, "TOP", 0, 200)
+				end)
 			end
+		end
+
+		if (ns.ClientMajor < 10) then
 
 			-- Blob Textures
 			-- These alpha values range from 0 to 255, for some obscure reason,
@@ -668,7 +713,7 @@ Bigmap.InitializeMinimap = function(self)
 
 	else
 
-		if (ns.ClientVersion < 10) then
+		if (ns.ClientMajor < 10) then
 
 			local eyeTexture = QueueStatusMinimapButton.Eye:CreateTexture()
 			eyeTexture:SetDrawLayer("ARTWORK", 1)
