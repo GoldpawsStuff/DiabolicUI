@@ -384,7 +384,7 @@ local Update = function(self, elapsed)
 					data.sparkDirection = "IN"
 				end
 			end
-			spark:SetAlpha(currentAlpha) -- BUG: -6.2??
+			spark:SetAlpha(currentAlpha)
 		end
 		if (not spark:IsShown()) then
 			spark:Show()
