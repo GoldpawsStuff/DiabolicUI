@@ -384,7 +384,7 @@ local Update = function(self, elapsed)
 					data.sparkDirection = "IN"
 				end
 			end
-			spark:SetAlpha(currentAlpha) -- BUG: -6.2??
+			spark:SetAlpha(currentAlpha)
 		end
 		if (not spark:IsShown()) then
 			spark:Show()
@@ -811,16 +811,8 @@ lib.CreateSmoothBar = function(self, name, parent, template)
 	Bars[bar] = data
 
 	-- Virtual texcoord handling
-	local tex = { 0, 1, 0, 1 }
-	tex._owner = statusbar
-
-	bar._data = data
-	bar._tex = tex
-	bar._update = Update
-
-	statusbar._data = data
-	statusbar._tex = tex
-	statusbar._update = Update
+	local texCoords = { 0, 1, 0, 1 }
+	texCoords._owner = statusbar
 
 	-- Give both the bar texture and the virtual bar direct access
 	Textures[bar] = texCoords
