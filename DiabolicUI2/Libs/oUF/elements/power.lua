@@ -214,7 +214,7 @@ local function Update(self, event, unit)
 	end
 
 	local displayType, min
-	if(element.displayAltPower) then
+	if(element.displayAltPower and oUF.isRetail) then
 		displayType, min = element:GetDisplayPower()
 	end
 
