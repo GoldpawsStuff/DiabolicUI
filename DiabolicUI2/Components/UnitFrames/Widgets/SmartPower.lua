@@ -63,8 +63,8 @@ local GetDisplayPower = function(element)
 end
 
 local UpdateColor = function(self, event, unit)
-	if (self.unit ~= unit) then 
-		return 
+	if (self.unit ~= unit) then
+		return
 	end
 	local element = self.SmartPower
 
@@ -162,13 +162,13 @@ local Update = function(self, event, unit)
 	end
 
 	-- Different GUID means a different player or NPC,
-	-- so we want updates to be instant, not smoothed. 
+	-- so we want updates to be instant, not smoothed.
 	local guid = UnitGUID(unit)
 	local forced = (guid ~= element.guid) or (UnitIsDeadOrGhost(unit))
 	element.guid = guid
 
 	local displayType, min
-	if (element.displayAltPower) then
+	if (element.displayAltPower and oUF.isRetail) then
 		displayType, min = element:GetDisplayPower()
 	end
 
