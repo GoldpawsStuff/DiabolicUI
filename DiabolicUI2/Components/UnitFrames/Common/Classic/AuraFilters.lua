@@ -35,6 +35,7 @@ ns.AuraFilters.PlayerBuffFilter = function(element, unit, button, name, texture,
 
 	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = name
+	button.timeLeft = expiration and (expiration - GetTime())
 	button.expiration = expiration
 	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
@@ -44,7 +45,7 @@ ns.AuraFilters.PlayerBuffFilter = function(element, unit, button, name, texture,
 		return true
 	end
 
-	return (not button.noDuration and duration < 301) or (expiration and expiration > 0 and expiration < 31) or (count > 1)
+	return (not button.noDuration and duration < 301) or (button.timeLeft and button.timeLeft > 0 and button.timeLeft < 31) or (count > 1)
 end
 
 ns.AuraFilters.PlayerDebuffFilter = function(element, unit, button, name, texture,
@@ -53,6 +54,7 @@ ns.AuraFilters.PlayerDebuffFilter = function(element, unit, button, name, textur
 
 	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = name
+	button.timeLeft = expiration and (expiration - GetTime())
 	button.expiration = expiration
 	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
@@ -71,6 +73,7 @@ ns.AuraFilters.TargetAuraFilter = function(element, unit, button, name, texture,
 
 	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = name
+	button.timeLeft = expiration and (expiration - GetTime())
 	button.expiration = expiration
 	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
@@ -88,6 +91,7 @@ ns.AuraFilters.NameplateAuraFilter = function(element, unit, button, name, textu
 	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
 
 	button.spell = name
+	button.timeLeft = expiration and (expiration - GetTime())
 	button.expiration = expiration
 	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
