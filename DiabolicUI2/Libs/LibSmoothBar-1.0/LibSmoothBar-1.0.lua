@@ -24,15 +24,15 @@
 
 --]]
 local MAJOR_VERSION = "LibSmoothBar-1.0"
-local MINOR_VERSION = 1
+local MINOR_VERSION = 2
 
-if (not LibStub) then 
-	error(MAJOR_VERSION .. " requires LibStub.") 
+if (not LibStub) then
+	error(MAJOR_VERSION .. " requires LibStub.")
 end
 
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
-if (not lib) then 
-	return 
+if (not lib) then
+	return
 end
 
 -- Lua API
@@ -85,7 +85,7 @@ StatusBar.GetReverseFill = noop
 StatusBar.GetRotatesTexture = noop
 StatusBar.GetStatusBarAtlas = noop
 StatusBar.GetStatusBarColor = noop
-StatusBar.GetStatusBarTexture = noop 
+StatusBar.GetStatusBarTexture = noop
 StatusBar.GetValue = noop
 StatusBar.SetFillStyle = noop
 StatusBar.SetMinMaxValues = noop
@@ -154,7 +154,7 @@ local Update = function(self, elapsed)
 	elseif (value < min) then
 		value = min
 	end
-	
+
 	if (value == min) or (max == min) then
 		bar:Hide()
 	else
@@ -196,7 +196,7 @@ local Update = function(self, elapsed)
 				-- *There's gotta be a more elegant way to do this...
 				local topBefore, topAfter = 1, #sparkMap.top
 				local bottomBefore, bottomAfter = 1, #sparkMap.bottom
-					
+
 				-- Iterate backwards to find the first top point before our current bar value
 				for i = topAfter,topBefore,-1 do
 					if sparkMap.top[i].keyPercent > sparkPercentage then
@@ -217,7 +217,7 @@ local Update = function(self, elapsed)
 						break
 					end
 				end
-			
+
 				-- figure out the offset at our current position
 				-- between our upper and lover points
 				local belowPercentTop = sparkMap.top[topBefore].keyPercent
@@ -228,11 +228,11 @@ local Update = function(self, elapsed)
 
 				local currentPercentTop = (sparkPercentage - belowPercentTop)/(abovePercentTop-belowPercentTop)
 				local currentPercentBottom = (sparkPercentage - belowPercentBottom)/(abovePercentBottom-belowPercentBottom)
-	
+
 				-- difference between the points
 				local diffTop = sparkMap.top[topAfter].offset - sparkMap.top[topBefore].offset
 				local diffBottom = sparkMap.bottom[bottomAfter].offset - sparkMap.bottom[bottomBefore].offset
-	
+
 				sparkBefore = (sparkMap.top[topBefore].offset + diffTop*currentPercentTop) --* height
 				sparkAfter = (sparkMap.bottom[bottomBefore].offset + diffBottom*currentPercentBottom) --* height
 			else
@@ -263,7 +263,7 @@ local Update = function(self, elapsed)
 				sparkAfter = (sparkMap[below].bottomOffset + diffBottom*currentPercent) --* height
 			end
 		end
-		
+
 		if (orientation == "RIGHT") then
 			if data.reversedH then
 				-- bar grows from the left to right
@@ -281,7 +281,7 @@ local Update = function(self, elapsed)
 			bar:SetPoint("BOTTOM")
 			bar:SetPoint("LEFT")
 			bar:SetSize(displaySize, height)
-				
+
 			spark:ClearAllPoints()
 			spark:SetPoint("TOP", bar, "TOPRIGHT", 0, sparkBefore*height)
 			spark:SetPoint("BOTTOM", bar, "BOTTOMRIGHT", 0, -sparkAfter*height)
@@ -298,18 +298,18 @@ local Update = function(self, elapsed)
 				-- (e.g. player absorbbar)
 				SetTexCoord(bar, 1-mult, 1, 0, 1)
 			end
-	
+
 			bar:ClearAllPoints()
 			bar:SetPoint("TOP")
 			bar:SetPoint("BOTTOM")
 			bar:SetPoint("RIGHT")
 			bar:SetSize(displaySize, height)
-			
+
 			spark:ClearAllPoints()
 			spark:SetPoint("TOP", bar, "TOPLEFT", 0, sparkBefore*height)
 			spark:SetPoint("BOTTOM", bar, "BOTTOMLEFT", 0, -sparkAfter*height)
 			spark:SetSize(data.sparkThickness, height - (sparkBefore + sparkAfter)*height)
-	
+
 		elseif (orientation == "UP") then
 			if data.reversed then
 				SetTexCoord(bar, 1, 0, 1-mult, 1)
@@ -317,18 +317,18 @@ local Update = function(self, elapsed)
 			else
 				SetTexCoord(bar, 0, 1, 1-mult, 1)
 			end
-	
+
 			bar:ClearAllPoints()
 			bar:SetPoint("LEFT")
 			bar:SetPoint("RIGHT")
 			bar:SetPoint("BOTTOM")
 			bar:SetSize(width, displaySize)
-			
+
 			spark:ClearAllPoints()
 			spark:SetPoint("LEFT", bar, "TOPLEFT", -sparkBefore*width, 0)
 			spark:SetPoint("RIGHT", bar, "TOPRIGHT", sparkAfter*width, 0)
 			spark:SetSize(width - (sparkBefore + sparkAfter)*width, data.sparkThickness)
-	
+
 		elseif (orientation == "DOWN") then
 			if data.reversed then
 				SetTexCoord(bar, 1, 0, 0, mult)
@@ -336,13 +336,13 @@ local Update = function(self, elapsed)
 			else
 				SetTexCoord(bar, 0, 1, 0, mult)
 			end
-	
+
 			bar:ClearAllPoints()
 			bar:SetPoint("LEFT")
 			bar:SetPoint("RIGHT")
 			bar:SetPoint("TOP")
 			bar:SetSize(width, displaySize)
-	
+
 			spark:ClearAllPoints()
 			spark:SetPoint("LEFT", bar, "BOTTOMLEFT", -sparkBefore*width, 0)
 			spark:SetPoint("RIGHT", bar, "BOTTOMRIGHT", sparkAfter*width, 0)
@@ -355,7 +355,7 @@ local Update = function(self, elapsed)
 			data.OnDisplayValueChanged(self, value)
 		end
 	end
-	
+
 	-- Spark alpha animation
 	if ((value == max) or (value == min) or (value/max >= data.sparkMaxPercent) or (value/max <= data.sparkMinPercent)) then
 		if spark:IsShown() then
@@ -368,7 +368,7 @@ local Update = function(self, elapsed)
 			local currentAlpha = spark:GetAlpha()
 			local targetAlpha = data.sparkDirection == "IN" and data.sparkMaxAlpha or data.sparkMinAlpha
 			local range = data.sparkMaxAlpha - data.sparkMinAlpha
-			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range	
+			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range
 			if data.sparkDirection == "IN" then
 				if currentAlpha + alphaChange < targetAlpha then
 					currentAlpha = currentAlpha + alphaChange
@@ -377,14 +377,14 @@ local Update = function(self, elapsed)
 					data.sparkDirection = "OUT"
 				end
 			elseif data.sparkDirection == "OUT" then
-				if currentAlpha + alphaChange > targetAlpha then
+				if currentAlpha - alphaChange > targetAlpha then
 					currentAlpha = currentAlpha - alphaChange
 				else
 					currentAlpha = targetAlpha
 					data.sparkDirection = "IN"
 				end
 			end
-			spark:SetAlpha(currentAlpha)
+			spark:SetAlpha(currentAlpha) -- BUG: -6.2??
 		end
 		if (not spark:IsShown()) then
 			spark:Show()
@@ -415,7 +415,7 @@ local OnUpdate = function(self, elapsed)
 				data.barDisplayValue = data.barValue
 				data.smoothing = nil
 			else
-				-- The fraction of the total bar this total animation should cover 
+				-- The fraction of the total bar this total animation should cover
 				local animsize = (data.barValue - data.smoothingInitialValue)/(data.barMax - data.barMin)
 
 				local smoothSpeed
@@ -748,7 +748,7 @@ StatusBar.GetStatusBarTexture = function(self)
 	return Bars[self].bar
 end
 
-StatusBar.GetAnchor = function(self) return Bars[self].bar end 
+StatusBar.GetAnchor = function(self) return Bars[self].bar end
 StatusBar.GetObjectType = function(self) return "StatusBar" end
 StatusBar.IsObjectType = function(self, type) return type == "SmartBar" or type == "StatusBar" or type == "Frame" end
 StatusBar.IsForbidden = function(self) return true end
@@ -767,7 +767,7 @@ lib.CreateSmoothBar = function(self, name, parent, template)
 
 	-- rare gem of a texture, works nicely on bars smaller than 256px in effective width
 	bar:SetTexture([[Interface\FontStyles\FontStyleMetal]])
-	
+
 	-- the spark texture
 	local spark = statusbar:CreateTexture()
 	spark:SetDrawLayer("BORDER", 1)
@@ -811,13 +811,21 @@ lib.CreateSmoothBar = function(self, name, parent, template)
 	Bars[bar] = data
 
 	-- Virtual texcoord handling
-	local texCoords = { 0, 1, 0, 1 }
-	texCoords._owner = statusbar
+	local tex = { 0, 1, 0, 1 }
+	tex._owner = statusbar
+
+	bar._data = data
+	bar._tex = tex
+	bar._update = Update
+
+	statusbar._data = data
+	statusbar._tex = tex
+	statusbar._update = Update
 
 	-- Give both the bar texture and the virtual bar direct access
 	Textures[bar] = texCoords
 	Textures[statusbar] = texCoords
-	
+
 	Update(statusbar)
 
 	-- Apply our custom handler
