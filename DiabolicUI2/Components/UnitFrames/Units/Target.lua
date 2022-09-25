@@ -50,164 +50,8 @@ local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local IsWrath = ns.IsWrath
 
-
 -- Callbacks
 --------------------------------------------
-local Aura_Sort = function(a, b)
-	if (a and b) then
-		if (a:IsShown() and b:IsShown()) then
-
-			local aPlayer = a.isPlayer or false
-			local bPlayer = b.isPlayer or false
-			if (aPlayer == bPlayer) then
-
-				local aTime = a.noDuration and math_huge or a.expiration or -1
-				local bTime = b.noDuration and math_huge or b.expiration or -1
-				if (aTime == bTime) then
-
-					local aName = a.spell or ""
-					local bName = b.spell or ""
-					if (aName and bName) then
-						if (sortDirection == "DESCENDING") then
-							return (aName < bName)
-						else
-							return (aName > bName)
-						end
-					end
-
-				elseif (aTime and bTime) then
-					local sortDirection = a:GetParent().sortDirection
-					if (sortDirection == "DESCENDING") then
-						return (aTime < bTime)
-					else
-						return (aTime > bTime)
-					end
-				else
-					return (aTime) and true or false
-				end
-
-			else
-				local sortDirection = a:GetParent().sortDirection
-				if (sortDirection == "DESCENDING") then
-					return (not aPlayer and bPlayer)
-				else
-					return (aPlayer and not bPlayer)
-				end
-			end
-		else
-			return (a:IsShown())
-		end
-	end
-end
-
-local Aura_Filter = function(element, unit, button, name, texture,
-	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
-	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
-
-	button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
-	button.spell = name
-	button.duration = duration
-	button.expiration = expiration
-	button.noDuration = (not duration or duration == 0)
-
-	if (isBossDebuff) then
-		return true
-	end
-
-	return (not button.noDuration and duration < 301) or (count > 1)
-end
-
-local Aura_Sorting = function(element, max)
-	table_sort(element, Aura_Sort)
-	return 1, #element
-end
-
-local Aura_Secure_UpdateTooltip = function(self)
-	if (GameTooltip:IsForbidden()) then return end
-	GameTooltip:SetUnitAura(self:GetParent().__owner.unit, self:GetID(), self.filter)
-end
-
-local Aura_Secure_OnEnter = function(self)
-	if (not self:IsVisible()) then return end
-	if (GameTooltip:IsForbidden()) then return end
-	GameTooltip:SetOwner(self, self:GetParent().tooltipAnchor)
-	self:UpdateTooltip()
-end
-
-local Aura_Secure_OnLeave = function(self)
-	if (GameTooltip:IsForbidden()) then return end
-	GameTooltip:Hide()
-end
-
-local Aura_CreateIcon = function(element, position)
-	local aura = CreateFrame("Button", element:GetDebugName() .. "Button" .. position, element)
-	aura:RegisterForClicks("RightButtonUp")
-
-	local icon = aura:CreateTexture(nil, "BACKGROUND", nil, 1)
-	icon:SetAllPoints()
-	icon:SetMask(GetMedia("actionbutton-mask-square"))
-	aura.icon = icon
-
-	local border = CreateFrame("Frame", nil, aura, ns.BackdropTemplate)
-	border:SetBackdrop({ edgeFile = GetMedia("border-aura"), edgeSize = 12 })
-	border:SetBackdropBorderColor(Colors.xp[1], Colors.xp[2], Colors.xp[3])
-	border:SetPoint("TOPLEFT", -6, 6)
-	border:SetPoint("BOTTOMRIGHT", 6, -6)
-	border:SetFrameLevel(aura:GetFrameLevel() + 2)
-	aura.border = border
-
-	local count = aura.border:CreateFontString(nil, "OVERLAY")
-	count:SetFontObject(GetFont(12,true))
-	count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
-	count:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", -2, 3)
-	aura.count = count
-
-	local time = aura.border:CreateFontString(nil, "OVERLAY")
-	time:SetFontObject(GetFont(12,true))
-	time:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
-	time:SetPoint("TOPLEFT", aura, "TOPLEFT", -3, 3)
-	aura.time = time
-
-	-- Using a virtual cooldown element with the timer attached,
-	-- allowing them to piggyback on the back-end's cooldown updates.
-	aura.cd = ns.Widgets.RegisterCooldown(time)
-
-	-- Replacing oUF's aura tooltips, as they are not secure.
-	aura.UpdateTooltip = Aura_Secure_UpdateTooltip
-	aura:SetScript("OnEnter", Aura_Secure_OnEnter)
-	aura:SetScript("OnLeave", Aura_Secure_OnLeave)
-
-	return aura
-end
-
-local Aura_PostUpdateIcon = function(element, unit, button, index, position, duration, expiration, debuffType, isStealable)
-
-	-- Stealable buffs
-	if(not button.isDebuff and isStealable and element.showStealableBuffs and not UnitIsUnit("player", unit)) then
-	end
-
-	-- Border Coloring
-	local color
-	if (button.isDebuff and element.showDebuffType) or (not button.isDebuff and element.showBuffType) or (element.showType) then
-		color = Colors.debuff[debuffType] or Colors.debuff.none
-	else
-		color = Colors.verydarkgray
-	end
-	if (color) then
-		button.border:SetBackdropBorderColor(color[1], color[2], color[3])
-	end
-
-	-- Icon Coloring
-	if (button.isPlayer) then
-		button.icon:SetDesaturated(false)
-		button.icon:SetVertexColor(1, 1, 1)
-	else
-		button.icon:SetDesaturated(true)
-		button.icon:SetVertexColor(.6, .6, .6)
-	end
-
-end
-
 local Cast_CustomDelayText = function(element, duration)
 	if (element.casting) then
 		duration = element.max - duration
@@ -381,10 +225,10 @@ UnitStyles["Target"] = function(self, unit, id)
 	auras.sortMethod = "TIME_REMAINING"
 	auras.sortDirection = "ASCENDING"
 
-	auras.CreateIcon = Aura_CreateIcon
-	auras.PostUpdateIcon = Aura_PostUpdateIcon
-	auras.CustomFilter = Aura_Filter
-	auras.PreSetPosition = Aura_Sorting
+	auras.CreateIcon = ns.AuraStyles.CreateIcon
+	auras.PostUpdateIcon = ns.AuraStyles.TargetPostUpdateIcon
+	auras.CustomFilter = ns.AuraFilters.TargetAuraFilter
+	auras.PreSetPosition = ns.AuraSorts.Default
 
 	self.Auras = auras
 

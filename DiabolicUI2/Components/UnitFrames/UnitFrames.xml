@@ -2,10 +2,19 @@
 
 	<Script file="UnitFrames.lua"/>
 
-	<Script file="Elements\SmartHealth.lua"/>
-	<Script file="Elements\SmartPower.lua"/>
-	<Script file="Elements\SwingTimer.lua"/>
-	<Script file="Elements\Tags.lua"/>
+	<Script file="Widgets\SmartHealth.lua"/>
+	<Script file="Widgets\SmartPower.lua"/>
+	<Script file="Widgets\SwingTimer.lua"/>
+	<Script file="Widgets\Tags.lua"/>
+
+	<Script file="Common\Shared\AuraSorts.lua"/>
+	<Script file="Common\Shared\AuraStyles.lua"/>
+
+	<Script file="Common\Retail\AuraFilters.lua"/>
+	<Script file="Common\Retail\AuraStyles.lua"/>
+
+	<Script file="Common\Classic\AuraFilters.lua"/>
+	<Script file="Common\Classic\AuraStyles.lua"/>
 
 	<Script file="Units\Player.lua"/>
 	<Script file="Units\Pet.lua"/>

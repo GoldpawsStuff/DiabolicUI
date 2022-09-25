@@ -40,136 +40,8 @@ local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 
--- * element     - the widget holding the aura buttons
--- * unit        - the unit on which the aura is cast (string)
--- * button      - the updated aura button (Button)
--- * index       - the index of the aura (number)
--- * position    - the actual position of the aura button (number)
--- * duration    - the aura duration in seconds (number?)
--- * expiration  - the point in time when the aura will expire. Comparable to GetTime() (number)
--- * debuffType  - the debuff type of the aura (string?)['Curse', 'Disease', 'Magic', 'Poison']
--- * isStealable - whether the aura can be stolen or purged (boolean)
-local AuraFilter = function(element, unit, button, name, texture,
-	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
-	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
-
-	button.spell = name
-	button.duration = duration
-	button.expiration = expiration
-	button.noDuration = (not duration or duration == 0)
-
-	if (isBossDebuff) then
-		return true
-	elseif (isStealable) then
-		return true
-	elseif (nameplateShowAll) then
-		return true
-	elseif (nameplateShowSelf and (caster == "player" or caster == "pet" or caster == "vehicle")) then
-		return true
-	elseif (caster == "player" or caster == "pet" or caster == "vehicle") then
-		if (button.isDebuff) then
-			return (not button.noDuration and duration < 61) -- show most ticking DoTs
-		else
-			return (not button.noDuration and duration < 31) -- show short buffs, like HoTs
-		end
-	end
-end
-
-local AuraFilter_Wrath = function(element, unit, button, name, texture,
-	count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID,
-	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
-
-	button.spell = name
-	button.duration = duration
-	button.expiration = expiration
-	button.noDuration = (not duration or duration == 0)
-
-	if (isBossDebuff) then
-		return true
-	elseif (isStealable) then
-		return true
-	elseif (caster == "player" or caster == "pet" or caster == "vehicle") then
-		if (button.isDebuff) then
-			return (not button.noDuration and duration < 301) -- Faerie Fire is 5 mins
-		else
-			return (not button.noDuration and duration < 31) -- show short buffs, like HoTs
-		end
-	end
-end
-
 -- Callbacks
 --------------------------------------------
-local UpdateHighlight = function(self)
-	local highlight = self.Highlight
-	if (not highlight) then
-		return
-	end
-	if (UnitIsUnit("target", self.unit)) then
-		highlight:SetBackdropBorderColor(1, 1, 1)
-		highlight:Show()
-	elseif (UnitIsUnit("focus", self.unit)) then
-		highlight:SetBackdropBorderColor(144/255, 195/255, 255/255)
-		highlight:Show()
-	else
-		highlight:Hide()
-	end
-end
-
-local Aura_CreateIcon = function(element, position)
-	local aura = CreateFrame("Button", element:GetDebugName() .. "Button" .. position, element)
-	aura:RegisterForClicks("RightButtonUp")
-
-	local icon = aura:CreateTexture(nil, "BACKGROUND", nil, 1)
-	icon:SetAllPoints()
-	icon:SetMask(GetMedia("actionbutton-mask-square"))
-	aura.icon = icon
-
-	local border = CreateFrame("Frame", nil, aura, ns.BackdropTemplate)
-	border:SetBackdrop({ edgeFile = GetMedia("border-aura"), edgeSize = 12 })
-	border:SetBackdropBorderColor(Colors.xp[1], Colors.xp[2], Colors.xp[3])
-	border:SetPoint("TOPLEFT", -6, 6)
-	border:SetPoint("BOTTOMRIGHT", 6, -6)
-	border:SetFrameLevel(aura:GetFrameLevel() + 2)
-	aura.border = border
-
-	local count = aura.border:CreateFontString(nil, "OVERLAY")
-	count:SetFontObject(GetFont(10,true))
-	count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
-	count:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", 2, -3)
-	aura.count = count
-
-	local time = aura.border:CreateFontString(nil, "OVERLAY")
-	time:SetFontObject(GetFont(12,true))
-	time:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
-	time:SetPoint("TOPLEFT", aura, "TOPLEFT", -3, 3)
-	aura.time = time
-
-	-- Using a virtual cooldown element with the timer attached,
-	-- allowing them to piggyback on the back-end's cooldown updates.
-	aura.cd = ns.Widgets.RegisterCooldown(time)
-
-	return aura
-end
-
-local Aura_PostUpdateIcon = function(element, unit, button, index, position, duration, expiration, debuffType, isStealable)
-
-	-- Stealable buffs
-	if(not button.isDebuff and isStealable and element.showStealableBuffs and not UnitIsUnit("player", unit)) then
-	end
-
-	-- Coloring
-	local color
-	if (button.isDebuff and element.showDebuffType) or (not button.isDebuff and element.showBuffType) or (element.showType) then
-		color = Colors.debuff[debuffType] or Colors.debuff.none
-	else
-		color = Colors.verydarkgray
-	end
-	if (color) then
-		button.border:SetBackdropBorderColor(color[1], color[2], color[3])
-	end
-
-end
-
 local Cast_UpdateInterruptible = function(element, unit)
 	if (element.notInterruptible) then
 		element:SetStatusBarColor(unpack(Colors.red))
@@ -232,6 +104,21 @@ local Power_PostUpdate = function(element, unit, cur, min, max)
 
 end
 
+local Plate_UpdateHighlight = function(self)
+	local highlight = self.Highlight
+	if (not highlight) then
+		return
+	end
+	if (UnitIsUnit("target", self.unit)) then
+		highlight:SetBackdropBorderColor(1, 1, 1)
+		highlight:Show()
+	elseif (UnitIsUnit("focus", self.unit)) then
+		highlight:SetBackdropBorderColor(144/255, 195/255, 255/255)
+		highlight:Show()
+	else
+		highlight:Hide()
+	end
+end
 
 UnitStyles["NamePlate"] = function(self, unit, id)
 
@@ -305,10 +192,10 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 
 	self.Highlight = highlight
 
-	self:RegisterEvent("PLAYER_TARGET_CHANGED", UpdateHighlight, true)
-	self:RegisterEvent("PLAYER_FOCUS_CHANGED", UpdateHighlight, true)
-	self:RegisterEvent("NAME_PLATE_UNIT_ADDED", UpdateHighlight, true)
-	self:RegisterEvent("NAME_PLATE_UNIT_REMOVED", UpdateHighlight, true)
+	self:RegisterEvent("PLAYER_TARGET_CHANGED", Plate_UpdateHighlight, true)
+	self:RegisterEvent("PLAYER_FOCUS_CHANGED", Plate_UpdateHighlight, true)
+	self:RegisterEvent("NAME_PLATE_UNIT_ADDED", Plate_UpdateHighlight, true)
+	self:RegisterEvent("NAME_PLATE_UNIT_REMOVED", Plate_UpdateHighlight, true)
 
 
 	-- Castbar
@@ -380,11 +267,10 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	auras["growth-y"] = "UP"
 	auras.sortMethod = "TIME_REMAINING"
 	auras.sortDirection = "ASCENDING"
-
-	auras.CustomFilter = ns.IsWrath and AuraFilter_Wrath or AuraFilter
-	auras.CreateIcon = Aura_CreateIcon
-	auras.PostUpdateIcon = Aura_PostUpdateIcon
-	auras.PreSetPosition = AuraSorting
+	auras.CustomFilter = ns.AuraFilters.NameplateAuraFilter
+	auras.CreateIcon = ns.AuraStyles.CreateIcon
+	auras.PostUpdateIcon = ns.AuraStyles.NameplatePostUpdateIcon
+	auras.PreSetPosition = ns.AuraSorts.Default
 
 	self.Auras = auras
 end
