@@ -80,7 +80,8 @@ local TEXTURES = {
 	Tab = {
 		"Left", "Middle", "Right",
 		"SelectedLeft", "SelectedMiddle", "SelectedRight",
-		"HighlightLeft", "HighlightMiddle", "HighlightRight"
+		"HighlightLeft", "HighlightMiddle", "HighlightRight",
+		"ActiveLeft", "ActiveMiddle", "ActiveRight" -- 10.0
 	}
 }
 
@@ -251,7 +252,7 @@ ChatFrame.GetTabTextures = function(self)
 			local tex
 			while (numEntries > counter) do
 				counter = counter + 1
-				tex = _G[name..TEXTURES.Tab[counter]]
+				tex = _G[name..TEXTURES.Tab[counter]] or tab[TEXTURES.Tab[counter]] -- 10.0
 				if (tex) then
 					break
 				end
