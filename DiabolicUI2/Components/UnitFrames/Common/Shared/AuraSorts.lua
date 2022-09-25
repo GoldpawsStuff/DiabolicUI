@@ -33,8 +33,10 @@ local Aura_Sort = function(a, b)
 	if (a and b) then
 		if (a:IsShown() and b:IsShown()) then
 
+			-- These flags are supplied by the aura filters
 			local aPlayer = a.isPlayer or false
 			local bPlayer = b.isPlayer or false
+
 			if (aPlayer == bPlayer) then
 
 				local aTime = a.noDuration and math_huge or a.expiration or -1
