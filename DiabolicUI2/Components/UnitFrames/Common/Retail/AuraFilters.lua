@@ -33,8 +33,8 @@ ns.AuraFilters.PlayerBuffFilter = function(element, unit, data)
 
 	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = data.name
-	button.duration = data.duration
 	button.expiration = data.expiration
+	button.duration = data.duration
 	button.noDuration = (not data.duration or data.duration == 0)
 	button.isPlayer = data.isFromPlayerOrPlayerPet
 
@@ -49,8 +49,8 @@ ns.AuraFilters.PlayerDebuffFilter = function(element, unit, data)
 
 	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = data.name
-	button.duration = data.duration
 	button.expiration = data.expiration
+	button.duration = data.duration
 	button.noDuration = (not data.duration or data.duration == 0)
 	button.isPlayer = data.isFromPlayerOrPlayerPet
 
@@ -64,8 +64,8 @@ end
 ns.AuraFilters.TargetAuraFilter = function(element, unit, data)
 
 	button.spell = data.name
-	button.duration = data.duration
 	button.expiration = data.expiration
+	button.duration = data.duration
 	button.noDuration = (not data.duration or data.duration == 0)
 	button.isPlayer = data.isFromPlayerOrPlayerPet
 
@@ -79,8 +79,8 @@ end
 ns.AuraFilters.NameplateAuraFilter = function(element, unit, data)
 
 	button.spell = data.name
-	button.duration = data.duration
 	button.expiration = data.expiration
+	button.duration = data.duration
 	button.noDuration = (not data.duration or data.duration == 0)
 	button.isPlayer = data.isFromPlayerOrPlayerPet
 

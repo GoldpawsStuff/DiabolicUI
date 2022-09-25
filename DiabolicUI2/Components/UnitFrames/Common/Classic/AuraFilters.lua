@@ -35,10 +35,10 @@ ns.AuraFilters.PlayerBuffFilter = function(element, unit, button, name, texture,
 
 	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = name
-	button.duration = duration
 	button.expiration = expiration
+	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
-	--button.isPlayer = data.isFromPlayerOrPlayerPet
+	button.isPlayer = caster == "player" or caster == "vehicle"
 
 	if (isBossDebuff) then
 		return true
@@ -53,9 +53,10 @@ ns.AuraFilters.PlayerDebuffFilter = function(element, unit, button, name, textur
 
 	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = name
-	button.duration = duration
 	button.expiration = expiration
+	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
+	button.isPlayer = caster == "player" or caster == "vehicle"
 
 	if (isBossDebuff) then
 		return true
@@ -70,9 +71,10 @@ ns.AuraFilters.TargetAuraFilter = function(element, unit, button, name, texture,
 
 	--button.unitIsCaster = unit and caster and UnitIsUnit(unit, caster)
 	button.spell = name
-	button.duration = duration
 	button.expiration = expiration
+	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
+	button.isPlayer = caster == "player" or caster == "vehicle"
 
 	if (isBossDebuff) then
 		return true
@@ -86,9 +88,10 @@ ns.AuraFilters.NameplateAuraFilter = function(element, unit, button, name, textu
 	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
 
 	button.spell = name
-	button.duration = duration
 	button.expiration = expiration
+	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
+	button.isPlayer = caster == "player" or caster == "vehicle"
 
 	if (isBossDebuff) then
 		return true
@@ -114,9 +117,10 @@ ns.AuraFilters.NameplateAuraFilter = function(element, unit, button, name, textu
 	canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
 
 	button.spell = name
-	button.duration = duration
 	button.expiration = expiration
+	button.duration = duration
 	button.noDuration = (not duration or duration == 0)
+	button.isPlayer = caster == "player" or caster == "vehicle"
 
 	if (isBossDebuff) then
 		return true
