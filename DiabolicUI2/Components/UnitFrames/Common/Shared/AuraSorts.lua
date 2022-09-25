@@ -26,6 +26,9 @@
 local Addon, ns = ...
 ns.AuraSorts = ns.AuraSorts or {}
 
+-- Lua API
+local table_sort = table.sort
+
 local Aura_Sort = function(a, b)
 	if (a and b) then
 		if (a:IsShown() and b:IsShown()) then
