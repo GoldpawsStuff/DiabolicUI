@@ -626,6 +626,8 @@ UnitStyles["Player"] = function(self, unit, id)
 	power:SetScript("OnLeave", SmartPower_OnLeave)
 	power.OnEnter = SmartPower_OnMouseOver
 	power.OnLeave = SmartPower_OnMouseOver
+	power.frequentUpdates = true
+	power.displayAltPower = true
 	power.colorPower = true
 
 	local a,b,c,d = power:GetStatusBarTexture()
