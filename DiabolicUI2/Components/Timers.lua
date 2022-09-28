@@ -176,7 +176,7 @@ Timers.UpdateAll = function(self)
 end
 
 Timers.OnInitialize = function(self)
-	if (ns.ClientVersion >= 10) then
+	if (ns.ClientMajor >= 10) then
 		return self:Disable()
 	end
 

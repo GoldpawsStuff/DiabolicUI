@@ -354,7 +354,7 @@ Bigmap.UpdatePosition = function(self)
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
 
-	if (ns.ClientVersion < 10) then
+	if (ns.ClientMajor < 10) then
 		--MinimapCluster:SetMovable(true)
 		--MinimapCluster:SetUserPlaced(true)
 		MinimapCluster.IsUserPlaced = function() return true end

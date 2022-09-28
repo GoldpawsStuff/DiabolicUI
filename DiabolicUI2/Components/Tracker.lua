@@ -425,7 +425,7 @@ Tracker.UpdatePosition = function(self)
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
 
-	if (ns.ClientVersion < 10) then
+	if (ns.ClientMajor < 10) then
 		--ObjectiveTrackerFrame:SetMovable(true)
 		--ObjectiveTrackerFrame:SetUserPlaced(true)
 		ObjectiveTrackerFrame.IsUserPlaced = function() return true end
