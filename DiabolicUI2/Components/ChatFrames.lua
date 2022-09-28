@@ -406,11 +406,16 @@ ChatFrames.StyleChat = function(self, frame)
 		editBox:SetPoint("TOP", frame, "BOTTOM", 0, -1)
 	end
 
-	ChatFrames:PostUpdateFont(frame)
+	ChatFrames:UpdateChatFont(frame)
+
 	hooksecurefunc(frame, "SetFont", function(...) ChatFrames:UpdateChatFont(...) end) -- blizzard use this
 	hooksecurefunc(frame, "SetFontObject", function(...) ChatFrames:UpdateChatFont(...) end) -- not blizzard
 
 	Elements[frame].styled = true
+
+	if (self.PostSetupChatFrames) then
+		self:PostSetupChatFrames()
+	end
 end
 
 ChatFrames.SetupChatFrames = function(self)
@@ -419,6 +424,9 @@ ChatFrames.SetupChatFrames = function(self)
 		if (frame) then
 			self:StyleChat(frame)
 		end
+	end
+	if (self.PostUpdateChatFrames) then
+		self:PostUpdateChatFrames()
 	end
 end
 
@@ -433,7 +441,7 @@ ChatFrames.SetupChatDefaults = function(self)
 			CHAT_FONT_HEIGHTS[i] = nil
 		end
 		-- Ensure we have bigger fonts for Wrath!
-		for i,v in ipairs({ 14, 16, 18, 20, 22, 24, 28, 32 }) do
+		for i,v in ipairs({ 12, 14, 16, 18, 20, 22, 24, 28, 32 }) do
 			CHAT_FONT_HEIGHTS[i] = v
 		end
 	end
@@ -470,6 +478,7 @@ ChatFrames.UpdateChatPositions = function(self)
 		self:OverrideChatPositions()
 	else
 		local frame = _G.ChatFrame1
+		frame:SetUserPlaced(false)
 		frame:ClearAllPoints()
 		frame:SetAllPoints(self.frame)
 		frame.ignoreFramePositionManager = true
@@ -536,7 +545,7 @@ ChatFrames.UpdateButtons = function(self, event, ...)
 			end
 
 			if (isMouseOver) and (shown and shown ~= 0) and (not frame.minimized) then
-				if (docked) then -- dock position or nil
+				if (docked or frame == ChatFrame1) then -- dock position or nil
 					atDock = true
 				end
 
