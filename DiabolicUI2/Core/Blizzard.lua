@@ -699,7 +699,7 @@ BlizzKill.KillFloaters = function(self)
 end
 
 BlizzKill.KillMenuOptions = function(self)
-	if (ns.CoreMajor >= 10) then
+	if (ns.ClientMajor >= 10) then
 		return
 	end
 	self:HandleMenuPage(5, "InterfaceOptionsActionBarsPanel")
