@@ -453,23 +453,35 @@ ChatFrames.SetupChatHover = function(self)
 end
 
 ChatFrames.SetupDockingLocks = function(self)
-	FCF_SetLocked(ChatFrame1, true)
-	hooksecurefunc("FCF_ToggleLockOnDockedFrame", function()
-		for _, frame in pairs(FCFDock_GetChatFrames(_G.GENERAL_CHAT_DOCK)) do
-			FCF_SetLocked(frame, true)
-		end
-	end)
+	if (self.OverrideDockingLocks) then
+		self:OverrideDockingLocks()
+	else
+		FCF_SetLocked(ChatFrame1, true)
+		hooksecurefunc("FCF_ToggleLockOnDockedFrame", function()
+			for _, frame in pairs(FCFDock_GetChatFrames(_G.GENERAL_CHAT_DOCK)) do
+				FCF_SetLocked(frame, true)
+			end
+		end)
+	end
 end
 
 ChatFrames.UpdateChatPositions = function(self)
-	local frame = _G.ChatFrame1
-	frame:ClearAllPoints()
-	frame:SetAllPoints(self.frame)
-	frame.ignoreFramePositionManager = true
+	if (self.OverrideChatPositions) then
+		self:OverrideChatPositions()
+	else
+		local frame = _G.ChatFrame1
+		frame:ClearAllPoints()
+		frame:SetAllPoints(self.frame)
+		frame.ignoreFramePositionManager = true
+	end
 end
 
 ChatFrames.UpdateChatFont = function(self, ...)
-	ChatFrame.PostUpdateFont(...)
+	if (self.OverrideChatFont) then
+		self:OverrideChatFont(...)
+	else
+		ChatFrame.PostUpdateFont(...)
+	end
 end
 
 ChatFrames.UpdateDockedChatTabs = function(self)
