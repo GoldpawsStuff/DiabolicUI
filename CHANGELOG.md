@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.50-RC] 2022-09-28
+### Fixed
+- Fixed various wrong client version checks that could cause issues with amongst other things the minimap and the quest tracker.
+
 ## [2.0.49-RC] 2022-09-25
 ### Added
 - Added general Dragonflight support. But don't report bugs yet, I have not officially started on this, this is just a bonus.
