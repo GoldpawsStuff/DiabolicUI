@@ -268,10 +268,11 @@ end
 -------------------------------------------------------
 -- Apply our own font family and style, keep size.
 ChatFrame.PostUpdateFont = function(self)
-	if (self._locked) then
+	if (self._templock) then
 		return
 	end
-	self._locked = true
+	self._templock = true
+
 	local fontObject = self:GetFontObject()
 	local font, size, style = fontObject:GetFont()
 	fontObject:SetFont(font, size, "OUTLINE")
@@ -279,7 +280,8 @@ ChatFrame.PostUpdateFont = function(self)
 	fontObject:SetShadowOffset(-.75, -.75)
 	--fontObject:SetFont(font, size, "")
 	--fontObject:SetShadowColor(0,0,0,.75)
-	self._locked = nil
+
+	self._templock = nil
 end
 
 -- Module API
@@ -404,10 +406,9 @@ ChatFrames.StyleChat = function(self, frame)
 		editBox:SetPoint("TOP", frame, "BOTTOM", 0, -1)
 	end
 
-	ChatFrame.PostUpdateFont(frame)
-
-	hooksecurefunc(frame, "SetFont", ChatFrame.PostUpdateFont) -- blizzard use this
-	hooksecurefunc(frame, "SetFontObject", ChatFrame.PostUpdateFont) -- not blizzard
+	ChatFrames:PostUpdateFont(frame)
+	hooksecurefunc(frame, "SetFont", function(...) ChatFrames:UpdateChatFont(...) end) -- blizzard use this
+	hooksecurefunc(frame, "SetFontObject", function(...) ChatFrames:UpdateChatFont(...) end) -- not blizzard
 
 	Elements[frame].styled = true
 end
@@ -465,6 +466,10 @@ ChatFrames.UpdateChatPositions = function(self)
 	frame:ClearAllPoints()
 	frame:SetAllPoints(self.frame)
 	frame.ignoreFramePositionManager = true
+end
+
+ChatFrames.UpdateChatFont = function(self, ...)
+	ChatFrame.PostUpdateFont(...)
 end
 
 ChatFrames.UpdateDockedChatTabs = function(self)
