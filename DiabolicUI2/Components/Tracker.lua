@@ -351,11 +351,6 @@ Tracker.InitializeTracker = function(self, event, addon)
 	local ObjectiveTrackerFrame = SetObjectScale(ObjectiveTrackerFrame, 1.1)
 	ObjectiveTrackerFrame:SetHeight(480 / 1.1)
 	ObjectiveTrackerFrame:SetAlpha(.9)
-	ObjectiveTrackerFrame:ClearAllPoints()
-	ObjectiveTrackerFrame:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT")
-	--ObjectiveTrackerFrame:SetMovable(true)
-	--ObjectiveTrackerFrame:SetUserPlaced(true)
-	ObjectiveTrackerFrame.IsUserPlaced = function() return true end
 
 	ObjectiveTrackerUIWidgetContainer:SetFrameStrata("BACKGROUND")
 	ObjectiveTrackerFrame:SetFrameStrata("BACKGROUND")
@@ -384,7 +379,7 @@ Tracker.InitializeTracker = function(self, event, addon)
 	SetOverrideBindingClick(toggleButton, true, "SHIFT-O", "DiabolicUI_ObjectiveTrackerToggleButton")
 
 	self:InitializeAlphaDriver()
-
+	self:UpdatePosition()
 end
 
 Tracker.InitializeWrathTracker = function(self)
@@ -423,6 +418,30 @@ Tracker.InitializeWrathTracker = function(self)
 	end)
 
 	self:UpdateWrathTracker()
+end
+
+Tracker.UpdatePosition = function(self)
+	if (InCombatLockdown()) then
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+	end
+
+	if (ns.ClientVersion < 10) then
+		--ObjectiveTrackerFrame:SetMovable(true)
+		--ObjectiveTrackerFrame:SetUserPlaced(true)
+		ObjectiveTrackerFrame.IsUserPlaced = function() return true end
+	else
+
+		-- Opt out of the movement system
+		ObjectiveTrackerFrame.ignoreFramePositionManager = true
+		UIParentRightManagedFrameContainer:RemoveManagedFrame(ObjectiveTrackerFrame)
+		ObjectiveTrackerFrame:SetParent(UIParent)
+		ObjectiveTrackerFrame.IsInDefaultPosition = function() end
+
+	end
+
+	ObjectiveTrackerFrame:ClearAllPoints()
+	ObjectiveTrackerFrame:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT")
+	-- /run print( select(2,ObjectiveTrackerFrame:GetPoint()):GetName() )
 end
 
 Tracker.UpdateWrathTracker = function(self)
@@ -475,10 +494,15 @@ Tracker.OnEvent = function(self, event, ...)
 		ObjectiveAlphaDriver:Update()
 		if (ns.IsWrath) then
 			self:UpdateWrathTracker()
+		else
+			self:UpdatePosition()
 		end
-	elseif (event == "VARIABLES_LOADED") then
+
+	elseif (event == "VARIABLES_LOADED") or (event == "SETTINGS_LOADED") or (event == "PLAYER_REGEN_ENABLED") then
 		if (ns.IsWrath) then
 			self:UpdateWrathTracker()
+		else
+			self:UpdatePosition()
 		end
 	end
 end
@@ -498,4 +522,8 @@ Tracker.OnInitialize = function(self)
 	end
 
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+
+	if (ns.ClientMajor >= 10) then
+		self:RegisterEvent("SETTINGS_LOADED", "OnEvent")
+	end
 end

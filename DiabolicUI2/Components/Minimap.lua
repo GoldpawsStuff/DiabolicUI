@@ -350,8 +350,26 @@ Bigmap.UpdateZone = function(self)
 end
 
 Bigmap.UpdatePosition = function(self)
+	if (InCombatLockdown()) then
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+	end
+
+	if (ns.ClientVersion < 10) then
+		--MinimapCluster:SetMovable(true)
+		--MinimapCluster:SetUserPlaced(true)
+		MinimapCluster.IsUserPlaced = function() return true end
+	else
+
+		-- Opt out of the movement system
+		MinimapCluster.ignoreFramePositionManager = true
+		UIParentRightManagedFrameContainer:RemoveManagedFrame(MinimapCluster)
+		MinimapCluster:SetParent(UIParent)
+		MinimapCluster.IsInDefaultPosition = function() end
+
+	end
+
 	MinimapCluster:ClearAllPoints()
-	MinimapCluster:SetPoint("TOPRIGHT", -60, -40) -- not happening in DF?
+	MinimapCluster:SetPoint("TOPRIGHT", -60, -40)
 end
 
 Bigmap.InitializeMinimap = function(self)
@@ -430,8 +448,6 @@ Bigmap.InitializeMinimap = function(self)
 		end
 
 		MinimapCluster.Minimap = dummy
-
-		--MinimapCluster.IsInDefaultPosition = function() return true end
 	end
 
 	-- The cluster is the parent to everything.
@@ -441,8 +457,6 @@ Bigmap.InitializeMinimap = function(self)
 	MinimapCluster:SetScript("OnEvent", noop)
 	MinimapCluster:EnableMouse(false)
 	MinimapCluster:SetSize(320,380) -- default size 192,192
-	MinimapCluster:ClearAllPoints()
-	MinimapCluster:SetPoint("TOPRIGHT", -60, -40) -- not happening in DF?
 	MinimapCluster.defaultHeight = 340
 
 	Minimap:SetFrameStrata("MEDIUM")
@@ -753,7 +767,7 @@ Bigmap.InitializeMinimap = function(self)
 
 	end
 
-
+	self:UpdatePosition()
 end
 
 Bigmap.InitializeMBB = function(self)
@@ -826,7 +840,7 @@ Bigmap.OnEvent = function(self, event)
 		self:UpdateTimers()
 		self:UpdatePosition()
 
-	elseif (event == "VARIABLES_LOADED") then
+	elseif (event == "VARIABLES_LOADED") or (event == "SETTINGS_LOADED") or (event == "PLAYER_REGEN_ENABLED") then
 		self:UpdateTimers()
 		self:UpdatePosition()
 
@@ -852,6 +866,10 @@ Bigmap.OnInitialize = function(self)
 	self:RegisterEvent("ZONE_CHANGED_INDOORS", "OnEvent")
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
 	self:RegisterChatCommand("setclock", "SetClock")
+
+	if (ns.ClientMajor >= 10) then
+		self:RegisterEvent("SETTINGS_LOADED", "OnEvent")
+	end
 
 	if (not SlashCmdList["CALENDAR"]) then
 		self:RegisterChatCommand("calendar", function()
