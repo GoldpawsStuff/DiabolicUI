@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.51-RC] 2022-09-29
+### Changed
+- Prettied up the color used for combo points to match the more pleasing one in SimpleClassPower.
+
 ## [2.0.50-RC] 2022-09-28
 ### Fixed
 - Fixed various wrong client version checks that could cause issues with amongst other things the minimap and the quest tracker.
