@@ -199,7 +199,8 @@ Colors.power.RUNIC_POWER = createColor(0/255, 236/255, 255/255) -- Death Knights
 -- Secondary Resource Colors
 Colors.power.ARCANE_CHARGES = createColor(121/255, 152/255, 192/255) -- Arcane Mage
 Colors.power.CHI = createColor(126/255, 255/255, 163/255) -- Monk
-Colors.power.COMBO_POINTS = createColor(255/255, 0/255, 30/255) -- Rogues, Druids
+--Colors.power.COMBO_POINTS = createColor(255/255, 0/255, 30/255) -- Rogues, Druids
+Colors.power.COMBO_POINTS = createColor(220/255, 68/255,  25/255) -- Rogues, Druids, Vehicles
 Colors.power.HOLY_POWER = createColor(245/255, 254/255, 145/255) -- Retribution Paladins
 Colors.power.RUNES = createColor(100/255, 155/255, 225/255) -- Death Knight
 Colors.power.SOUL_FRAGMENTS = createColor(148/255, 130/255, 201/255) -- Demon Hunter
