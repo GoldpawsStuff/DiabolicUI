@@ -223,8 +223,7 @@ UnitStyles["Target"] = function(self, unit, id)
 	auras["growth-y"] = "DOWN"
 	auras.tooltipAnchor = "ANCHOR_BOTTOMRIGHT"
 	auras.sortMethod = "TIME_REMAINING"
-	auras.sortDirection = "ASCENDING"
-
+	auras.sortDirection = "DESCENDING"
 	auras.CreateIcon = ns.AuraStyles.CreateIcon
 	auras.PostUpdateIcon = ns.AuraStyles.TargetPostUpdateIcon
 	auras.CustomFilter = ns.AuraFilters.TargetAuraFilter

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-09-29
+### Changed
+- Changed the sort order of nameplate and target auras to show the ones with the shortest time remaining first.
+
 ## [2.0.51-RC] 2022-09-29
 ### Changed
 - Prettied up the color used for combo points to match the more pleasing one in SimpleClassPower.
