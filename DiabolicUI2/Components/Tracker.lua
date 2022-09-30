@@ -174,17 +174,58 @@ local UpdateProgressBar = function(_, _, line)
 	end
 end
 
-local UpdateWatchFrameLine = function(line)
+-- Something is tainting the Wrath WatchFrame,
+-- let's just work around it for now.
+local LinkButton_OnClick = function(self, ...)
+	if (not InCombatLockdown()) then
+		WatchFrameLinkButtonTemplate_OnClick(self:GetParent(), ...)
+	end
+end
+
+local UpdateWrathTrackerLinkButtons = function()
+	for i,linkButton in pairs(WATCHFRAME_LINKBUTTONS) do
+		if (linkButton and not Handled[linkButton]) then
+			local clickFrame = CreateFrame("Button", nil, linkButton)
+			clickFrame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+			clickFrame:SetAllPoints()
+			clickFrame:SetScript("OnClick", LinkButton_OnClick)
+		end
+	end
+end
+
+-- Style tracker fonts
+local UpdateWrathWatchFrameLine = function(line)
 	if (not Handled[line]) then
 		--local name = line:GetName()
 		--local icon = _G[name.."Icon"]
 		--local border = _G[name.."Border"]
 		line.text:SetFontObject(GetFont(15,true)) -- default size is 16
+
+		hooksecurefunc(line.dash, "SetAlpha", function(self, alpha, override)
+			if (override) then
+				return
+			end
+			self:SetAlpha(0, true)
+		end)
+
 		Handled[line] = true
 	end
+
 	-- Always assure this is cleared
 	-- *don't clear the text, it's indent is needed!
 	line.dash:SetAlpha(0)
+end
+
+local UpdateWrathTrackerLines = function()
+	for _, timerLine in pairs(WATCHFRAME_TIMERLINES) do
+		UpdateWrathWatchFrameLine(timerLine)
+	end
+	for _, achievementLine in pairs(WATCHFRAME_ACHIEVEMENTLINES) do
+		UpdateWrathWatchFrameLine(achievementLine)
+	end
+	for _, questLine in pairs(WATCHFRAME_QUESTLINES) do
+		UpdateWrathWatchFrameLine(questLine)
+	end
 end
 
 local UpdateQuestItemButton = function(button)
@@ -387,21 +428,13 @@ Tracker.InitializeWrathTracker = function(self)
 		return
 	end
 
-	--function WatchFrame_SetWidth(width)
-	--	if ( width == "0" ) then
-	--		WATCHFRAME_EXPANDEDWIDTH = 204;
-	--		WATCHFRAME_MAXLINEWIDTH = 192;
-	--	else
-	--		WATCHFRAME_EXPANDEDWIDTH = 306;
-	--		WATCHFRAME_MAXLINEWIDTH = 294;
-	--	end
-	--	if ( WatchFrame:IsShown() and not WatchFrame.collapsed ) then
-	--		WatchFrame:SetWidth(WATCHFRAME_EXPANDEDWIDTH);
-	--		WatchFrame_Update();
-	--	end
-	--end
+	-- The local function WatchFrame_GetLinkButton creates the buttons,
+	-- and it's only ever called from these two global functions.
+	UpdateWrathTrackerLinkButtons()
+	hooksecurefunc("WatchFrame_DisplayTrackedAchievements", UpdateWrathTrackerLinkButtons)
+	hooksecurefunc("WatchFrame_DisplayTrackedQuests", UpdateWrathTrackerLinkButtons)
 
-	-- Does this taint?
+	-- Does this taint? Is this the source?
 	local locked
 	hooksecurefunc(WatchFrame, "SetWidth", function()
 		if (not locked) then
@@ -461,14 +494,8 @@ Tracker.UpdateWrathTracker = function(self)
 		WatchFrame:SetWidth(WATCHFRAME_COLLAPSEDWIDTH)
 	end
 
-	-- Style tracker fonts
-	local UpdateWrathQuestLines = function()
-		for i,line in pairs(WATCHFRAME_QUESTLINES) do
-			UpdateWatchFrameLine(line)
-		end
-	end
-	hooksecurefunc("WatchFrame_Update", UpdateWrathQuestLines)
-	UpdateWrathQuestLines()
+	hooksecurefunc("WatchFrame_Update", UpdateWrathTrackerLines)
+	UpdateWrathTrackerLines()
 
 	-- Style quest buttons
 	local i,item = 1,WatchFrameItem1

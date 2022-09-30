@@ -481,7 +481,7 @@ Bar.UpdateStates = function(self)
 
 	UnregisterStateDriver(self, "state-vis")
 	self:SetAttribute("state-vis", "0")
-	RegisterStateDriver(self, "vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show")
+	RegisterStateDriver(self, "vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide")
 end
 
 StanceBar.SpawnBar = function(self)

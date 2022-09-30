@@ -4,9 +4,15 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-09-29
+## [2.0.52-RC] 2022-09-30
+### Added
+- Attached the keyring to the bag buttons beneath the backpack in Wrath.
+
 ### Changed
 - Changed the sort order of nameplate and target auras to show the ones with the shortest time remaining first.
+
+### Fixed
+- Prevented the WatchFrame from opening the questlog during combat, as a workaround to a taint I have yet to discover the source of. Normal keybinds to open the log still work just fine.
 
 ## [2.0.51-RC] 2022-09-29
 ### Changed
