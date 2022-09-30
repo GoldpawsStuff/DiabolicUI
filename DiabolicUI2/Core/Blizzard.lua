@@ -453,6 +453,17 @@ BlizzKill.KillActionBars = function(self)
 					previous = slot
 				end
 			end
+
+			local keyring = KeyRingButton
+			if (keyring) then
+				keyring:SetParent(backpack)
+				keyring:SetHeight(slotSize)
+				keyring:SetFrameStrata(strata)
+				keyring:SetFrameLevel(level)
+				keyring:ClearAllPoints()
+				keyring:SetPoint("RIGHT", previous, "LEFT", 0, 0)
+				previous = keyring
+			end
 		end
 
 	end
