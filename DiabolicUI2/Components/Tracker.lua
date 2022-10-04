@@ -199,7 +199,8 @@ local UpdateWrathWatchFrameLine = function(line)
 		--local name = line:GetName()
 		--local icon = _G[name.."Icon"]
 		--local border = _G[name.."Border"]
-		line.text:SetFontObject(GetFont(15,true)) -- default size is 16
+		line.text:SetFontObject(GetFont(12,true)) -- default size is 12
+		line.text:SetWordWrap(false)
 
 		hooksecurefunc(line.dash, "SetAlpha", function(self, alpha, override)
 			if (override) then
@@ -441,7 +442,7 @@ Tracker.InitializeWrathTracker = function(self)
 			locked = true
 			-- Don't alter the width if the tracker is collapsed
 			if (WatchFrame:IsShown() and not WatchFrame.collapsed) then
-				WATCHFRAME_EXPANDEDWIDTH = 266
+				WATCHFRAME_EXPANDEDWIDTH = 266/1.125-- 266
 				WATCHFRAME_MAXLINEWIDTH = WATCHFRAME_EXPANDEDWIDTH - 12
 				WatchFrame:SetWidth(WATCHFRAME_EXPANDEDWIDTH)
 				WatchFrame_Update()
@@ -482,11 +483,11 @@ Tracker.UpdateWrathTracker = function(self)
 		return
 	end
 
-	SetObjectScale(WatchFrame, 1)
+	SetObjectScale(WatchFrame, 1.125)
 
 	WatchFrame:SetFrameStrata("LOW")
 	WatchFrame:SetFrameLevel(50)
-	WatchFrameTitle:SetFontObject(GetFont(15,true))
+	WatchFrameTitle:SetFontObject(GetFont(13,true))
 
 	WATCHFRAME_COLLAPSEDWIDTH = WatchFrameTitle:GetWidth() + 36
 

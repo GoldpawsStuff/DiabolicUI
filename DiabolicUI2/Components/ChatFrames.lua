@@ -151,7 +151,7 @@ end
 
 ChatFrame.GetTab = function(self)
 	if (not Elements[self].tab) then
-		Elements[self].tab = _G[self:GetName() .. "Tab"]
+		Elements[self].tab = self.tab or _G[self:GetName() .. "Tab"]
 	end
 	return Elements[self].tab
 end
@@ -322,7 +322,6 @@ ChatFrames.StyleChat = function(self, frame)
 	end
 
 	if (buttonFrame) then
-
 		-- Take control of the tab's alpha changes
 		-- and disable blizzard's own fading.
 		buttonFrame:SetAlpha(1)
@@ -333,9 +332,6 @@ ChatFrames.StyleChat = function(self, frame)
 			tex:SetTexture(nil)
 			tex:SetAlpha(0)
 		end
-
-		-- set alpha of frame buttons to 0
-
 	end
 
 	if (tab) then
@@ -369,18 +365,11 @@ ChatFrames.StyleChat = function(self, frame)
 		-- Toggle tab text visibility on hover
 		tab:HookScript("OnEnter", function()
 			Elements[frame].isMouseOverTab = true
-			--self:UpdateDockedChatTabs()
 			self:UpdateClutter()
 		end)
 
 		tab:HookScript("OnLeave", function()
 			Elements[frame].isMouseOverTab = false
-			--local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(id)
-			--if (shown and docked) then
-			--	tabText:SetAlpha(.9)
-			--else
-			--	tabText:SetAlpha(.5)
-			--end
 			self:UpdateClutter()
 		end)
 
@@ -658,10 +647,18 @@ ChatFrames.OnEvent = function(self, event, ...)
 	end
 end
 
+ChatFrames.GetDefaultChatFrameSize = function(self)
+	return 475,228
+end
+
+ChatFrames.GetDefaultChatFramePosition = function(self)
+	return "BOTTOMLEFT", UIParent, "BOTTOMLEFT", 54, 310
+end
+
 ChatFrames.OnInitialize = function(self)
 	local scaffold = SetObjectScale(CreateFrame("Frame", nil, UIParent))
-	scaffold:SetSize(475,228)
-	scaffold:SetPoint("BOTTOMLEFT", 54, 310)
+	scaffold:SetSize(self:GetDefaultChatFrameSize())
+	scaffold:SetPoint(self:GetDefaultChatFramePosition())
 	self.frame = scaffold
 	self:SetupChatDefaults()
 end

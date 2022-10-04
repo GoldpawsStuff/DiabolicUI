@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.53-RC] 2022-10-04
+### Changed
+- Changed the Wrath tracker's scaling slightly, to avoid truncated text and weird spaces.
+
+### Fixed
+- The exit button at the end of the primary action bar while inside a vehicle now also gets a fitting texture in Wrath.
+
 ## [2.0.52-RC] 2022-09-30
 ### Added
 - Attached the keyring to the bag buttons beneath the backpack in Wrath.

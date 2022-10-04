@@ -481,14 +481,17 @@ Bars.SpawnBars = function(self)
 				PetDismiss()
 			end
 		end,
-		texture = [[Interface\Icons\INV_Pet_ExitBattle]],
-		tooltip = _G.LEAVE_VEHICLE
+		tooltip = _G.LEAVE_VEHICLE,
+		texture = (ns.IsClassic or ns.IsTBC) and [[Interface\Icons\Spell_Shadow_SacrificialShield]]
+			   or (ns.IsWrath) and [[Interface\Icons\achievement_bg_kill_carrier_opposing_flagroom]]
+			   or [[Interface\Icons\INV_Pet_ExitBattle]]
 	}
 
 	for i = 1,12 do
 		local button = bar:CreateButton(i, styleFunc)
 		button:SetPoint("BOTTOMLEFT", (i-1)*(53+1), 0)
 		if (i == 12) then
+			-- these don't get texture updates. why?
 			button:SetState(11, "custom", exitButton)
 			button:SetState(12, "custom", exitButton)
 		end

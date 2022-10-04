@@ -495,16 +495,13 @@ Tooltips.OnTooltipSetUnit = function(self, tooltip)
 			_G.GameTooltipTextLeft1:SetText(displayName)
 		end
 
-
 	else
 		local englishFaction, localizedFaction = UnitFactionGroup(unit)
 		local reaction = UnitReaction(unit, "player")
 		local classification = UnitClassification(unit)
-		if (unitLevel < 0) then
+		if (unitEffectiveLevel < 0) then
 			classification = "worldboss"
 		end
-		local level = unitLevel
-		local effectiveLevel = unitLevel
 		local creatureFamily = UnitCreatureFamily(unit)
 		local creatureType = UnitCreatureType(unit)
 		if (creatureType == NOT_SPECIFIED) then
