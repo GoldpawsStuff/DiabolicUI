@@ -408,7 +408,7 @@ ChatFrames.StyleChat = function(self, frame)
 end
 
 ChatFrames.SetupChatFrames = function(self)
-	for _,frameName in ipairs(_G.CHAT_FRAMES) do
+	for _,frameName in pairs(_G.CHAT_FRAMES) do
 		local frame = _G[frameName]
 		if (frame) then
 			self:StyleChat(frame)
@@ -485,7 +485,7 @@ end
 ChatFrames.UpdateDockedChatTabs = function(self)
 	local frame = ChatFrame1
 	if (self.frame:IsMouseOver(30,0,-30,30)) then
-		for _,frameName in ipairs(_G.CHAT_FRAMES) do
+		for _,frameName in pairs(_G.CHAT_FRAMES) do
 			local frame = _G[frameName]
 			if (frame) then
 				local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(frame:GetID())
@@ -504,7 +504,7 @@ ChatFrames.UpdateDockedChatTabs = function(self)
 		end
 
 	else
-		for _,frameName in ipairs(_G.CHAT_FRAMES) do
+		for _,frameName in pairs(_G.CHAT_FRAMES) do
 			local frame = _G[frameName]
 			if (frame) then
 				local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(frame:GetID())
@@ -521,7 +521,7 @@ end
 ChatFrames.UpdateButtons = function(self, event, ...)
 
 	local atDock
-	for _,frameName in ipairs(_G.CHAT_FRAMES) do
+	for _,frameName in pairs(_G.CHAT_FRAMES) do
 		local frame = _G[frameName]
 		if (frame) then
 			local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(frame:GetID())
@@ -592,9 +592,9 @@ ChatFrames.UpdateButtons = function(self, event, ...)
 
 end
 
-ChatFrames.UpdateClutter = function(self, ...)
+ChatFrames.UpdateClutter = function(self, event, ...)
 	self:UpdateDockedChatTabs()
-	self:UpdateButtons(...)
+	self:UpdateButtons(event, ...)
 end
 
 ChatFrames.KillToastButton = function(self)
@@ -652,7 +652,7 @@ ChatFrames.GetDefaultChatFrameSize = function(self)
 end
 
 ChatFrames.GetDefaultChatFramePosition = function(self)
-	return "BOTTOMLEFT", UIParent, "BOTTOMLEFT", 54, 310
+	return "BOTTOMLEFT", 54, 310
 end
 
 ChatFrames.OnInitialize = function(self)
