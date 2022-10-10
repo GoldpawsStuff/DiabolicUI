@@ -28,6 +28,7 @@ local BlizzKill = ns:NewModule("BlizzKill", "LibMoreEvents-1.0", "AceHook-3.0")
 
 -- Lua API
 local ipairs = ipairs
+local pairs = pairs
 local string_format = string.format
 
 -- WoW API
@@ -249,7 +250,7 @@ end
 BlizzKill.KillActionBars = function(self)
 
 	-- Dragonflight
-	if (ns.ClientVersion >= 100000) then
+	if (ns.ClientMajor >= 10) then
 
 		self:HandleActionBar(MultiBarBottomLeft, true)
 		self:HandleActionBar(MultiBarBottomRight, true)
@@ -299,7 +300,7 @@ BlizzKill.KillActionBars = function(self)
 	end
 
 	-- Shadowlands, Wrath, Vanilla
-	if (ns.ClientVersion < 100000) then
+	if (ns.ClientMajor < 10) then
 
 		MultiBarBottomLeft:SetParent(UIHider)
 		MultiBarBottomRight:SetParent(UIHider)
@@ -517,7 +518,7 @@ BlizzKill.KillChatFrames = function(self, event, ...)
 	end
 
 	local UIHider = UIHider
-	for _,frameName in ipairs(CHAT_FRAMES) do
+	for _,frameName in pairs(CHAT_FRAMES) do
 		local frame = _G[frameName]
 		if (frame) then
 			frame:SetParent(UIHider)
