@@ -49,7 +49,7 @@ ns.AuraStyles.PlayerPostUpdateIcon = function(element, unit, button, index, posi
 	end
 
 	-- Icon Coloring
-	if (button.isPlayer) then
+	if (button.isPlayer or button.isDebuff) then
 		button.icon:SetDesaturated(false)
 		button.icon:SetVertexColor(1, 1, 1)
 	else

@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-10
+## [2.0.54-RC] 2022-10-15
 ### Changed
+- Debuffs on the player should no longer be desaturated.
 - Various back-end updates and fixes, both in preparation for the upcoming retail expansion and upcoming addon extensions to this user interface.
 
 ## [2.0.53-RC] 2022-10-04
