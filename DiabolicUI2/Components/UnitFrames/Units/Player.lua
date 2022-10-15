@@ -209,21 +209,21 @@ local Runes_PostUpdateColor = function(element, r, g, b, color, rune)
 	end
 end
 
-local SmartPower_OnEnter = function(element)
+local Power_OnEnter = function(element)
 	local OnEnter = element.__owner:GetScript("OnEnter")
 	if (OnEnter) then
 		OnEnter(element)
 	end
 end
 
-local SmartPower_OnLeave = function(element)
+local Power_OnLeave = function(element)
 	local OnLeave = element.__owner:GetScript("OnLeave")
 	if (OnLeave) then
 		OnLeave(element)
 	end
 end
 
-local SmartPower_OnMouseOver = function(element)
+local Power_OnMouseOver = function(element)
 	element.__owner:OnMouseOver()
 end
 
@@ -260,7 +260,7 @@ end
 local OnHide = function(self)
 	self.inCombat = nil
 	self.isMouseOver = nil
-	self.SmartPower.isMouseOver = nil
+	self.Power.isMouseOver = nil
 	self:OnMouseOver()
 end
 
@@ -270,13 +270,13 @@ local OnMouseOver = function(self, event)
 	elseif (event == "PLAYER_REGEN_ENABLED") then
 		self.inCombat = nil
 	end
-	if (self.isMouseOver) or (self.SmartPower.isMouseOver) or (self.inCombat) then
-		self.SmartHealth.Value:Show()
-		self.SmartPower.Value:Show()
+	if (self.isMouseOver) or (self.Power.isMouseOver) or (self.inCombat) then
+		self.Health.Value:Show()
+		self.Power.Value:Show()
 		self:UpdateTags()
 	else
-		self.SmartHealth.Value:Hide()
-		self.SmartPower.Value:Hide()
+		self.Health.Value:Hide()
+		self.Power.Value:Hide()
 	end
 end
 
@@ -336,7 +336,9 @@ UnitStyles["Player"] = function(self, unit, id)
 	art:SetPoint("BOTTOMRIGHT", health, "BOTTOM", 29, -25)
 	art:SetTexture(GetMedia("orb-art1"))
 
-	self.SmartHealth = health
+	--self.Health.UpdateColor = UpdateHealthColor
+	self.Health = health
+	self.Health.Override = ns.API.UpdateHealth
 
 	-- Power Orb
 	--------------------------------------------
@@ -345,10 +347,10 @@ UnitStyles["Player"] = function(self, unit, id)
 	power:SetPoint("BOTTOM", 882, 0)
 	power:SetStatusBarTexture(GetMedia("orb2"), GetMedia("orb2"))
 	power:EnableMouse(true)
-	power:SetScript("OnEnter", SmartPower_OnEnter)
-	power:SetScript("OnLeave", SmartPower_OnLeave)
-	power.OnEnter = SmartPower_OnMouseOver
-	power.OnLeave = SmartPower_OnMouseOver
+	power:SetScript("OnEnter", Power_OnEnter)
+	power:SetScript("OnLeave", Power_OnLeave)
+	power.OnEnter = Power_OnMouseOver
+	power.OnLeave = Power_OnMouseOver
 	power.frequentUpdates = true
 	power.displayAltPower = true
 	power.colorPower = true
@@ -384,7 +386,8 @@ UnitStyles["Player"] = function(self, unit, id)
 	art:SetPoint("BOTTOMLEFT", power, "BOTTOM", -29, -25)
 	art:SetTexture(GetMedia("orb-art2"))
 
-	self.SmartPower = power
+	self.Power = power
+	self.Power.Override = ns.API.UpdatePower
 
 	-- Castbar
 	--------------------------------------------
@@ -540,7 +543,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	else
 		self:Tag(healthValue, "[Diabolic:Health:Full][Diabolic:Absorb]")
 	end
-	self.SmartHealth.Value = healthValue
+	self.Health.Value = healthValue
 
 	local powerValue = power:CreateFontString(nil, "OVERLAY", nil, 0)
 	powerValue:Hide()
@@ -549,7 +552,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	powerValue:SetAlpha(.85)
 	powerValue:SetPoint("BOTTOM", power, "TOP", 0, 16)
 	self:Tag(powerValue, "[Diabolic:Power:Full]")
-	self.SmartPower.Value = powerValue
+	self.Power.Value = powerValue
 
 	-- Auras
 	--------------------------------------------

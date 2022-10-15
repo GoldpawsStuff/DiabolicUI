@@ -77,7 +77,8 @@ UnitStyles["ToT"] = function(self, unit, id)
 	health.colorReaction = true
 	health.colorThreat = true
 	health.colorHealth = true
-	self.SmartHealth = health
+	self.Health = health
+	self.Health.Override = ns.API.UpdateHealth
 
 	local healthValue = health:CreateFontString(nil, "OVERLAY", nil, 0)
 	healthValue:SetFontObject(GetFont(13,true))
@@ -85,7 +86,7 @@ UnitStyles["ToT"] = function(self, unit, id)
 	healthValue:SetAlpha(.85)
 	healthValue:SetPoint("CENTER", 0, 0)
 	self:Tag(healthValue, "[Diabolic:Health:Smart]")
-	self.SmartHealth.Value = healthValue
+	self.Health.Value = healthValue
 
 	self.PostUpdate = PostUpdate
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", PostUpdate, true)

@@ -50,13 +50,15 @@ UnitStyles["Focus"] = function(self, unit, id)
 	health.colorHealth = true
 	health.colorClass = false
 	health.colorReaction = true
-	self.SmartHealth = health
+
+	self.Health = health
+	self.Health.Override = ns.API.UpdateHealth
 
 	local healthBg = health:CreateTexture(nil, "BACKGROUND", nil, -7)
 	healthBg:SetPoint("TOPLEFT", -1, 1)
 	healthBg:SetPoint("BOTTOMRIGHT", 1, -1)
 	healthBg:SetColorTexture(.05, .05, .05, .85)
-	self.SmartHealth.bg = healthBg
+	self.Health.bg = healthBg
 
 	local name = self:CreateFontString(nil, "OVERLAY", nil, 6)
 	name:SetFontObject(GetFont(12,true))

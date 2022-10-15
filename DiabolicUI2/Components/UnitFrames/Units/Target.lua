@@ -69,7 +69,7 @@ end
 local Cast_PostCastStart = function(element, unit)
 	local self = element.__owner
 	self.Name:Hide()
-	self.SmartHealth.Value:Hide()
+	self.Health.Value:Hide()
 
 	local r, g, b = self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3]
 	element.Text:SetTextColor(r, g, b)
@@ -87,14 +87,14 @@ end
 local Cast_PostCastStop = function(element, unit, spellID)
 	local self = element.__owner
 	self.Name:Show()
-	self.SmartHealth.Value:Show()
-	self.SmartHealth.Value:UpdateTag()
+	self.Health.Value:Show()
+	self.Health.Value:UpdateTag()
 end
 
 local Cast_PostCastFail = function(element, unit, spellID)
 	local self = element.__owner
-	self.SmartHealth.Value:Show()
-	self.SmartHealth.Value:UpdateTag()
+	self.Health.Value:Show()
+	self.Health.Value:UpdateTag()
 
 	local r, g, b = self.colors.normal[1], self.colors.normal[2], self.colors.normal[3]
 	element.Text:SetTextColor(r, g, b)
@@ -117,11 +117,11 @@ local UpdateArtwork = function(self)
 	if (c == "worldboss" or (l and l < 1) or c == "elite" or c == "rareelite" or c == "rare") then
 		self.normalBg:SetAlpha(0)
 		self.eliteBg:SetAlpha(1)
-		self.SmartHealth:SetStatusBarTexture(GetMedia("target-bar-elite-diabolic"))
+		self.Health:SetStatusBarTexture(GetMedia("target-bar-elite-diabolic"))
 	else
 		self.normalBg:SetAlpha(1)
 		self.eliteBg:SetAlpha(0)
-		self.SmartHealth:SetStatusBarTexture(GetMedia("target-bar-normal-diabolic"))
+		self.Health:SetStatusBarTexture(GetMedia("target-bar-normal-diabolic"))
 	end
 end
 
@@ -155,14 +155,16 @@ UnitStyles["Target"] = function(self, unit, id)
 	health.colorReaction = true
 	health.colorThreat = true
 	health.colorHealth = true
-	self.SmartHealth = health
+
+	self.Health = health
+	self.Health.Override = ns.API.UpdateHealth
 
 	local healthValue = health:CreateFontString(nil, "OVERLAY", nil, 0)
 	healthValue:SetFontObject(GetFont(16,true))
 	healthValue:SetTextColor(unpack(self.colors.offwhite))
 	healthValue:SetPoint("CENTER", 0, 0)
 	self:Tag(healthValue, "[Diabolic:Health]")
-	self.SmartHealth.Value = healthValue
+	self.Health.Value = healthValue
 
 	local name = self:CreateFontString(nil, "OVERLAY", nil, 0)
 	name:SetJustifyH("CENTER")

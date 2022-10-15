@@ -72,11 +72,11 @@ local Power_PostUpdate = function(element, unit, cur, min, max)
 		end
 	end
 
-	local power = self.SmartPower
+	local power = self.Power
 
 	if (shouldShow) then
 		if (power.isHidden) then
-			local health = self.SmartHealth
+			local health = self.Health
 			health:ClearAllPoints()
 			health:SetPoint("CENTER", 0, 5)
 
@@ -89,7 +89,7 @@ local Power_PostUpdate = function(element, unit, cur, min, max)
 		end
 	else
 		if (not power.isHidden) then
-			local health = self.SmartHealth
+			local health = self.Health
 			health:ClearAllPoints()
 			health:SetPoint("CENTER", 0, 0)
 
@@ -151,7 +151,8 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	healthBackdrop:SetColorTexture(.6, .6, .6, .05)
 	health.Backdrop = healthBackdrop
 
-	self.SmartHealth = health
+	self.Health = health
+	self.Health.Override = ns.API.UpdateHealth
 
 
 	-- Power
@@ -178,7 +179,8 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	powerBackdrop:SetColorTexture(.6, .6, .6, .05)
 	power.Backdrop = powerBackdrop
 
-	self.SmartPower = power
+	self.Power = power
+	self.Power.Override = ns.API.UpdatePower
 
 
 	-- Highlight
@@ -252,7 +254,7 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	local auras = CreateFrame("Frame", nil, self)
 	auras:SetSize(30*3-4, 26)
 	--auras:SetPoint("BOTTOM", self, "TOP", 0, 10) -- with name
-	auras:SetPoint("BOTTOM", self.SmartHealth, "TOP", 0, 6)
+	auras:SetPoint("BOTTOM", self.Health, "TOP", 0, 6)
 	auras.size = 26
 	auras.spacing = 4
 	auras.numTotal = 6
