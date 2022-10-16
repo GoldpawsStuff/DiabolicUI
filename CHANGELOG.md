@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.55-RC] 2022-10-16
+### Changed
+- Updated action button library to be closer to its baseline version, moved a lot of customizations into the front-end.
+
 ## [2.0.54-RC] 2022-10-15
 ### Changed
 - Debuffs on the player should no longer be desaturated.
