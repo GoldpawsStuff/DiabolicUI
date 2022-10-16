@@ -59,6 +59,7 @@ ns.Private.IsTBC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 ns.Private.IsWrath = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
 ns.Private.IsShadowlands = ns.Private.ClientMajor == 9
 ns.Private.IsDragonflight = ns.Private.ClientMajor == 10
+ns.Private.IsWoW10 = version >= 100000
 
 -- Prefix for frame names
 ------------------------------------------------------
