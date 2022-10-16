@@ -55,6 +55,7 @@ local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
 local RegisterCooldown = ns.Widgets.RegisterCooldown
+local UIHider = ns.Hider
 local noop = ns.Noop
 
 -- Constants
@@ -69,6 +70,27 @@ ns.ActionButtons = {}
 
 -- ActionButton Styling
 local styleFunc = function(button)
+
+	if (button.SpellHighlightAnim) and (button.SpellHighlightAnim.Stop) then
+		button.SpellHighlightAnim:Stop()
+	end
+	local name = button:GetName()
+	for _,element in pairs({
+		_G[name.."Border"],
+		_G[name.."FloatingBG"],
+		_G[name.."Name"],
+		_G[name.."NormalTexture"],
+		_G[name.."Shine"],
+		button.SpellHighlightTexture,
+		button.QuickKeybindHighlightTexture,
+		button.GetCheckedTexture and button:GetCheckedTexture(),
+		button.GetHighlightTexture and button:GetHighlightTexture(),
+		button.GetNormalTexture and button:GetNormalTexture(),
+	}) do
+		if (element) then
+			element:SetParent(UIHider)
+		end
+	end
 
 	local bSize,bPad = 53,1
 
