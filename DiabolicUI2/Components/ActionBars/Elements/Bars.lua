@@ -68,221 +68,152 @@ local LEFT_ACTIONBAR_PAGE = LEFT_ACTIONBAR_PAGE or 4
 ns.ActionBars = {}
 ns.ActionButtons = {}
 
--- ActionButton Styling
-local styleFunc = function(button)
+local StyleButton = function(button)
 
-	local name = button:GetName()
-	local bSize,bPad = 53,1
+	button.icon = button.icon
+	button.cooldown = button.cooldown
+	button.count = button.Count
+	button.hotkey = button.HotKey
+	button.name = button.Name
+	button.flash = button.Flash
+	button.flyoutArrowContainer = button.FlyoutArrowContainer -- WoW10
+	button.flyoutBorder = button.FlyoutBorder
+	button.flyoutBorderShadow = button.FlyoutBorderShadow
+	button.levelLinkLockIcon = button.LevelLinkLockIcon -- Retail
 
-	for _,element in pairs({
-		_G[name.."Border"],
-		_G[name.."FloatingBG"],
-		_G[name.."Name"],
-		_G[name.."NormalTexture"],
-		_G[name.."Shine"],
-		button.Border,
-		button.SpellHighlightTexture,
-		button.QuickKeybindHighlightTexture,
-	}) do
-		if (element) then
-			element:SetParent(UIHider)
+	button.AutoCastShine:SetParent(UIHider)
+	button.Border:SetParent(UIHider)
+	button.NewActionTexture:SetParent(UIHider)
+	button.Name:SetParent(UIHider)
+	button.NormalTexture:SetParent(UIHider)
+	button.Border:SetParent(UIHider)
+	button.SpellHighlightAnim:Stop()
+	button.SpellHighlightTexture:SetParent(UIHider)
+	--button.QuickKeybindHighlightTexture:SetParent(UIHider)
+
+	if (ns.WoW10) then
+		button.BottomDivider:SetParent(UIHider)
+		button.RightDivider:SetParent(UIHider)
+		button.SlotArt:SetParent(UIHider)
+		button.SlotBackground:SetParent(UIHider)
+	end
+
+	button:SetAttribute("buttonLock", true)
+	button:SetSize(53,53)
+
+	button.backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
+	button.backdrop:SetSize(64,64)
+	button.backdrop:SetPoint("CENTER")
+	button.backdrop:SetTexture(GetMedia("button-big"))
+
+	button.overlay = CreateFrame("Frame", nil, button)
+	button.overlay:SetFrameLevel(button:GetFrameLevel() + 2)
+	button.overlay:SetAllPoints()
+
+	button.icon:SetDrawLayer("BACKGROUND", 1)
+	button.icon:ClearAllPoints()
+	button.icon:SetPoint("TOPLEFT", 3, -3)
+	button.icon:SetPoint("BOTTOMRIGHT", -3, 3)
+	button.icon:SetMask(GetMedia("actionbutton-mask-square-rounded"))
+
+	button.icon.desaturator = button:CreateTexture(nil, "BACKGROUND", nil, 2)
+	button.icon.desaturator:SetShown(button.icon:IsShown())
+	button.icon.desaturator:SetAllPoints(button.icon)
+	button.icon.desaturator:SetMask(GetMedia("actionbutton-mask-square-rounded"))
+	button.icon.desaturator:SetTexture(button.icon:GetTexture())
+	button.icon.desaturator:SetDesaturated(true)
+	button.icon.desaturator:SetVertexColor(button.icon:GetVertexColor())
+	button.icon.desaturator:SetAlpha(.2)
+	button.icon.desaturator.alpha = .2
+
+	button.icon.darken = button:CreateTexture(nil, "BACKGROUND", nil, 3)
+	button.icon.darken:SetAllPoints(button.icon)
+	button.icon.darken:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
+	button.icon.darken:SetVertexColor(0, 0, 0, .1)
+
+	button.pushedTexture = button:CreateTexture(nil, "ARTWORK", nil, 1)
+	button.pushedTexture:SetVertexColor(1, 1, 1, .05)
+	button.pushedTexture:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
+	button.pushedTexture:SetAllPoints(button.icon)
+
+	button.spellHighlight = button.overlay:CreateTexture(nil, "ARTWORK", nil, -7)
+	button.spellHighlight:SetTexture(GetMedia("actionbutton-spellhighlight-square-rounded"))
+	button.spellHighlight:SetSize(92,92)
+	button.spellHighlight:SetPoint("CENTER", 0, 0)
+	button.spellHighlight:Hide()
+
+	button.cooldown:ClearAllPoints()
+	button.cooldown:SetAllPoints(button.icon)
+	button.cooldown:SetReverse(false)
+	button.cooldown:SetSwipeTexture(GetMedia("actionbutton-mask-square-rounded"))
+	button.cooldown:SetDrawSwipe(true)
+	button.cooldown:SetBlingTexture(GetMedia("blank"), 0, 0, 0, 0)
+	button.cooldown:SetDrawBling(false)
+	button.cooldown:SetEdgeTexture(GetMedia("blank"))
+	button.cooldown:SetDrawEdge(false)
+	button.cooldown:SetHideCountdownNumbers(true)
+
+	button.cooldownCount = button.overlay:CreateFontString()
+	button.cooldownCount:SetDrawLayer("ARTWORK", 1)
+	button.cooldownCount:SetPoint("CENTER", 1, 0)
+	button.cooldownCount:SetFontObject(GetFont(16,true))
+	button.cooldownCount:SetJustifyH("CENTER")
+	button.cooldownCount:SetJustifyV("MIDDLE")
+	button.cooldownCount:SetShadowOffset(0, 0)
+	button.cooldownCount:SetShadowColor(0, 0, 0, 0)
+	button.cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
+
+	button.count:SetParent(button.overlay)
+	button.count:ClearAllPoints()
+	button.count:SetPoint("BOTTOMRIGHT", 0, 2)
+	button.count:SetFontObject(GetFont(14,true))
+
+	button.hotkey:SetParent(button.overlay)
+	button.hotkey:ClearAllPoints()
+	button.hotkey:SetPoint("TOPRIGHT", 0, -3)
+	button.hotkey:SetFontObject(GetFont(12,true))
+	button.hotkey:SetTextColor(.75, .75, .75)
+
+	button.flash:SetDrawLayer("ARTWORK", 2)
+	button.flash:SetAllPoints(button.icon)
+	button.flash:SetVertexColor(1, 0, 0, .25)
+	button.flash:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
+	button.flash:Hide()
+
+	button:SetNormalTexture("")
+	button:SetHighlightTexture("")
+	button:SetCheckedTexture("")
+	button:SetPushedTexture(button.pushedTexture)
+	button:GetPushedTexture():SetBlendMode("ADD")
+	button:GetPushedTexture():SetDrawLayer("ARTWORK", 1)
+	button:SetScript("OnEnter", function(self) self.icon.darken:SetAlpha(0); self:OnEnter() end)
+	button:SetScript("OnLeave", function(self) self.icon.darken:SetAlpha(.1); self:OnLeave() end)
+
+	hooksecurefunc(button.icon, "SetShown", function(icon, ...) icon.desaturator:SetShown(...) end)
+	hooksecurefunc(button.icon, "Show", function(icon) icon.desaturator:Show() end)
+	hooksecurefunc(button.icon, "Hide", function(icon) icon.desaturator:Hide() end)
+	hooksecurefunc(button.icon, "SetAlpha", function(icon, ...) icon.desaturator:SetAlpha(icon.desaturator.alpha or .2) end)
+	hooksecurefunc(button.icon, "SetVertexColor", function(icon, r, g, b) icon.desaturator:SetVertexColor(r, g, b) end)
+	hooksecurefunc(button.icon, "SetTexture", function(icon, ...)
+		icon.desaturator:SetTexture(...)
+		icon.desaturator:SetDesaturated(true)
+		local r,g,b = icon:GetVertexColor() -- can return nil in WoW10
+		if (r and g and b) then
+			if not r or not g or not b then
+				r, g, b = 1, 1, 1
+			end
+			icon.desaturator:SetVertexColor(r, g, b)
 		end
-	end
+		icon.desaturator:SetAlpha(icon.desaturator.alpha or .2)
+	end)
 
-	if (button.SpellHighlightAnim) and (button.SpellHighlightAnim.Stop) then
-		button.SpellHighlightAnim:Stop()
-	end
+	RegisterCooldown(button.cooldown, button.cooldownCount)
 
-	if (button.SetNormalTexture) then
-		button:SetNormalTexture("")
-		button.SetNormalTexture = noop
-	end
-
-	if (button.SetHighlightTexture) then
-		button:SetHighlightTexture("")
-		button.SetHighlightTexture = noop
-	end
-
-	if (button.SetCheckedTexture) then
-		button:SetCheckedTexture("")
-		button.SetCheckedTexture = noop
-	end
-
-	-- We're letting blizzard handle this one,
-	-- in order to catch both mouse clicks and keybind clicks.
-	if (button.SetPushedTexture) then
-		local pushedTexture = button:CreateTexture(nil, "ARTWORK", nil, 1)
-		pushedTexture:SetVertexColor(1, 1, 1, .05)
-		pushedTexture:SetTexture(maskTexture)
-		pushedTexture:SetAllPoints(icon or button)
-		button:SetPushedTexture(pushedTexture)
-		button:GetPushedTexture():SetBlendMode("ADD")
-		button:GetPushedTexture():SetDrawLayer("ARTWORK", 1) -- must be updated after pushed texture has been set
-		button.Pushed = pushedTexture -- not sure I need to reference this.
-	end
-
-	-- We don't want direct external styling of these buttons.
 	button.AddToButtonFacade = noop
 	button.AddToMasque = noop
-
-	--button:DisableDragNDrop(true)
-	button:SetAttribute("buttonLock", true)
-	button:SetSize(bSize,bSize)
-
-	local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetSize(64,64)
-	backdrop:SetPoint("CENTER")
-	backdrop:SetTexture(GetMedia("button-big"))
-
-	local name = button:GetName()
-	local blankTexture = GetMedia("blank")
-	local maskTexture = GetMedia("actionbutton-mask-square-rounded")
-
-	local action = button.action
-
-	local autoCastable = _G[name.."AutoCastable"]
-	local cooldown = _G[name.."Cooldown"]
-	local count = _G[name.."Count"]
-	local flash	= _G[name.."Flash"]
-	local hotkey = _G[name.."HotKey"]
-	local icon = _G[name.."Icon"]
-
-	button.backdrop = backdrop
-	button.autoCastable = autoCastable
-	button.cooldown = cooldown
-	button.count = count
-	button.flash = flash
-	button.hotkey = hotkey
-	button.icon = icon
-
-	local overlayFrame = CreateFrame("Frame", nil, button)
-	overlayFrame:SetFrameLevel(button:GetFrameLevel() + 2)
-	overlayFrame:SetAllPoints()
-
-	local spellHighlight = overlayFrame:CreateTexture(nil, "ARTWORK", nil, -7)
-	spellHighlight:SetTexture(GetMedia("actionbutton-spellhighlight-square-rounded"))
-	spellHighlight:SetSize(92,92)
-	spellHighlight:SetPoint("CENTER", 0, 0)
-	button.SpellHighlight = spellHighlight
-
-	if (icon) then
-		icon:SetDrawLayer("BACKGROUND", 1)
-		icon:ClearAllPoints()
-		icon:SetPoint("TOPLEFT", 3, -3)
-		icon:SetPoint("BOTTOMRIGHT", -3, 3)
-		icon:SetMask(maskTexture)
-
-		local desaturator = button:CreateTexture(nil, "BACKGROUND", nil, 2)
-		desaturator:SetAllPoints(icon)
-		desaturator:SetMask(maskTexture)
-		desaturator:SetTexture(icon:GetTexture())
-		desaturator:SetDesaturated(true)
-		desaturator:SetVertexColor(icon:GetVertexColor())
-		desaturator:SetAlpha(.2)
-		desaturator.alpha = .2
-		icon.desaturator = desaturator
-
-		for i,v in pairs((getmetatable(icon).__index)) do
-			if (type(v) == "function") then
-				local method = v
-				if (i == "SetTexture") then
-					icon[i] = function(icon, ...)
-						method(icon, ...)
-						method(desaturator, ...)
-						desaturator:SetDesaturated(true)
-						local r,g,b = icon:GetVertexColor()
-						if (r and g and b) then
-							desaturator:SetVertexColor(r,g,b)
-						end
-						desaturator:SetAlpha(desaturator.alpha or .2)
-					end
-				elseif (i == "SetVertexColor") then
-					icon[i] = function(icon, r, g, b, a)
-						method(icon, r, g, b, a)
-						method(desaturator, r, g, b)
-					end
-				elseif (i == "SetAlpha") then
-					icon[i] = function(icon, ...)
-						method(icon, ...)
-						desaturator:SetAlpha(desaturator.alpha or .2)
-					end
-				elseif (i ~= "SetDesaturated") then
-					icon[i] = function(icon, ...)
-						method(icon, ...)
-						method(desaturator, ...)
-					end
-				end
-			end
-		end
-
-		local darken = button:CreateTexture(nil, "BACKGROUND", nil, 3)
-		darken:SetAllPoints(icon)
-		darken:SetTexture(maskTexture)
-		darken:SetVertexColor(0, 0, 0, .1)
-
-		button:SetScript("OnEnter", function(self)
-			darken:SetAlpha(0)
-			if (self.OnEnter) then
-				self:OnEnter()
-			end
-		end)
-
-		button:SetScript("OnLeave", function(self)
-			darken:SetAlpha(.1)
-			if (self.OnLeave) then
-				self:OnLeave()
-			end
-		end)
-	end
-
-	if (cooldown) then
-		cooldown:ClearAllPoints()
-		cooldown:SetAllPoints(icon or button)
-		cooldown:SetReverse(false)
-		cooldown:SetSwipeTexture(maskTexture)
-		cooldown:SetDrawSwipe(true)
-		cooldown:SetBlingTexture(blankTexture, 0, 0, 0, 0)
-		cooldown:SetDrawBling(false)
-		cooldown:SetEdgeTexture(blankTexture)
-		cooldown:SetDrawEdge(false)
-		cooldown:SetHideCountdownNumbers(true)
-
-		local cooldownCount = overlayFrame:CreateFontString()
-		cooldownCount:SetDrawLayer("ARTWORK", 1)
-		cooldownCount:SetPoint("CENTER", 1, 0)
-		cooldownCount:SetFontObject(GetFont(16,true))
-		cooldownCount:SetJustifyH("CENTER")
-		cooldownCount:SetJustifyV("MIDDLE")
-		cooldownCount:SetShadowOffset(0, 0)
-		cooldownCount:SetShadowColor(0, 0, 0, 0)
-		cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
-		button.cooldownCount = cooldownCount
-
-		RegisterCooldown(cooldown, cooldownCount)
-	end
-
-	if (count) then
-		count:SetParent(overlayFrame)
-		count:ClearAllPoints()
-		count:SetPoint("BOTTOMRIGHT", 0, 2)
-		count:SetFontObject(GetFont(14,true))
-	end
-
-	if (hotkey) then
-		hotkey:SetParent(overlayFrame)
-		hotkey:ClearAllPoints()
-		hotkey:SetPoint("TOPRIGHT", 0, -3)
-		hotkey:SetFontObject(GetFont(12,true))
-		hotkey:SetTextColor(.75, .75, .75)
-	end
-
-	if (flash) then
-		flash:SetDrawLayer("ARTWORK", 2)
-		flash:SetAllPoints(icon or button)
-		flash:SetVertexColor(1, 0, 0, .25)
-		flash:SetTexture(maskTexture)
-		flash:Hide()
-	end
+	button.SetNormalTexture = noop
+	button.SetHighlightTexture = noop
+	button.SetCheckedTexture = noop
 
 	-- Intended for external access through plugins
 	ns.ActionButtons[button] = true
@@ -350,13 +281,11 @@ Bar.Create = function(self, id, name, parent)
 	return bar
 end
 
-Bar.CreateButton = function(self, id, styleFunc)
+Bar.CreateButton = function(self, id)
 
 	local button = LAB10GE:CreateButton(id, self:GetName().."Button"..(#self.buttons + 1), self)
 
-	if (styleFunc) then
-		styleFunc(button)
-	end
+	StyleButton(button)
 
 	for k = 1,14 do
 		button:SetState(k, "action", (k - 1) * 12 + id)
@@ -524,7 +453,7 @@ Bars.SpawnBars = function(self)
 	}
 
 	for i = 1,12 do
-		local button = bar:CreateButton(i, styleFunc)
+		local button = bar:CreateButton(i)
 		button:SetPoint("BOTTOMLEFT", (i-1)*(53+1), 0)
 		if (i == 12) then
 			-- these don't get texture updates. why?
@@ -572,7 +501,7 @@ Bars.SpawnBars = function(self)
 	--bar:SetAttribute("userhidden", true)
 
 	for i = 1,12 do
-		local button = bar:CreateButton(i, styleFunc)
+		local button = bar:CreateButton(i)
 		button:SetPoint("BOTTOMLEFT", (i-1)*54, 0)
 	end
 
@@ -602,7 +531,7 @@ Bars.SpawnBars = function(self)
 	bar.Backdrop = backdrop
 
 	for i = 1,6 do
-		local button = bar:CreateButton(i, styleFunc)
+		local button = bar:CreateButton(i)
 		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
 	end
 
@@ -627,7 +556,7 @@ Bars.SpawnBars = function(self)
 	bar.Backdrop = backdrop
 
 	for i = 1,6 do
-		local button = bar:CreateButton(i, styleFunc)
+		local button = bar:CreateButton(i)
 		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
 	end
 
@@ -652,7 +581,7 @@ Bars.SpawnBars = function(self)
 	bar.Backdrop = backdrop
 
 	for i = 1,6 do
-		local button = bar:CreateButton(i + 6, styleFunc)
+		local button = bar:CreateButton(i + 6)
 		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
 	end
 
@@ -677,7 +606,7 @@ Bars.SpawnBars = function(self)
 	bar.Backdrop = backdrop
 
 	for i = 1,6 do
-		local button = bar:CreateButton(i + 6, styleFunc)
+		local button = bar:CreateButton(i + 6)
 		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
 	end
 
@@ -702,7 +631,7 @@ Bars.SpawnBars = function(self)
 	bar.Backdrop = backdrop
 
 	for i = 1,6 do
-		local button = bar:CreateButton(i, styleFunc)
+		local button = bar:CreateButton(i)
 		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
 	end
 
@@ -727,7 +656,7 @@ Bars.SpawnBars = function(self)
 	bar.Backdrop = backdrop
 
 	for i = 1,6 do
-		local button = bar:CreateButton(i + 6, styleFunc)
+		local button = bar:CreateButton(i + 6)
 		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
 	end
 
