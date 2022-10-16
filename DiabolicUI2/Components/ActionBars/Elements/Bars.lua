@@ -71,28 +71,59 @@ ns.ActionButtons = {}
 -- ActionButton Styling
 local styleFunc = function(button)
 
-	if (button.SpellHighlightAnim) and (button.SpellHighlightAnim.Stop) then
-		button.SpellHighlightAnim:Stop()
-	end
 	local name = button:GetName()
+	local bSize,bPad = 53,1
+
 	for _,element in pairs({
 		_G[name.."Border"],
 		_G[name.."FloatingBG"],
 		_G[name.."Name"],
 		_G[name.."NormalTexture"],
 		_G[name.."Shine"],
+		button.Border,
 		button.SpellHighlightTexture,
 		button.QuickKeybindHighlightTexture,
-		button.GetCheckedTexture and button:GetCheckedTexture(),
-		button.GetHighlightTexture and button:GetHighlightTexture(),
-		button.GetNormalTexture and button:GetNormalTexture(),
 	}) do
 		if (element) then
 			element:SetParent(UIHider)
 		end
 	end
 
-	local bSize,bPad = 53,1
+	if (button.SpellHighlightAnim) and (button.SpellHighlightAnim.Stop) then
+		button.SpellHighlightAnim:Stop()
+	end
+
+	if (button.SetNormalTexture) then
+		button:SetNormalTexture("")
+		button.SetNormalTexture = noop
+	end
+
+	if (button.SetHighlightTexture) then
+		button:SetHighlightTexture("")
+		button.SetHighlightTexture = noop
+	end
+
+	if (button.SetCheckedTexture) then
+		button:SetCheckedTexture("")
+		button.SetCheckedTexture = noop
+	end
+
+	-- We're letting blizzard handle this one,
+	-- in order to catch both mouse clicks and keybind clicks.
+	if (button.SetPushedTexture) then
+		local pushedTexture = button:CreateTexture(nil, "ARTWORK", nil, 1)
+		pushedTexture:SetVertexColor(1, 1, 1, .05)
+		pushedTexture:SetTexture(maskTexture)
+		pushedTexture:SetAllPoints(icon or button)
+		button:SetPushedTexture(pushedTexture)
+		button:GetPushedTexture():SetBlendMode("ADD")
+		button:GetPushedTexture():SetDrawLayer("ARTWORK", 1) -- must be updated after pushed texture has been set
+		button.Pushed = pushedTexture -- not sure I need to reference this.
+	end
+
+	-- We don't want direct external styling of these buttons.
+	button.AddToButtonFacade = noop
+	button.AddToMasque = noop
 
 	--button:DisableDragNDrop(true)
 	button:SetAttribute("buttonLock", true)
@@ -252,23 +283,6 @@ local styleFunc = function(button)
 		flash:SetTexture(maskTexture)
 		flash:Hide()
 	end
-
-	-- We're letting blizzard handle this one,
-	-- in order to catch both mouse clicks and keybind clicks.
-	if (button.SetPushedTexture) then
-		local pushedTexture = button:CreateTexture(nil, "ARTWORK", nil, 1)
-		pushedTexture:SetVertexColor(1, 1, 1, .05)
-		pushedTexture:SetTexture(maskTexture)
-		pushedTexture:SetAllPoints(icon or button)
-		button:SetPushedTexture(pushedTexture)
-		button:GetPushedTexture():SetBlendMode("ADD")
-		button:GetPushedTexture():SetDrawLayer("ARTWORK", 1) -- must be updated after pushed texture has been set
-		button.Pushed = pushedTexture -- not sure I need to reference this.
-	end
-
-	-- We don't want direct external styling of these buttons.
-	button.AddToButtonFacade = noop
-	button.AddToMasque = noop
 
 	-- Intended for external access through plugins
 	ns.ActionButtons[button] = true
