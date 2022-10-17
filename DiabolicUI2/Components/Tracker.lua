@@ -459,15 +459,20 @@ Tracker.UpdatePosition = function(self)
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
 
-	if (ns.ClientMajor < 10) then
+	if (not ns.WoW10) then
 		--ObjectiveTrackerFrame:SetMovable(true)
 		--ObjectiveTrackerFrame:SetUserPlaced(true)
 		ObjectiveTrackerFrame.IsUserPlaced = function() return true end
-	else
+	end
 
+	if (ns.WoW10) then
 		-- Opt out of the movement system
+
+		ObjectiveTrackerFrame.layoutParent = nil
+		ObjectiveTrackerFrame.isRightManagedFrame = nil
 		ObjectiveTrackerFrame.ignoreFramePositionManager = true
 		UIParentRightManagedFrameContainer:RemoveManagedFrame(ObjectiveTrackerFrame)
+
 		ObjectiveTrackerFrame:SetParent(UIParent)
 		ObjectiveTrackerFrame.IsInDefaultPosition = function() end
 
@@ -551,7 +556,7 @@ Tracker.OnInitialize = function(self)
 
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 
-	if (ns.ClientMajor >= 10) then
+	if (ns.WoW10) then
 		self:RegisterEvent("SETTINGS_LOADED", "OnEvent")
 	end
 end

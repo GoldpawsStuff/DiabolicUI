@@ -26,406 +26,33 @@
 local Addon, ns = ...
 local ActionBars = ns:GetModule("ActionBars")
 local Bars = ActionBars:NewModule("Bars", "LibMoreEvents-1.0", "AceConsole-3.0")
-local LAB10GE = LibStub("LibActionButton-1.0-GoldpawEdition")
 
 -- Lua API
-local ipairs = ipairs
 local math_floor = math.floor
 local pairs = pairs
 local select = select
-local setmetatable = setmetatable
 local string_format = string.format
 local tonumber = tonumber
-local tostring = tostring
-local unpack = unpack
 
 -- WoW API
-local ClearOverrideBindings = ClearOverrideBindings
 local CreateFrame = CreateFrame
 local GetBindingKey = GetBindingKey
 local InCombatLockdown = InCombatLockdown
 local PetDismiss = PetDismiss
 local RegisterStateDriver = RegisterStateDriver
-local SetOverrideBindingClick = SetOverrideBindingClick
 local UnitExists = UnitExists
 local VehicleExit = VehicleExit
 
 -- Addon API
-local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
-local RegisterCooldown = ns.Widgets.RegisterCooldown
-local UIHider = ns.Hider
-local noop = ns.Noop
 
 -- Constants
 local _,playerClass = UnitClass("player")
-local BOTTOMLEFT_ACTIONBAR_PAGE = BOTTOMLEFT_ACTIONBAR_PAGE or 6
-local BOTTOMRIGHT_ACTIONBAR_PAGE = BOTTOMRIGHT_ACTIONBAR_PAGE or 5
-local RIGHT_ACTIONBAR_PAGE = RIGHT_ACTIONBAR_PAGE or 3
-local LEFT_ACTIONBAR_PAGE = LEFT_ACTIONBAR_PAGE or 4
-
-ns.ActionBars = {}
-ns.ActionButtons = {}
-
-local StyleButton = function(button)
-
-	button.icon = button.icon
-	button.cooldown = button.cooldown
-	button.count = button.Count
-	button.hotkey = button.HotKey
-	button.name = button.Name
-	button.flash = button.Flash
-	button.flyoutArrowContainer = button.FlyoutArrowContainer -- WoW10
-	button.flyoutBorder = button.FlyoutBorder
-	button.flyoutBorderShadow = button.FlyoutBorderShadow
-	button.levelLinkLockIcon = button.LevelLinkLockIcon -- Retail
-
-	button.AutoCastShine:SetParent(UIHider)
-	button.Border:SetParent(UIHider)
-	button.NewActionTexture:SetParent(UIHider)
-	button.Name:SetParent(UIHider)
-	button.NormalTexture:SetParent(UIHider)
-	button.Border:SetParent(UIHider)
-	button.SpellHighlightAnim:Stop()
-	button.SpellHighlightTexture:SetParent(UIHider)
-	--button.QuickKeybindHighlightTexture:SetParent(UIHider)
-
-	if (ns.WoW10) then
-		button.BottomDivider:SetParent(UIHider)
-		button.RightDivider:SetParent(UIHider)
-		button.SlotArt:SetParent(UIHider)
-		button.SlotBackground:SetParent(UIHider)
-	end
-
-	button:SetAttribute("buttonLock", true)
-	button:SetSize(53,53)
-
-	button.backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
-	button.backdrop:SetSize(64,64)
-	button.backdrop:SetPoint("CENTER")
-	button.backdrop:SetTexture(GetMedia("button-big"))
-
-	button.overlay = CreateFrame("Frame", nil, button)
-	button.overlay:SetFrameLevel(button:GetFrameLevel() + 2)
-	button.overlay:SetAllPoints()
-
-	button.icon:SetDrawLayer("BACKGROUND", 1)
-	button.icon:ClearAllPoints()
-	button.icon:SetPoint("TOPLEFT", 3, -3)
-	button.icon:SetPoint("BOTTOMRIGHT", -3, 3)
-	button.icon:SetMask(GetMedia("actionbutton-mask-square-rounded"))
-
-	button.icon.desaturator = button:CreateTexture(nil, "BACKGROUND", nil, 2)
-	button.icon.desaturator:SetShown(button.icon:IsShown())
-	button.icon.desaturator:SetAllPoints(button.icon)
-	button.icon.desaturator:SetMask(GetMedia("actionbutton-mask-square-rounded"))
-	button.icon.desaturator:SetTexture(button.icon:GetTexture())
-	button.icon.desaturator:SetDesaturated(true)
-	button.icon.desaturator:SetVertexColor(button.icon:GetVertexColor())
-	button.icon.desaturator:SetAlpha(.2)
-	button.icon.desaturator.alpha = .2
-
-	button.icon.darken = button:CreateTexture(nil, "BACKGROUND", nil, 3)
-	button.icon.darken:SetAllPoints(button.icon)
-	button.icon.darken:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
-	button.icon.darken:SetVertexColor(0, 0, 0, .1)
-
-	button.pushedTexture = button:CreateTexture(nil, "ARTWORK", nil, 1)
-	button.pushedTexture:SetVertexColor(1, 1, 1, .05)
-	button.pushedTexture:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
-	button.pushedTexture:SetAllPoints(button.icon)
-
-	button.spellHighlight = button.overlay:CreateTexture(nil, "ARTWORK", nil, -7)
-	button.spellHighlight:SetTexture(GetMedia("actionbutton-spellhighlight-square-rounded"))
-	button.spellHighlight:SetSize(92,92)
-	button.spellHighlight:SetPoint("CENTER", 0, 0)
-	button.spellHighlight:Hide()
-
-	button.cooldown:ClearAllPoints()
-	button.cooldown:SetAllPoints(button.icon)
-	button.cooldown:SetReverse(false)
-	button.cooldown:SetSwipeTexture(GetMedia("actionbutton-mask-square-rounded"))
-	button.cooldown:SetDrawSwipe(true)
-	button.cooldown:SetBlingTexture(GetMedia("blank"), 0, 0, 0, 0)
-	button.cooldown:SetDrawBling(false)
-	button.cooldown:SetEdgeTexture(GetMedia("blank"))
-	button.cooldown:SetDrawEdge(false)
-	button.cooldown:SetHideCountdownNumbers(true)
-
-	button.cooldownCount = button.overlay:CreateFontString()
-	button.cooldownCount:SetDrawLayer("ARTWORK", 1)
-	button.cooldownCount:SetPoint("CENTER", 1, 0)
-	button.cooldownCount:SetFontObject(GetFont(16,true))
-	button.cooldownCount:SetJustifyH("CENTER")
-	button.cooldownCount:SetJustifyV("MIDDLE")
-	button.cooldownCount:SetShadowOffset(0, 0)
-	button.cooldownCount:SetShadowColor(0, 0, 0, 0)
-	button.cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
-
-	button.count:SetParent(button.overlay)
-	button.count:ClearAllPoints()
-	button.count:SetPoint("BOTTOMRIGHT", 0, 2)
-	button.count:SetFontObject(GetFont(14,true))
-
-	button.hotkey:SetParent(button.overlay)
-	button.hotkey:ClearAllPoints()
-	button.hotkey:SetPoint("TOPRIGHT", 0, -3)
-	button.hotkey:SetFontObject(GetFont(12,true))
-	button.hotkey:SetTextColor(.75, .75, .75)
-
-	button.flash:SetDrawLayer("ARTWORK", 2)
-	button.flash:SetAllPoints(button.icon)
-	button.flash:SetVertexColor(1, 0, 0, .25)
-	button.flash:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
-	button.flash:Hide()
-
-	button:SetNormalTexture("")
-	button:SetHighlightTexture("")
-	button:SetCheckedTexture("")
-	button:SetPushedTexture(button.pushedTexture)
-	button:GetPushedTexture():SetBlendMode("ADD")
-	button:GetPushedTexture():SetDrawLayer("ARTWORK", 1)
-	button:SetScript("OnEnter", function(self) self.icon.darken:SetAlpha(0); self:OnEnter() end)
-	button:SetScript("OnLeave", function(self) self.icon.darken:SetAlpha(.1); self:OnLeave() end)
-
-	hooksecurefunc(button.icon, "SetShown", function(icon, ...) icon.desaturator:SetShown(...) end)
-	hooksecurefunc(button.icon, "Show", function(icon) icon.desaturator:Show() end)
-	hooksecurefunc(button.icon, "Hide", function(icon) icon.desaturator:Hide() end)
-	hooksecurefunc(button.icon, "SetAlpha", function(icon, ...) icon.desaturator:SetAlpha(icon.desaturator.alpha or .2) end)
-	hooksecurefunc(button.icon, "SetVertexColor", function(icon, r, g, b) icon.desaturator:SetVertexColor(r, g, b) end)
-	hooksecurefunc(button.icon, "SetTexture", function(icon, ...)
-		icon.desaturator:SetTexture(...)
-		icon.desaturator:SetDesaturated(true)
-		local r,g,b = icon:GetVertexColor() -- can return nil in WoW10
-		if (r and g and b) then
-			if not r or not g or not b then
-				r, g, b = 1, 1, 1
-			end
-			icon.desaturator:SetVertexColor(r, g, b)
-		end
-		icon.desaturator:SetAlpha(icon.desaturator.alpha or .2)
-	end)
-
-	RegisterCooldown(button.cooldown, button.cooldownCount)
-
-	button.AddToButtonFacade = noop
-	button.AddToMasque = noop
-	button.SetNormalTexture = noop
-	button.SetHighlightTexture = noop
-	button.SetCheckedTexture = noop
-
-	-- Intended for external access through plugins
-	ns.ActionButtons[button] = true
-
-	return button
-end
-
--- Actionbar Template
-local Bar = CreateFrame("Button")
-local Bar_MT = {__index = Bar}
-
-Bar.Create = function(self, id, name, parent)
-
-	local bar = setmetatable(SetObjectScale(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate")), Bar_MT)
-	bar:SetFrameStrata("BACKGROUND")
-	bar:SetFrameLevel(10)
-	bar:SetID(id)
-	bar.id = id
-	bar.buttons = {}
-
-	bar:SetAttribute("UpdateVisibility", [[
-		local visibility = self:GetAttribute("visibility");
-		local userhidden = self:GetAttribute("userhidden");
-		if (visibility == "show") then
-			if (userhidden) then
-				self:Hide();
-			else
-				self:Show();
-			end
-		elseif (visibility == "hide") then
-			self:Hide();
-		end
-	]])
-
-	bar:SetAttribute("_onstate-vis", [[
-		if (not newstate) then
-			return
-		end
-		self:SetAttribute("visibility", newstate);
-		self:RunAttribute("UpdateVisibility");
-	]])
-
-	bar:SetAttribute("_onstate-page", [[
-		if newstate == "possess" or newstate == "11" then
-			if HasVehicleActionBar() then
-				newstate = GetVehicleBarIndex()
-			elseif HasOverrideActionBar() then
-				newstate = GetOverrideBarIndex()
-			elseif HasTempShapeshiftActionBar() then
-				newstate = GetTempShapeshiftBarIndex()
-			else
-				newstate = nil
-			end
-			if not newstate then
-				newstate = 12
-			end
-		end
-		self:SetAttribute("state", newstate)
-		control:ChildUpdate("state", newstate)
-	]])
-
-	-- Intended for external access by plugins
-	ns.ActionBars[#ns.ActionBars + 1] = bar
-
-	return bar
-end
-
-Bar.CreateButton = function(self, id)
-
-	local button = LAB10GE:CreateButton(id, self:GetName().."Button"..(#self.buttons + 1), self)
-
-	StyleButton(button)
-
-	for k = 1,14 do
-		button:SetState(k, "action", (k - 1) * 12 + id)
-	end
-	button:SetState(0, "action", (self.id - 1) * 12 + id)
-
-	button:Show()
-	button:SetAttribute("statehidden", nil)
-	button:UpdateAction()
-
-	self:SetFrameRef("Button"..(#self.buttons + 1), button)
-
-	if (self.id == 1) then
-		button.keyBoundTarget = string_format("ACTIONBUTTON%d", id)
-	elseif (self.id == BOTTOMLEFT_ACTIONBAR_PAGE) then
-		button.keyBoundTarget = string_format("MULTIACTIONBAR1BUTTON%d", id)
-	elseif (self.id == BOTTOMRIGHT_ACTIONBAR_PAGE) then
-		button.keyBoundTarget = string_format("MULTIACTIONBAR2BUTTON%d", id)
-	elseif (self.id == RIGHT_ACTIONBAR_PAGE) then
-		button.keyBoundTarget = string_format("MULTIACTIONBAR3BUTTON%d", id)
-	elseif (self.id == LEFT_ACTIONBAR_PAGE) then
-		button.keyBoundTarget = string_format("MULTIACTIONBAR4BUTTON%d", id)
-	end
-
-	button:UpdateConfig({ keyBoundTarget = button.keyBoundTarget })
-
-	self.buttons[#self.buttons + 1] = button
-
-	return button
-end
-
-Bar.GetAll = function(self)
-	return pairs(self.buttons)
-end
-
-Bar.UpdateBindings = function(self)
-	if (InCombatLockdown()) then
-		return
-	end
-	if (not self.buttons) then
-		return
-	end
-	ClearOverrideBindings(self)
-	for id,button in ipairs(self.buttons) do
-		local bindingAction = button.keyBoundTarget
-		if (bindingAction) then
-
-			-- iterate through the registered keys for the action
-			local buttonName = button:GetName()
-			for keyNumber = 1,select("#", GetBindingKey(bindingAction)) do
-
-				-- get a key for the action
-				local key = select(keyNumber, GetBindingKey(bindingAction))
-				if (key and (key ~= "")) then
-
-					-- this is why we need named buttons
-					SetOverrideBindingClick(self, false, key, buttonName) -- assign the key to our own button
-				end
-			end
-		end
-	end
-end
-
-Bar.UpdateStateDriver = function(self)
-	if (InCombatLockdown()) then
-		return
-	end
-
-	local statedriver
-	if (self.id == 1) then
-		statedriver = "[overridebar][possessbar][shapeshift]possess; [form,noform] 0; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
-
-		if (playerClass == "DRUID") then
-			statedriver = statedriver .. "; [bonusbar:1,nostealth] 7; [bonusbar:1,stealth] 7; [bonusbar:2] 8; [bonusbar:3] 9; [bonusbar:4] 10"
-
-		elseif (playerClass == "MONK") then
-			statedriver = statedriver .. "; [bonusbar:1] 7; [bonusbar:2] 8; [bonusbar:3] 9"
-
-		elseif (playerClass == "PRIEST") then
-			statedriver = statedriver .. "; [bonusbar:1] 7"
-
-		elseif (playerClass == "ROGUE") then
-			statedriver = statedriver .. "; [bonusbar:1] 7"
-
-		elseif (playerClass == "WARRIOR") then
-			statedriver = statedriver .. "; [bonusbar:1] 7; [bonusbar:2] 8"
-		end
-		statedriver = statedriver .. "; 1"
-	else
-		statedriver = tostring(self.id)
-	end
-
-	UnregisterStateDriver(self, "page")
-	self:SetAttribute("state-page", "0")
-	RegisterStateDriver(self, "page", statedriver or "0")
-end
-
-Bar.UpdateVisibilityDriver = function(self)
-	if (InCombatLockdown()) then
-		return
-	end
-
-	if (self.enabled) then
-		local visdriver
-		if (self.id == 1) then
-			visdriver = "[petbattle]hide;show"
-		else
-			visdriver = "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show"
-		end
-
-		UnregisterStateDriver(self, "state-vis")
-		self:SetAttribute("state-vis", "0")
-		RegisterStateDriver(self, "vis", visdriver)
-	else
-		UnregisterStateDriver(self, "state-vis")
-		self:SetAttribute("state-vis", "0")
-		RegisterStateDriver(self, "vis", "hide")
-	end
-end
-
-Bar.Enable = function(self)
-	if (InCombatLockdown()) then
-		return
-	end
-	self.enabled = true
-	self:UpdateStateDriver()
-	self:UpdateVisibilityDriver()
-end
-
-Bar.Disable = function(self)
-	if (InCombatLockdown()) then
-		return
-	end
-	self.enabled = false
-	self:UpdateVisibilityDriver()
-end
-
-Bar.IsEnabled = function(self)
-	return self.enabled
-end
+local BOTTOMLEFT_ACTIONBAR_PAGE = BOTTOMLEFT_ACTIONBAR_PAGE
+local BOTTOMRIGHT_ACTIONBAR_PAGE = BOTTOMRIGHT_ACTIONBAR_PAGE
+local RIGHT_ACTIONBAR_PAGE = RIGHT_ACTIONBAR_PAGE
+local LEFT_ACTIONBAR_PAGE = LEFT_ACTIONBAR_PAGE
 
 Bars.SpawnBars = function(self)
 	if (not self.Bars) then
@@ -434,7 +61,7 @@ Bars.SpawnBars = function(self)
 
 	-- Primary ActionBar
 	-------------------------------------------------------
-	local bar = Bar:Create(1, ns.Prefix.."ActionBar1", UIParent)
+	local bar = SetObjectScale(ns.ActionBar:Create(1, ns.Prefix.."ActionBar1", UIParent))
 	bar:SetPoint("BOTTOM", -1, 11)
 	bar:SetSize(647, 53)
 
@@ -494,7 +121,7 @@ Bars.SpawnBars = function(self)
 
 	-- Secondary ActionBar (Bottom Left MultiBar)
 	-------------------------------------------------------
-	local bar = Bar:Create(BOTTOMLEFT_ACTIONBAR_PAGE, ns.Prefix.."ActionBar2", UIParent)
+	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMLEFT_ACTIONBAR_PAGE, ns.Prefix.."ActionBar2", UIParent))
 	bar:SetPoint("BOTTOM", -1, 70)
 	bar:SetSize(647, 53)
 	bar:Hide()
@@ -518,7 +145,7 @@ Bars.SpawnBars = function(self)
 
 	-- Left Bar 1 (Bottom Right MultiBar, Buttons 1-6)
 	-------------------------------------------------------
-	local bar = Bar:Create(BOTTOMRIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar1", UIParent)
+	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMRIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar1", UIParent))
 	bar:SetAttribute("userhidden", true)
 	bar:SetFrameStrata("MEDIUM")
 	bar:SetSize(162, 112)
@@ -543,7 +170,7 @@ Bars.SpawnBars = function(self)
 
 	-- Left Bar 2 (Left Side MultiBar, Buttons 1-6)
 	-------------------------------------------------------
-	local bar = Bar:Create(LEFT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar2", UIParent)
+	local bar = SetObjectScale(ns.ActionBar:Create(LEFT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar2", UIParent))
 	bar:SetAttribute("userhidden", true)
 	bar:SetFrameStrata("MEDIUM")
 	bar:SetSize(162, 112)
@@ -568,7 +195,7 @@ Bars.SpawnBars = function(self)
 
 	-- Left Bar 3 (Left Side MultiBar, Buttons 7-12)
 	-------------------------------------------------------
-	local bar = Bar:Create(LEFT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar3", UIParent)
+	local bar = SetObjectScale(ns.ActionBar:Create(LEFT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar3", UIParent))
 	bar:SetAttribute("userhidden", true)
 	bar:SetFrameStrata("MEDIUM")
 	bar:SetSize(162, 112)
@@ -593,7 +220,7 @@ Bars.SpawnBars = function(self)
 
 	-- Right Bar 1 (Bottom Right MultiBar, Buttons 7-12)
 	-------------------------------------------------------
-	local bar = Bar:Create(BOTTOMRIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar4", UIParent)
+	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMRIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar4", UIParent))
 	bar:SetAttribute("userhidden", true)
 	bar:SetFrameStrata("MEDIUM")
 	bar:SetSize(162, 112)
@@ -618,7 +245,7 @@ Bars.SpawnBars = function(self)
 
 	-- Right Bar 2 (Right Side MultiBar, Buttons 1-6)
 	-------------------------------------------------------
-	local bar = Bar:Create(RIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar5", UIParent)
+	local bar = SetObjectScale(ns.ActionBar:Create(RIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar5", UIParent))
 	bar:SetAttribute("userhidden", true)
 	bar:SetFrameStrata("MEDIUM")
 	bar:SetSize(162, 112)
@@ -643,7 +270,7 @@ Bars.SpawnBars = function(self)
 
 	-- Right Bar 3 (Right Side MultiBar, Buttons 7-12)
 	-------------------------------------------------------
-	local bar = Bar:Create(RIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar6", UIParent)
+	local bar = SetObjectScale(ns.ActionBar:Create(RIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar6", UIParent))
 	bar:SetAttribute("userhidden", true)
 	bar:SetFrameStrata("MEDIUM")
 	bar:SetSize(162, 112)

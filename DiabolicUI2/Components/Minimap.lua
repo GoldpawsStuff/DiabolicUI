@@ -93,7 +93,7 @@ end
 local Minimap_OnMouseUp = function(self, button)
 	if (button == "RightButton") then
 		if (ns.IsRetail) then
-			if (ns.ClientMajor < 10) then
+			if (not ns.WoW10) then
 				MiniMapTracking_OnMouseDown(MiniMapTracking)
 			else
 				MinimapCluster.Tracking.Button:OnMouseDown()
@@ -354,15 +354,21 @@ Bigmap.UpdatePosition = function(self)
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
 
-	if (ns.ClientMajor < 10) then
+	if (not ns.WoW10) then
 		--MinimapCluster:SetMovable(true)
 		--MinimapCluster:SetUserPlaced(true)
 		MinimapCluster.IsUserPlaced = function() return true end
-	else
+	end
+
+	if (ns.WoW10) then
 
 		-- Opt out of the movement system
+		MinimapCluster.layoutParent = nil
+		MinimapCluster.isRightManagedFrame = nil
 		MinimapCluster.ignoreFramePositionManager = true
 		UIParentRightManagedFrameContainer:RemoveManagedFrame(MinimapCluster)
+
+		-- 256, 256
 		MinimapCluster:SetParent(UIParent)
 		MinimapCluster.IsInDefaultPosition = function() end
 
@@ -388,7 +394,7 @@ Bigmap.InitializeMinimap = function(self)
 			_G[object]:UnregisterAllEvents()
 		end
 	end
-	if (ns.ClientMajor < 10) then
+	if (not ns.WoW10) then
 		for _,object in pairs({
 			"GameTimeFrame",
 			--"MinimapCluster",
@@ -436,7 +442,7 @@ Bigmap.InitializeMinimap = function(self)
 	-- Setup Main Frames
 	--------------------------------------------------------
 
-	if (ns.ClientMajor >= 10) then
+	if (ns.WoW10) then
 		local dummy = CreateFrame("Frame", nil, MinimapCluster)
 		dummy:SetPoint(Minimap:GetPoint())
 
@@ -656,7 +662,7 @@ Bigmap.InitializeMinimap = function(self)
 			end
 		end
 
-		if (ns.ClientMajor < 10) then
+		if (not ns.WoW10) then
 
 			-- Blob Textures
 			-- These alpha values range from 0 to 255, for some obscure reason,
@@ -732,7 +738,7 @@ Bigmap.InitializeMinimap = function(self)
 
 	else
 
-		if (ns.ClientMajor < 10) then
+		if (not ns.WoW10) then
 
 			local eyeTexture = QueueStatusMinimapButton.Eye:CreateTexture()
 			eyeTexture:SetDrawLayer("ARTWORK", 1)
@@ -867,7 +873,7 @@ Bigmap.OnInitialize = function(self)
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
 	self:RegisterChatCommand("setclock", "SetClock")
 
-	if (ns.ClientMajor >= 10) then
+	if (ns.WoW10) then
 		self:RegisterEvent("SETTINGS_LOADED", "OnEvent")
 	end
 

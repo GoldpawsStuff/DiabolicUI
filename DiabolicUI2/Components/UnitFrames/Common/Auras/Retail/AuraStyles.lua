@@ -24,7 +24,7 @@
 
 --]]
 local Addon, ns = ...
-if (ns.ClientMajor < 10) then
+if (not ns.WoW10) then
 	return
 end
 ns.AuraStyles = ns.AuraStyles or {}

@@ -176,7 +176,7 @@ Timers.UpdateAll = function(self)
 end
 
 Timers.OnInitialize = function(self)
-	if (ns.ClientMajor >= 10) then
+	if (ns.WoW10) then
 		return self:Disable()
 	end
 
