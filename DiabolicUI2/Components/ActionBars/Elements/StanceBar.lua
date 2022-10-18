@@ -227,12 +227,14 @@ local style = function(button)
 	return button
 end
 
-
 StanceBar.SpawnBar = function(self)
 	if (not self.Bar) then
 		local bar = SetObjectScale(ns.StanceBar:Create(ns.Prefix.."StanceBar", UIParent))
 		bar:Hide()
 		bar:SetFrameStrata("MEDIUM")
+
+		bar.UpdateBackdrop = function(self)
+		end
 
 		local button
 		for id = 1,10 do
@@ -312,6 +314,12 @@ end
 StanceBar.ForAll = function(self, method, ...)
 	if (self.Bar) then
 		self.Bar:ForAll(method, ...)
+	end
+end
+
+StanceBar.GetAll = function(self)
+	if (self.Bar) then
+		return self.Bar:GetAll()
 	end
 end
 

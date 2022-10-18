@@ -40,15 +40,6 @@ local PetBar = CreateFrame("Button")
 local PetBar_MT = { __index = PetBar }
 ns.PetBar = PetBar
 
-PetBar.Create = function(self, name, parent)
-	local bar = setmetatable(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate"), PetBar_MT)
-	bar:SetFrameStrata("BACKGROUND")
-	bar:SetFrameLevel(10)
-	bar.buttons = {}
-
-	return bar
-end
-
 PetBar.CreateButton = function(self, id, name)
 
 	local button = ns.PetButton:Create(id, name, self)
@@ -57,10 +48,6 @@ PetBar.CreateButton = function(self, id, name)
 	self.buttons[#self.buttons + 1] = button
 
 	return button
-end
-
-PetBar.GetAll = function(self)
-	return pairs(self.buttons)
 end
 
 PetBar.ForAll = function(self, method, ...)
@@ -73,6 +60,10 @@ PetBar.ForAll = function(self, method, ...)
 			func(button, ...)
 		end
 	end
+end
+
+PetBar.GetAll = function(self)
+	return pairs(self.buttons)
 end
 
 PetBar.UpdateBindings = function(self)
@@ -98,4 +89,50 @@ PetBar.UpdateBindings = function(self)
 			end
 		end
 	end
+end
+
+PetBar.UpdateVisibilityDriver = function(self)
+	if (InCombatLockdown()) then
+		return
+	end
+
+	local visdriver
+	if (self.enabled) then
+		visdriver = "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;[@pet]show;hide"
+	end
+
+	UnregisterStateDriver(self, "state-vis")
+	self:SetAttribute("state-vis", "0")
+	RegisterStateDriver(self, "vis", visdriver or "hide")
+end
+
+PetBar.Enable = function(self)
+	if (InCombatLockdown()) then
+		return
+	end
+	self.enabled = true
+	self:UpdateStateDriver()
+	self:UpdateVisibilityDriver()
+end
+
+PetBar.Disable = function(self)
+	if (InCombatLockdown()) then
+		return
+	end
+	self.enabled = false
+	self:UpdateVisibilityDriver()
+end
+
+PetBar.IsEnabled = function(self)
+	return self.enabled
+end
+
+-- Constructor
+PetBar.Create = function(self, name, parent)
+	local bar = setmetatable(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate"), PetBar_MT)
+	bar:SetFrameStrata("BACKGROUND")
+	bar:SetFrameLevel(10)
+	bar.buttons = {}
+
+	return bar
 end

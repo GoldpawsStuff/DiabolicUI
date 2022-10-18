@@ -64,13 +64,19 @@ PetBar.SpawnBar = function(self)
 			style(button)
 		end
 
-
+		self.Bar = bar
 	end
 end
 
 PetBar.ForAll = function(self, method, ...)
 	if (self.Bar) then
 		self.Bar:ForAll(method, ...)
+	end
+end
+
+PetBar.GetAll = function(self)
+	if (self.Bar) then
+		return self.Bar:GetAll()
 	end
 end
 

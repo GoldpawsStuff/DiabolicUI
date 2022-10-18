@@ -45,20 +45,11 @@ local UnregisterStateDriver = UnregisterStateDriver
 -- Addon API
 local GetMedia = ns.API.GetMedia
 
-local Bar = CreateFrame("Button")
-local Bar_MT = { __index = Bar }
-ns.StanceBar = Bar
+local StanceBar = CreateFrame("Button")
+local StanceBar_MT = { __index = StanceBar }
+ns.StanceBar = StanceBar
 
-Bar.Create = function(self, name, parent)
-	local bar = setmetatable(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate"), Bar_MT)
-	bar:SetFrameStrata("BACKGROUND")
-	bar:SetFrameLevel(10)
-	bar.buttons = {}
-
-	return bar
-end
-
-Bar.CreateButton = function(self, id, name)
+StanceBar.CreateButton = function(self, id, name)
 
 	local button = ns.StanceButton:Create(id, name, self)
 	button.keyBoundTarget = "SHAPESHIFTBUTTON%d"..id
@@ -68,7 +59,7 @@ Bar.CreateButton = function(self, id, name)
 	return button
 end
 
-Bar.ForAll = function(self, method, ...)
+StanceBar.ForAll = function(self, method, ...)
 	for id,button in self:GetAll() do
 		local func = button[method]
 		if (func) then
@@ -77,36 +68,11 @@ Bar.ForAll = function(self, method, ...)
 	end
 end
 
-Bar.GetAll = function(self)
+StanceBar.GetAll = function(self)
 	return pairs(self.buttons)
 end
 
-Bar.Enable = function(self)
-	if (InCombatLockdown()) then
-		return
-	end
-	self.enabled = true
-	self:UpdateStates()
-end
-
-Bar.Disable = function(self)
-	if (InCombatLockdown()) then
-		return
-	end
-	self.enabled = false
-	UnregisterStateDriver(self, "state-vis")
-	self:SetAttribute("state-vis", "0")
-	RegisterStateDriver(self, "vis", "hide")
-end
-
-Bar.IsEnabled = function(self)
-	return self.enabled
-end
-
-Bar.UpdateBackdrop = function(self)
-end
-
-Bar.UpdateBindings = function(self)
+StanceBar.UpdateBindings = function(self)
 	if (InCombatLockdown()) then
 		return
 	end
@@ -131,7 +97,7 @@ Bar.UpdateBindings = function(self)
 	end
 end
 
-Bar.UpdateButtons = function(self)
+StanceBar.UpdateButtons = function(self)
 	local buttons = self.buttons
 	local numStances = GetNumShapeshiftForms()
 	for i = 1, numStances do
@@ -143,7 +109,7 @@ Bar.UpdateButtons = function(self)
 	end
 end
 
-Bar.UpdateStates = function(self)
+StanceBar.UpdateStates = function(self)
 	if (InCombatLockdown()) then
 		return
 	end
@@ -160,4 +126,14 @@ Bar.UpdateStates = function(self)
 	UnregisterStateDriver(self, "state-vis")
 	self:SetAttribute("state-vis", "0")
 	RegisterStateDriver(self, "vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide")
+end
+
+-- Constructor
+StanceBar.Create = function(self, name, parent)
+	local bar = setmetatable(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate"), StanceBar_MT)
+	bar:SetFrameStrata("BACKGROUND")
+	bar:SetFrameLevel(10)
+	bar.buttons = {}
+
+	return bar
 end
