@@ -47,7 +47,7 @@ local Button_MT = {__index = Button}
 ns.StanceButtons = {}
 ns.StanceButton = Button
 
-Button.Create = function(self, id, parent)
+Button.Create = function(self, id, name, parent)
 
 	local name = ns.Prefix.."StanceButton"..id
 	local button = setmetatable(CreateFrame("CheckButton", name, parent, "StanceButtonTemplate"), Button_MT)

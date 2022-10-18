@@ -31,7 +31,6 @@ local ipairs = ipairs
 local pairs = pairs
 local select = select
 local setmetatable = setmetatable
-local string_format = string.format
 
 -- WoW API
 local ClearOverrideBindings = ClearOverrideBindings
@@ -59,10 +58,10 @@ Bar.Create = function(self, name, parent)
 	return bar
 end
 
-Bar.CreateButton = function(self, id)
+Bar.CreateButton = function(self, id, name)
 
-	local button = ns.StanceButton:Create(id, self)
-	button.keyBoundTarget = string_format("SHAPESHIFTBUTTON%d", id)
+	local button = ns.StanceButton:Create(id, name, self)
+	button.keyBoundTarget = "SHAPESHIFTBUTTON%d"..id
 
 	self.buttons[#self.buttons + 1] = button
 

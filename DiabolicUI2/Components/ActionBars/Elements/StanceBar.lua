@@ -235,10 +235,10 @@ StanceBar.SpawnBar = function(self)
 		bar:SetFrameStrata("MEDIUM")
 
 		local button
-		for i = 1,10 do
-			button = bar:CreateButton(i)
-			button:SetPoint("BOTTOMLEFT", (i-1)*(54), 0)
-			bar:SetFrameRef("Button"..i, button)
+		for id = 1,10 do
+			button = bar:CreateButton(id, bar:GetName().."Button"..id)
+			button:SetPoint("BOTTOMLEFT", (id-1)*(54), 0)
+			bar:SetFrameRef("Button"..id, button)
 			style(button)
 		end
 		bar:UpdateStates()
@@ -260,8 +260,8 @@ StanceBar.SpawnBar = function(self)
 				end
 			end
 			if (numButtons > 0) then
-				bar:SetWidth(numButtons*53 + (numButtons-1));
-				bar:SetHeight(53);
+				bar:SetWidth(numButtons*54 + (numButtons-1));
+				bar:SetHeight(54);
 			else
 				bar:SetWidth(2);
 				bar:SetHeight(2);
@@ -376,12 +376,15 @@ StanceBar.OnEvent = function(self, event, ...)
 end
 
 StanceBar.OnInitialize = function(self)
-	-- Currently only allowing this for git versions in development mode
 	if (not ns.db.global.core.enableDevelopmentMode or not ns.IsDevelopment) then
 		self:Disable()
 		return
 	end
 	self:SpawnBar()
+end
+
+StanceBar.OnEnable = function(self)
+
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 	self:RegisterEvent("UPDATE_BONUS_ACTIONBAR", "OnEvent")
 	self:RegisterEvent("ACTIONBAR_PAGE_CHANGED", "OnEvent")
@@ -393,11 +396,11 @@ StanceBar.OnInitialize = function(self)
 	self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR", "OnEvent")
 	self:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", "OnEvent")
 	self:RegisterEvent("UPDATE_POSSESS_BAR", "OnEvent")
-	self:RegisterEvent("UPDATE_BINDINGS", "UpdateBindings")
-	ns.RegisterCallback(self, "ActionBars_SecondaryBar_Updated", "UpdateToggleButton")
-end
 
-StanceBar.OnEnable = function(self)
+	self:RegisterEvent("UPDATE_BINDINGS", "UpdateBindings")
 	self:UpdateBindings()
+
 	self:UpdateToggleButton()
+	ns.RegisterCallback(self, "ActionBars_SecondaryBar_Updated", "UpdateToggleButton")
+
 end

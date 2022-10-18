@@ -76,6 +76,38 @@ end
 
 local PetButton = CreateFrame("CheckButton")
 local PetButton_MT = { __index = PetButton }
+ns.PetButton = PetButton
+
+PetButton.Create = function(self, id, name, parent)
+
+	local button = setmetatable(CreateFrame("CheckButton", name, parent, "PetActionButtonTemplate"), PetButton_MT)
+	button.showgrid = 0
+	button.id = id
+	button.parent = parent
+
+	button:SetFrameStrata("MEDIUM")
+	button:SetID(id)
+
+	button:UnregisterAllEvents()
+	button:SetScript("OnEvent", nil)
+
+	button.OnEnter = button:GetScript("OnEnter")
+	button:SetScript("OnEnter", OnEnter)
+	button:SetScript("OnDragStart", OnDragStart)
+	button:SetScript("OnReceiveDrag", OnReceiveDrag)
+
+	button:SetNormalTexture("")
+
+	button.pushedTexture = button:GetPushedTexture()
+	button.highlightTexture = button:GetHighlightTexture()
+
+	button.textureCache = {}
+	button.textureCache.pushed = button.pushedTexture:GetTexture()
+	button.textureCache.highlight = button.highlightTexture:GetTexture()
+
+	return button
+
+end
 
 PetButton.Update = function(self)
 	local name, texture, isToken, isActive, autoCastAllowed, autoCastEnabled, spellID = GetPetActionInfo(self.id)
@@ -223,35 +255,4 @@ PetButton.ClearBindings = function(self)
 	while GetBindingKey(binding) do
 		SetBinding(GetBindingKey(binding), nil)
 	end
-end
-
-ActionBars.CreatePetButton = function(self, id, name, parent)
-
-	local button = setmetatable(CreateFrame("CheckButton", name, parent, "PetActionButtonTemplate"), PetButton_MT)
-	button.showgrid = 0
-	button.id = id
-	button.parent = parent
-
-	button:SetFrameStrata("MEDIUM")
-	button:SetID(id)
-
-	button:UnregisterAllEvents()
-	button:SetScript("OnEvent", nil)
-
-	button.OnEnter = button:GetScript("OnEnter")
-	button:SetScript("OnEnter", OnEnter)
-	button:SetScript("OnDragStart", OnDragStart)
-	button:SetScript("OnReceiveDrag", OnReceiveDrag)
-
-	button:SetNormalTexture("")
-
-	button.pushedTexture = button:GetPushedTexture()
-	button.highlightTexture = button:GetHighlightTexture()
-
-	button.textureCache = {}
-	button.textureCache.pushed = button.pushedTexture:GetTexture()
-	button.textureCache.highlight = button.highlightTexture:GetTexture()
-
-	return button
-
 end

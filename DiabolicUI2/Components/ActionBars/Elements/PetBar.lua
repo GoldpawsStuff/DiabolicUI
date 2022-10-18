@@ -43,25 +43,40 @@ local SetOverrideBindingClick = SetOverrideBindingClick
 local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
 
+local style = function(button)
+end
+
 PetBar.SpawnBar = function(self)
 	if (not self.Bar) then
-		self.Bar = SetObjectScale(ns.PetBar:Create(ns.Prefix.."PetActionBar", UIParent))
+
+		local bar = SetObjectScale(ns.PetBar:Create(ns.Prefix.."PetActionBar", UIParent))
+		bar:Hide()
+		bar:SetFrameStrata("MEDIUM")
+		bar:SetPoint("CENTER", 0, -200)
+		bar:SetWidth(11*54 - 1)
+		bar:SetHeight(54)
+
+		local button
+		for id = 1,10 do
+			button = bar:CreateButton(id, bar:GetName().."Button"..id)
+			button:SetPoint("BOTTOMLEFT", (id-1)*(54), 0)
+			bar:SetFrameRef("Button"..id, button)
+			style(button)
+		end
+
+
+	end
+end
+
+PetBar.ForAll = function(self, method, ...)
+	if (self.Bar) then
+		self.Bar:ForAll(method, ...)
 	end
 end
 
 PetBar.UpdateBindings = function(self)
-	if (InCombatLockdown()) then
-		return
-	end
 	if (self.Bar) then
-		ClearOverrideBindings(self.Bar)
-		for id = 1, 10 do
-			local action, button = ("BONUSACTIONBUTTON%d"):format(i), (ns.Prefix.."PetActionBarButton"..id):format(id)
-			for k = 1, select("#", GetBindingKey(action)) do
-				local key = select(k, GetBindingKey(action))
-				SetOverrideBindingClick(self.Bar, false, key, button)
-			end
-		end
+		self.Bar:UpdateBindings()
 	end
 end
 
@@ -87,6 +102,10 @@ PetBar.OnEvent = function(self)
 end
 
 PetBar.OnInitialize = function(self)
+	if (not ns.db.global.core.enableDevelopmentMode or not ns.IsDevelopment) then
+		self:Disable()
+		return
+	end
 	self:SpawnBar()
 end
 

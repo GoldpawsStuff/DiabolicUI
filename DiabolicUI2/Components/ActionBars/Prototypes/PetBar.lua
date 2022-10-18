@@ -26,9 +26,38 @@
 local Addon, ns = ...
 local ActionBars = ns:GetModule("ActionBars")
 
-local PetBar = {}
+-- Lua API
+local ipairs = ipairs
+local select = select
+
+-- WoW API
+local ClearOverrideBindings = ClearOverrideBindings
+local GetBindingKey = GetBindingKey
+local InCombatLockdown = InCombatLockdown
+local SetOverrideBindingClick = SetOverrideBindingClick
+
+local PetBar = CreateFrame("Button")
 local PetBar_MT = { __index = PetBar }
 ns.PetBar = PetBar
+
+PetBar.Create = function(self, name, parent)
+	local bar = setmetatable(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate"), PetBar_MT)
+	bar:SetFrameStrata("BACKGROUND")
+	bar:SetFrameLevel(10)
+	bar.buttons = {}
+
+	return bar
+end
+
+PetBar.CreateButton = function(self, id, name)
+
+	local button = ns.PetButton:Create(id, name, self)
+	button.keyBoundTarget = "BONUSACTIONBUTTON"..id
+
+	self.buttons[#self.buttons + 1] = button
+
+	return button
+end
 
 PetBar.GetAll = function(self)
 	return pairs(self.buttons)
@@ -46,14 +75,27 @@ PetBar.ForAll = function(self, method, ...)
 	end
 end
 
-PetBar.Create = function(self, name, parent)
-	local bar = setmetatable(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate"), Bar_MT)
-	local buttons = {}
-	for id = 1,10 do
-		buttons[id] = ActionBars:CreatePetButton(id, name.."Button"..id, bar)
+PetBar.UpdateBindings = function(self)
+	if (InCombatLockdown()) then
+		return
 	end
-	bar.buttons = buttons
-
-	return bar
+	if (not self.buttons) then
+		return
+	end
+	ClearOverrideBindings(self)
+	for id,button in ipairs(self.buttons) do
+		local bindingAction = button.keyBoundTarget
+		if (bindingAction) then
+			-- iterate through the registered keys for the action
+			local buttonName = button:GetName()
+			for keyNumber = 1,select("#", GetBindingKey(bindingAction)) do
+				-- get a key for the action
+				local key = select(keyNumber, GetBindingKey(bindingAction))
+				if (key and (key ~= "")) then
+					-- this is why we need named buttons
+					SetOverrideBindingClick(self, false, key, buttonName) -- assign the key to our own button
+				end
+			end
+		end
+	end
 end
-
