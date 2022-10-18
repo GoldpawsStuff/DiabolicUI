@@ -182,53 +182,6 @@ local LinkButton_OnClick = function(self, ...)
 	end
 end
 
-local UpdateWrathTrackerLinkButtons = function()
-	for i,linkButton in pairs(WATCHFRAME_LINKBUTTONS) do
-		if (linkButton and not Handled[linkButton]) then
-			local clickFrame = CreateFrame("Button", nil, linkButton)
-			clickFrame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-			clickFrame:SetAllPoints()
-			clickFrame:SetScript("OnClick", LinkButton_OnClick)
-		end
-	end
-end
-
--- Style tracker fonts
-local UpdateWrathWatchFrameLine = function(line)
-	if (not Handled[line]) then
-		--local name = line:GetName()
-		--local icon = _G[name.."Icon"]
-		--local border = _G[name.."Border"]
-		line.text:SetFontObject(GetFont(12,true)) -- default size is 12
-		line.text:SetWordWrap(false)
-
-		hooksecurefunc(line.dash, "SetAlpha", function(self, alpha, override)
-			if (override) then
-				return
-			end
-			self:SetAlpha(0, true)
-		end)
-
-		Handled[line] = true
-	end
-
-	-- Always assure this is cleared
-	-- *don't clear the text, it's indent is needed!
-	line.dash:SetAlpha(0)
-end
-
-local UpdateWrathTrackerLines = function()
-	for _, timerLine in pairs(WATCHFRAME_TIMERLINES) do
-		UpdateWrathWatchFrameLine(timerLine)
-	end
-	for _, achievementLine in pairs(WATCHFRAME_ACHIEVEMENTLINES) do
-		UpdateWrathWatchFrameLine(achievementLine)
-	end
-	for _, questLine in pairs(WATCHFRAME_QUESTLINES) do
-		UpdateWrathWatchFrameLine(questLine)
-	end
-end
-
 local UpdateQuestItemButton = function(button)
 	local name = button:GetName()
 	local icon = button.icon or _G[name.."IconTexture"]
@@ -300,6 +253,61 @@ local UpdateQuestItem = function(_, block)
 	local button = block.itemButton
 	if (button) then
 		UpdateQuestItemButton(button)
+	end
+end
+
+local UpdateWrathTrackerLinkButtons = function()
+	for i,linkButton in pairs(WATCHFRAME_LINKBUTTONS) do
+		if (linkButton and not Handled[linkButton]) then
+			local clickFrame = CreateFrame("Button", nil, linkButton)
+			clickFrame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+			clickFrame:SetAllPoints()
+			clickFrame:SetScript("OnClick", LinkButton_OnClick)
+		end
+	end
+end
+
+local UpdateWrathWatchFrameLine = function(line)
+	if (not Handled[line]) then
+		--local name = line:GetName()
+		--local icon = _G[name.."Icon"]
+		--local border = _G[name.."Border"]
+		line.text:SetFontObject(GetFont(12,true)) -- default size is 12
+		line.text:SetWordWrap(false)
+
+		hooksecurefunc(line.dash, "SetAlpha", function(self, alpha, override)
+			if (override) then
+				return
+			end
+			self:SetAlpha(0, true)
+		end)
+
+		Handled[line] = true
+	end
+
+	-- Always assure this is cleared
+	-- *don't clear the text, it's indent is needed!
+	line.dash:SetAlpha(0)
+end
+
+local UpdateWrathTrackerLines = function()
+	for _, timerLine in pairs(WATCHFRAME_TIMERLINES) do
+		UpdateWrathWatchFrameLine(timerLine)
+	end
+	for _, achievementLine in pairs(WATCHFRAME_ACHIEVEMENTLINES) do
+		UpdateWrathWatchFrameLine(achievementLine)
+	end
+	for _, questLine in pairs(WATCHFRAME_QUESTLINES) do
+		UpdateWrathWatchFrameLine(questLine)
+	end
+end
+
+local UpdateWrathQuestItemButtons = function()
+	local i,item = 1,WatchFrameItem1
+	while (item) do
+		UpdateQuestItemButton(item)
+		i = i + 1
+		item = _G["WatchFrameItem" .. i]
 	end
 end
 
@@ -429,29 +437,69 @@ Tracker.InitializeWrathTracker = function(self)
 		return
 	end
 
+	-- Does this taint? Is this the source?
+	--local locked
+	--hooksecurefunc(WatchFrame, "SetWidth", function()
+	--	if (not locked) then
+	--		locked = true
+	--		-- Don't alter the width if the tracker is collapsed
+	--		if (WatchFrame:IsShown() and not WatchFrame.collapsed) then
+	--			WATCHFRAME_EXPANDEDWIDTH = 266/1.125-- 266
+	--			WATCHFRAME_MAXLINEWIDTH = WATCHFRAME_EXPANDEDWIDTH - 12
+	--			WatchFrame:SetWidth(WATCHFRAME_EXPANDEDWIDTH)
+	--			WatchFrame_Update()
+	--		end
+	--		locked = nil
+	--	end
+	--end)
+
+	self.holder = SetObjectScale(CreateFrame("Frame", ns.Prefix.."WatchFrameAnchor", WatchFrame))
+	self.holder:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -410)
+	self.holder:SetSize(280, 22)
+
+	--SetCVar("watchFrameWidth", "1")
+	--WatchFrame_Expand(WatchFrame)
+
+
+
 	-- The local function WatchFrame_GetLinkButton creates the buttons,
 	-- and it's only ever called from these two global functions.
 	UpdateWrathTrackerLinkButtons()
+	hooksecurefunc("WatchFrame_Update", UpdateWrathTrackerLines)
 	hooksecurefunc("WatchFrame_DisplayTrackedAchievements", UpdateWrathTrackerLinkButtons)
 	hooksecurefunc("WatchFrame_DisplayTrackedQuests", UpdateWrathTrackerLinkButtons)
+	hooksecurefunc("WatchFrameItem_OnShow", UpdateQuestItemButton)
 
-	-- Does this taint? Is this the source?
-	local locked
-	hooksecurefunc(WatchFrame, "SetWidth", function()
-		if (not locked) then
-			locked = true
-			-- Don't alter the width if the tracker is collapsed
-			if (WatchFrame:IsShown() and not WatchFrame.collapsed) then
-				WATCHFRAME_EXPANDEDWIDTH = 266/1.125-- 266
-				WATCHFRAME_MAXLINEWIDTH = WATCHFRAME_EXPANDEDWIDTH - 12
-				WatchFrame:SetWidth(WATCHFRAME_EXPANDEDWIDTH)
-				WatchFrame_Update()
-			end
-			locked = nil
-		end
-	end)
 
 	self:UpdateWrathTracker()
+end
+
+Tracker.UpdateWrathTracker = function(self)
+	if (not ns.IsWrath) then
+		return
+	end
+
+	SetCVar("watchFrameWidth", "1")
+
+	SetObjectScale(WatchFrame, 1.125) -- 1.125
+
+
+	-- UIParent.lua overrides the position if this is false
+	--WatchFrame:SetMovable(true)
+	--WatchFrame:SetUserPlaced(true)
+	WatchFrame.IsUserPlaced = function() return true end
+
+	WatchFrameTitle:SetFontObject(GetFont(12,true))
+	WatchFrame:SetFrameStrata("LOW")
+	WatchFrame:SetFrameLevel(50)
+	WatchFrame:SetClampedToScreen(false)
+	WatchFrame:ClearAllPoints()
+	WatchFrame:SetPoint("TOP", self.holder, "TOP")
+	WatchFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 90)
+
+	UpdateWrathQuestItemButtons()
+	UpdateWrathTrackerLines()
+
 end
 
 Tracker.UpdatePosition = function(self)
@@ -481,37 +529,6 @@ Tracker.UpdatePosition = function(self)
 	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT")
 	-- /run print( select(2,ObjectiveTrackerFrame:GetPoint()):GetName() )
-end
-
-Tracker.UpdateWrathTracker = function(self)
-	if (not ns.IsWrath) then
-		return
-	end
-
-	SetObjectScale(WatchFrame, 1.125)
-
-	WatchFrame:SetFrameStrata("LOW")
-	WatchFrame:SetFrameLevel(50)
-	WatchFrameTitle:SetFontObject(GetFont(13,true))
-
-	WATCHFRAME_COLLAPSEDWIDTH = WatchFrameTitle:GetWidth() + 36
-
-	if (WatchFrame:IsShown() and WatchFrame.collapsed) then
-		WatchFrame:SetWidth(WATCHFRAME_COLLAPSEDWIDTH)
-	end
-
-	hooksecurefunc("WatchFrame_Update", UpdateWrathTrackerLines)
-	UpdateWrathTrackerLines()
-
-	-- Style quest buttons
-	local i,item = 1,WatchFrameItem1
-	while (item) do
-		UpdateQuestItemButton(item)
-		i = i + 1
-		item = _G["WatchFrameItem" .. i]
-	end
-
-	hooksecurefunc("WatchFrameItem_OnShow", UpdateQuestItemButton)
 end
 
 Tracker.OnEvent = function(self, event, ...)

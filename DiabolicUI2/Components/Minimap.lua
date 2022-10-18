@@ -354,28 +354,31 @@ Bigmap.UpdatePosition = function(self)
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
 
-	if (not ns.WoW10) then
-		--MinimapCluster:SetMovable(true)
-		--MinimapCluster:SetUserPlaced(true)
-		MinimapCluster.IsUserPlaced = function() return true end
+	if (not true) then
+		if (not ns.WoW10) then
+			--MinimapCluster:SetMovable(true)
+			--MinimapCluster:SetUserPlaced(true)
+			MinimapCluster.IsUserPlaced = function() return true end
+		end
+
+		if (ns.WoW10) then
+
+			-- Opt out of the movement system
+			MinimapCluster.layoutParent = nil
+			MinimapCluster.isRightManagedFrame = nil
+			MinimapCluster.ignoreFramePositionManager = true
+			UIParentRightManagedFrameContainer:RemoveManagedFrame(MinimapCluster)
+
+			-- 256, 256
+			MinimapCluster:SetParent(UIParent)
+			MinimapCluster.IsInDefaultPosition = function() end
+
+		end
+
+		MinimapCluster:ClearAllPoints()
+		MinimapCluster:SetPoint("TOPRIGHT", -60, -40)
 	end
 
-	if (ns.WoW10) then
-
-		-- Opt out of the movement system
-		MinimapCluster.layoutParent = nil
-		MinimapCluster.isRightManagedFrame = nil
-		MinimapCluster.ignoreFramePositionManager = true
-		UIParentRightManagedFrameContainer:RemoveManagedFrame(MinimapCluster)
-
-		-- 256, 256
-		MinimapCluster:SetParent(UIParent)
-		MinimapCluster.IsInDefaultPosition = function() end
-
-	end
-
-	MinimapCluster:ClearAllPoints()
-	MinimapCluster:SetPoint("TOPRIGHT", -60, -40)
 end
 
 Bigmap.InitializeMinimap = function(self)
@@ -459,15 +462,20 @@ Bigmap.InitializeMinimap = function(self)
 	-- The cluster is the parent to everything.
 	-- This prevents the default zone text from being updated,
 	-- as well as disables its tooltip.
-	MinimapCluster:UnregisterAllEvents()
-	MinimapCluster:SetScript("OnEvent", noop)
-	MinimapCluster:EnableMouse(false)
-	MinimapCluster:SetSize(320,380) -- default size 192,192
-	MinimapCluster.defaultHeight = 340
+	--MinimapCluster:UnregisterAllEvents()
+	--MinimapCluster:SetScript("OnEvent", noop)
+	--MinimapCluster:EnableMouse(false)
+	--MinimapCluster:SetSize(320,380) -- default size 192,192
+	--MinimapCluster.defaultHeight = 340
+
+	local minimapHolder = CreateFrame("Frame", ns.Prefix.."MinimapAnchor", Minimap)
+	minimapHolder:SetSize(280,280) -- keep it minimap sized
+	minimapHolder:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -60)
 
 	Minimap:SetFrameStrata("MEDIUM")
 	Minimap:ClearAllPoints()
-	Minimap:SetPoint("CENTER", MinimapCluster, "TOP", 20, -160)
+	--Minimap:SetPoint("CENTER", MinimapCluster, "TOP", 20, -160) -- can we detach it?
+	Minimap:SetPoint("TOPRIGHT", minimapHolder, "TOPRIGHT", 0, 0)
 	Minimap:SetSize(280,280) -- default is 140,140
 	Minimap:SetMaskTexture(GetMedia("minimap-mask-transparent"))
 	Minimap:EnableMouseWheel(true)
