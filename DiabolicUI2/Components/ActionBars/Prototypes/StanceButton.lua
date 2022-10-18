@@ -152,9 +152,6 @@ Button.Update = function(self)
 end
 
 Button.UpdateHotkeys = function(self)
-end
-
-Button.UpdateHotkeys = function(self)
 	local key = self:GetHotkey() or ""
 	local hotkey = self.hotkey
 

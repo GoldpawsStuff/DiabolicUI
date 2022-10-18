@@ -232,6 +232,7 @@ StanceBar.SpawnBar = function(self)
 		local bar = SetObjectScale(ns.StanceBar:Create(ns.Prefix.."StanceBar", UIParent))
 		bar:Hide()
 		bar:SetFrameStrata("MEDIUM")
+		bar.customVisibilityDriver = "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide"
 
 		bar.UpdateBackdrop = function(self)
 		end
@@ -243,7 +244,7 @@ StanceBar.SpawnBar = function(self)
 			bar:SetFrameRef("Button"..id, button)
 			style(button)
 		end
-		bar:UpdateStates()
+		bar:UpdateVisibilityDriver()
 
 		local button = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
 		button:SetFrameRef("StanceBar", bar)

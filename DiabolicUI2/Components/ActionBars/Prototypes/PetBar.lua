@@ -98,7 +98,7 @@ PetBar.UpdateVisibilityDriver = function(self)
 
 	local visdriver
 	if (self.enabled) then
-		visdriver = "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;[@pet]show;hide"
+		visdriver = self.customVisibilityDriver or "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;[@pet]show;hide"
 	end
 
 	UnregisterStateDriver(self, "state-vis")
@@ -111,7 +111,6 @@ PetBar.Enable = function(self)
 		return
 	end
 	self.enabled = true
-	self:UpdateStateDriver()
 	self:UpdateVisibilityDriver()
 end
 
@@ -129,9 +128,18 @@ end
 
 -- Constructor
 PetBar.Create = function(self, name, parent)
+
 	local bar = setmetatable(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate"), PetBar_MT)
 	bar:SetFrameStrata("BACKGROUND")
 	bar:SetFrameLevel(10)
+	bar:SetAttribute("_onstate-vis", [[
+		if not newstate then return end
+		if newstate == "show" then
+			self:Show()
+		elseif newstate == "hide" then
+			self:Hide()
+		end
+	]])
 	bar.buttons = {}
 
 	return bar

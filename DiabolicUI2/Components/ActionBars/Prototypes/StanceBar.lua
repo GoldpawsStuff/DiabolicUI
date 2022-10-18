@@ -98,6 +98,9 @@ StanceBar.UpdateBindings = function(self)
 end
 
 StanceBar.UpdateButtons = function(self)
+	if (InCombatLockdown()) then
+		return
+	end
 	local buttons = self.buttons
 	local numStances = GetNumShapeshiftForms()
 	for i = 1, numStances do
@@ -109,23 +112,40 @@ StanceBar.UpdateButtons = function(self)
 	end
 end
 
-StanceBar.UpdateStates = function(self)
+StanceBar.UpdateVisibilityDriver = function(self)
 	if (InCombatLockdown()) then
 		return
 	end
 
-	self:SetAttribute("_onstate-vis", [[
-		if not newstate then return end
-		if newstate == "show" then
-			self:Show()
-		elseif newstate == "hide" then
-			self:Hide()
-		end
-	]])
+	local visdriver
+	if (self.enabled) then
+		visdriver = self.customVisibilityDriver or "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show"
+	end
 
 	UnregisterStateDriver(self, "state-vis")
 	self:SetAttribute("state-vis", "0")
-	RegisterStateDriver(self, "vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide")
+	RegisterStateDriver(self, "vis", visdriver or "hide")
+end
+
+StanceBar.Enable = function(self)
+	if (InCombatLockdown()) then
+		return
+	end
+	self.enabled = true
+	self:UpdateButtons()
+	self:UpdateVisibilityDriver()
+end
+
+StanceBar.Disable = function(self)
+	if (InCombatLockdown()) then
+		return
+	end
+	self.enabled = false
+	self:UpdateVisibilityDriver()
+end
+
+StanceBar.IsEnabled = function(self)
+	return self.enabled
 end
 
 -- Constructor
@@ -133,6 +153,14 @@ StanceBar.Create = function(self, name, parent)
 	local bar = setmetatable(CreateFrame("Frame", name, parent, "SecureHandlerStateTemplate"), StanceBar_MT)
 	bar:SetFrameStrata("BACKGROUND")
 	bar:SetFrameLevel(10)
+	bar:SetAttribute("_onstate-vis", [[
+		if not newstate then return end
+		if newstate == "show" then
+			self:Show()
+		elseif newstate == "hide" then
+			self:Hide()
+		end
+	]])
 	bar.buttons = {}
 
 	return bar

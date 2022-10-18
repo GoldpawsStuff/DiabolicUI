@@ -64,6 +64,9 @@ PetBar.SpawnBar = function(self)
 			style(button)
 		end
 
+		bar:UpdateVisibilityDriver()
+		bar:Enable()
+
 		self.Bar = bar
 	end
 end
