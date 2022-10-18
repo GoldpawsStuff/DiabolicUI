@@ -336,7 +336,6 @@ UnitStyles["Player"] = function(self, unit, id)
 	art:SetPoint("BOTTOMRIGHT", health, "BOTTOM", 29, -25)
 	art:SetTexture(GetMedia("orb-art1"))
 
-	--self.Health.UpdateColor = UpdateHealthColor
 	self.Health = health
 	self.Health.Override = ns.API.UpdateHealth
 
