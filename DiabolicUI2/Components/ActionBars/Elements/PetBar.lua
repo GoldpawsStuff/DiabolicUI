@@ -352,7 +352,7 @@ PetBar.OnEnable = function(self)
 	self:RegisterEvent("PET_BAR_SHOWGRID", "OnEvent")
 	self:RegisterEvent("PET_BAR_HIDEGRID", "OnEvent")
 
-	if (not ns.IsClassic) then
+	if (ns.IsRetail) then
 		self:RegisterEvent("PET_SPECIALIZATION_CHANGED", "OnEvent")
 	end
 
