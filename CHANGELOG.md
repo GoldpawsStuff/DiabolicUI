@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased] 2022-10-19
+### Added
+- Some stuff I'd rather not talk about. Currently only available to git users running in dev mode. Which you shouldn't do.
+
 ### Changed
 - Made the full buff display permanently visible and moved it to its expected location up next to the minimap. This is an experiment, and I'm not yet fully convinced I'll leave it in there. It does however allow me to more aggressively filter the centered aura display above the actionbars without too many complaints.
 - Moved the default position of the tooltip slightly.
