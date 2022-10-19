@@ -1,20 +1,13 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<Button name="DiabolicAuraTemplate" inherits="SecureActionButtonTemplate" virtual="true">
-		<Size x="40" y="40"/>
+		<Size x="36" y="36"/>
 		<Attributes>
 			<Attribute name="type" value="cancelaura"/>
 		</Attributes>
 		<Scripts>
 			<OnLoad>
-				-- Embed Lua template
 				DiabolicUI2:GetModule("Auras"):Embed(self)
-				-- Setup the aura
-				self.filter = self:GetParent():GetAttribute("filter")
-				self:Style()
-				self.UpdateTooltip = self.Secure_UpdateTooltip
-				self:SetScript("OnEnter", self.Secure_OnEnter)
-				self:SetScript("OnLeave", self.Secure_OnLeave)
-				self:SetScript("OnAttributeChanged", self.OnAttributeChanged)
+				self:OnInitialize()
 				self:RegisterForClicks("RightButtonUp")
 			</OnLoad>
 		</Scripts>

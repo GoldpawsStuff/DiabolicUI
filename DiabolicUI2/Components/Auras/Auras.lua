@@ -74,8 +74,9 @@ end
 Aura.Secure_OnEnter = function(self)
 	if (not self:IsVisible()) then return end
 	if (GameTooltip:IsForbidden()) then return end
+	local p = self:GetParent()
 	GameTooltip:SetOwner(self, "ANCHOR_NONE")
-	GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 16)
+	GameTooltip:SetPoint(p.tooltipPoint, self, p.tooltipAnchor, p.tooltipOffsetX, p.tooltipOffsetY)
 	self:UpdateTooltip()
 end
 
@@ -92,57 +93,113 @@ Aura.OnAttributeChanged = function(self, attribute, value)
 	end
 end
 
-Aura.UpdateAura = function(aura, index)
+Aura.UpdateAura = function(self, index)
 
-	local name, icon, count, dispelType, duration, expirationTime, source, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitAura(aura:GetParent():GetAttribute("unit"), index, aura.filter)
+	local name, icon, count, dispelType, duration, expirationTime, source, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer, nameplateShowAll, timeMod = UnitAura(self:GetParent():GetAttribute("unit"), index, self.filter)
 
 	if (name) then
-		aura:SetAlpha(1)
-		aura.icon:SetTexture(icon)
-		aura.count:SetText((count and count > 1) and count or "")
+		self:SetAlpha(1)
+		self.icon:SetTexture(icon)
+		self.count:SetText((count and count > 1) and count or "")
 
 		if (duration and duration > 0) then
-			aura.cd:SetCooldown(expirationTime - duration, duration)
-			aura.cd:Show()
+			self.cd:SetCooldown(expirationTime - duration, duration)
+			self.cd:Show()
 		else
-			aura.cd:Hide()
-			aura.bar:Show()
+			self.cd:Hide()
+			if (self.bar) then
+				self.bar:Show()
+			end
 		end
 	else
-		aura.icon:SetTexture(nil)
-		aura.count:SetText("")
-		aura.cd:Hide()
+		self.icon:SetTexture(nil)
+		self.count:SetText("")
+		self.cd:Hide()
 	end
 
 end
 
-Aura.UpdateTempEnchant = function(aura, slot)
+Aura.UpdateTempEnchant = function(self, slot)
 	local enchant = (slot == 16 and 2) or 6
 	local expiration = select(enchant, GetWeaponEnchantInfo())
 	local icon = GetInventoryItemTexture("player", slot)
 
 	if (icon) then
-		aura:SetAlpha(1)
-		aura.icon:SetTexture(icon)
-		aura.count:SetText("")
+		self:SetAlpha(1)
+		self.icon:SetTexture(icon)
+		self.count:SetText("")
 
 		if (expiration) then
-			aura.cd:SetCooldown(GetTime(), expiration / 1e3)
-			aura.cd:Show()
+			self.cd:SetCooldown(GetTime(), expiration / 1e3)
+			self.cd:Show()
 		else
-			aura.cd:Hide()
+			self.cd:Hide()
+			if (self.bar) then
+				self.bar:Show()
+			end
 		end
 	else
 		-- sometimes empty temp enchants are shown
 		-- this is a bug in the secure aura headers
-		aura:SetAlpha(0)
-		aura.icon:SetTexture(nil)
-		aura.count:SetText("")
-		aura.cd:Hide()
+		self:SetAlpha(0)
+		self.icon:SetTexture(nil)
+		self.count:SetText("")
+		self.cd:Hide()
 	end
 end
 
-Aura.Style = function(aura)
+Aura.OnInitialize = function(self)
+	self:Style()
+	self.filter = self:GetParent():GetAttribute("filter")
+	self.UpdateTooltip = self.Secure_UpdateTooltip
+	self:SetScript("OnEnter", self.Secure_OnEnter)
+	self:SetScript("OnLeave", self.Secure_OnLeave)
+	self:SetScript("OnAttributeChanged", self.OnAttributeChanged)
+end
+
+Aura.Style = function(self)
+
+	self:SetAlpha(.5)
+
+	local icon = self:CreateTexture(nil, "BACKGROUND", nil, 1)
+	icon:SetAllPoints()
+	icon:SetMask(GetMedia("actionbutton-mask-square"))
+	self.icon = icon
+
+	local border = CreateFrame("Frame", nil, self, ns.BackdropTemplate)
+	border:SetBackdrop({ edgeFile = GetMedia("border-aura"), edgeSize = 12 })
+	border:SetBackdropBorderColor(Colors.xp[1], Colors.xp[2], Colors.xp[3])
+	border:SetPoint("TOPLEFT", -6, 6)
+	border:SetPoint("BOTTOMRIGHT", 6, -6)
+	border:SetFrameLevel(self:GetFrameLevel() + 2)
+	self.border = border
+
+	local count = self.border:CreateFontString(nil, "OVERLAY")
+	count:SetFontObject(GetFont(12,true))
+	count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
+	count:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -2, 3)
+	self.count = count
+
+	local bar = Auras:CreateSmoothBar(nil, self)
+	bar:SetPoint("TOP", self, "BOTTOM", 0, 0)
+	bar:SetPoint("LEFT", self, "LEFT", 1, 0)
+	bar:SetPoint("RIGHT", self, "RIGHT", -1, 0)
+	bar:SetHeight(4)
+	bar:SetStatusBarTexture(GetMedia("bar-small"))
+	bar:SetStatusBarColor(Colors.xp[1], Colors.xp[2], Colors.xp[3])
+	bar.bg = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
+	bar.bg:SetPoint("TOPLEFT", -1, 1)
+	bar.bg:SetPoint("BOTTOMRIGHT", 1, -1)
+	bar.bg:SetColorTexture(.05, .05, .05, .85)
+	self.bar = bar
+
+	-- Using a virtual cooldown element with the bar and timer attached,
+	-- allowing them to piggyback on oUF's cooldown updates.
+	self.cd = ns.Widgets.RegisterCooldown(bar)
+
+end
+
+Aura.Style2 = function(aura)
 
 	local icon = aura:CreateTexture(nil, "BACKGROUND", nil, 1)
 	icon:SetAllPoints()
@@ -198,7 +255,22 @@ Auras.UpdateAllAuras = function(self)
 	local child = window:GetAttribute("child1")
 	local i = 1
 	while (child) do
+		--child:UpdateAura(child:GetID())
 		Aura.UpdateAura(child, child:GetID())
+		i = i + 1
+		child = window:GetAttribute("child" .. i)
+	end
+end
+
+Auras.UpdateGFX = function(self)
+	local window = self.Window
+	if (not window) then
+		return
+	end
+	local child = window:GetAttribute("child1")
+	local i = 1
+	while (child) do
+		Aura.Style(child)
 		i = i + 1
 		child = window:GetAttribute("child" .. i)
 	end
@@ -211,6 +283,41 @@ Auras.Embed = function(self, aura)
 end
 
 Auras.SpawnFrames = function(self, name, parent)
+
+	local window = SetObjectScale(CreateFrame("Frame", ns.Prefix.."BuffHeader", UIParent, "SecureAuraHeaderTemplate"))
+	window:SetFrameLevel(10)
+	window:SetSize(36,36)
+	window:SetPoint("TOPRIGHT", -380, -66)
+
+	window:SetAttribute("weaponTemplate", "DiabolicAuraTemplate")
+	window:SetAttribute("template", "DiabolicAuraTemplate")
+	window:SetAttribute("minHeight", 36)
+	window:SetAttribute("minWidth", 36)
+	window:SetAttribute("point", "BOTTOMLEFT")
+	window:SetAttribute("xOffset", 40)
+	window:SetAttribute("yOffset", 0)
+	window:SetAttribute("wrapAfter", 8)
+	window:SetAttribute("wrapYOffset", 45)
+	window:SetAttribute("filter", "HELPFUL")
+	window:SetAttribute("includeWeapons", 1)
+	window:SetAttribute("sortMethod", "TIME")
+	window:SetAttribute("sortDirection", "+")
+
+	window.tooltipPoint = "TOPRIGHT"
+	window.tooltipAnchor = "BOTTOMLEFT"
+	window.tooltipOffsetX = -8
+	window.tooltipOffsetY = -8
+
+	RegisterAttributeDriver(window, "unit", "[vehicleui] vehicle; player")
+
+	-- Don't show before attribute drivers above are in place,
+	-- or you'll get a missing unit error when querying the aura.
+	window:Show()
+
+	self.Window = window
+end
+
+Auras.SpawnFrames2 = function(self, name, parent)
 
 	local window = SetObjectScale(CreateFrame("Frame", ns.Prefix.."BuffHeader", UIParent, "SecureAuraHeaderTemplate"))
 	window:SetFrameLevel(10)
@@ -231,6 +338,11 @@ Auras.SpawnFrames = function(self, name, parent)
 	window:SetAttribute("sortDirection", "+")
 	window:HookScript("OnHide", function() self.Toggle:UpdateAlpha() end)
 	RegisterAttributeDriver(window, "unit", "[vehicleui] vehicle; player")
+
+	window.tooltipPoint = "BOTTOMLEFT"
+	window.tooltipAnchor = "TOPLEFT"
+	window.tooltipOffsetX = 0
+	window.tooltipOffsetY = 16
 
 	local backdrop = CreateFrame("Frame", ns.Prefix.."BuffHeaderBackdrop", window, ns.BackdropTemplate)
 	backdrop:SetPoint("TOPLEFT", -18, 22)
