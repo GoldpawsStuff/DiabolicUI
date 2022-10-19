@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-10-19
+### Changed
+- Made the full buff display permanently visible and moved it to its expected location up next to the minimap. This is an experiment, and I'm not yet fully convinced I'll leave it in there. It does however allow me to more aggressively filter the centered aura display above the actionbars without too many complaints.
+
 ## [2.0.55-RC] 2022-10-16
 ### Changed
 - Updated action button library to be closer to its baseline version, moved a lot of customizations into the front-end.
