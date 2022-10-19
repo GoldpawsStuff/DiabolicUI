@@ -245,12 +245,17 @@ end
 PetBar.SpawnBar = function(self)
 	if (not self.Bar) then
 
+		-- Create bar
 		local scale = .8
 		local bar = SetObjectScale(ns.PetBar:Create(ns.Prefix.."PetActionBar", UIParent), scale)
 		bar:SetFrameStrata("MEDIUM")
 		bar:SetWidth(549)
 		bar:SetHeight(54)
+		bar:SetAttribute("enablePetBar", ns.db.char.actionbars.enablePetBar and true or false)
 		bar.scale = scale
+		bar.UpdateSettings = function(self)
+			ns.db.char.actionbars.enablePetBar = self:GetAttribute("enablePetBar")
+		end
 
 		local button
 		for id = 1,10 do
@@ -263,11 +268,62 @@ PetBar.SpawnBar = function(self)
 		local onVisibility = function(self)
 			ns:Fire("ActionBars_PetBar_Updated", self:IsShown() and true or false)
 		end
-
 		bar:HookScript("OnHide", onVisibility)
 		bar:HookScript("OnShow", onVisibility)
 
+		-- Create pull-out handle
+		local handle = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
+		handle:SetSize(64,12)
+		handle:SetFrameStrata("MEDIUM")
+		handle:RegisterForClicks("AnyUp")
+		handle:SetFrameRef("Bar", bar)
+		handle:SetAttribute("_onclick", [[
+			local bar = self:GetFrameRef("Bar");
+			bar:SetAttribute("enablePetBar", not bar:GetAttribute("enablePetBar"));
+			bar:CallMethod("UpdateSettings");
+			bar:RunAttribute("UpdateVisibility");
+		]])
+		handle:SetAttribute("UpdatePosition", [[
+			self:ClearAllPoints();
+			local bar = self:GetFrameRef("Bar");
+			if (bar:IsShown()) then
+				self:SetPoint("BOTTOM", bar, "TOP", 0, 2);
+			else
+				self:SetPoint("BOTTOM", bar, "BOTTOM", 0, 0);
+			end
+		]])
+		RegisterStateDriver(handle, "visibility", bar:GetAttribute("visibility-driver"))
+
+		handle.texture = handle:CreateTexture()
+		handle.texture:SetColorTexture(.5, 0, 0, .5)
+		handle.texture:SetAllPoints()
+
+		bar:SetFrameRef("Handle", handle)
+		bar:SetAttribute("UpdateVisibility", [[
+			local driver = self:GetAttribute("visibility-driver");
+			if not driver then return end
+			local newstate = SecureCmdOptionParse(driver);
+			local enabled = self:GetAttribute("enablePetBar");
+			if (enabled and newstate == "show") then
+				self:Show();
+			else
+				self:Hide();
+			end
+			local handle = self:GetFrameRef("Handle");
+			handle:RunAttribute("UpdatePosition");
+		]])
+
+		bar:SetAttribute("_onstate-vis", [[
+			if not newstate then return end
+			self:RunAttribute("UpdateVisibility");
+		]])
+
+		--handle:Execute([[ self:RunAttribute("UpdatePosition"); ]]);
+		--bar:Execute([[ self:RunAttribute("UpdateVisibility"); ]]);
+
+
 		self.Bar = bar
+		self.Bar.Handle = handle
 
 		--bar:UpdateVisibilityDriver()
 		bar:Enable()

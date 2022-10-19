@@ -35,7 +35,8 @@ _G[Addon] = ns
 local defaults = {
 	char = {
 		actionbars = {
-			enableSecondary = false
+			enableSecondary = false,
+			enablePetBar = true
 		}
 	},
 	global = {

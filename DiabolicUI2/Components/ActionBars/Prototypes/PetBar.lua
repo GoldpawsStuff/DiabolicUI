@@ -100,6 +100,7 @@ PetBar.UpdateVisibilityDriver = function(self)
 	if (self.enabled) then
 		visdriver = self.customVisibilityDriver or "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;[pet]show;hide"
 	end
+	self:SetAttribute("visibility-driver", visdriver)
 
 	UnregisterStateDriver(self, "state-vis")
 	self:SetAttribute("state-vis", "0")

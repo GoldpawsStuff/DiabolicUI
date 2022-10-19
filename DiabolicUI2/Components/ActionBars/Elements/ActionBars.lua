@@ -490,7 +490,6 @@ Bars.SpawnBars = function(self)
 	self.Bars.SmallActionBar6 = bar
 
 
-
 	-- Left ToggleButton
 	-------------------------------------------------------
 	local toggle = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))

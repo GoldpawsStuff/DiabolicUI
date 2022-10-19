@@ -26,9 +26,27 @@
 local Addon, ns = ...
 local ActionBars = ns:NewModule("ActionBars", "LibMoreEvents-1.0")
 
+---------------------------------------------
+-- Proxy Calls
+---------------------------------------------
 ActionBars.HasSecondaryBar = function(self)
 	local Bars = self:GetModule("Bars", true)
 	return Bars and Bars:HasSecondaryBar()
+end
+
+ActionBars.GetSecondaryBar = function(self)
+	local Bars = self:GetModule("Bars", true)
+	return Bars and Bars:GetSecondaryBar()
+end
+
+ActionBars.GetSecondaryBarOffset = function(self)
+	local Bars = self:GetModule("Bars", true)
+	return Bars and Bars:GetSecondaryBarOffset()
+end
+
+ActionBars.GetBarOffset = function(self)
+	local Bars = self:GetModule("Bars", true)
+	return Bars and Bars:GetBarOffset()
 end
 
 ActionBars.OnInitialize = function(self)
