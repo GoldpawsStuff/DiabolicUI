@@ -299,12 +299,7 @@ PetBar.UpdatePosition = function(self)
 	if (not self.Bar) then
 		return
 	end
-	local hasSecondary = ActionBars:HasSecondaryBar()
-	if (hasSecondary) then
-		self.Bar:SetPoint("BOTTOM", 0, (84 + 59) / self.Bar.scale)
-	else
-		self.Bar:SetPoint("BOTTOM", 0, 84 / self.Bar.scale)
-	end
+	self.Bar:SetPoint("BOTTOM", 0, (84 + ActionBars:GetBarOffset()) / self.Bar.scale)
 end
 
 PetBar.OnEvent = function(self, event, ...)

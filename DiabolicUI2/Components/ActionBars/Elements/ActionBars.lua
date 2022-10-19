@@ -312,7 +312,7 @@ Bars.SpawnBars = function(self)
 	-- Secondary ActionBar (Bottom Left MultiBar)
 	-------------------------------------------------------
 	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMLEFT_ACTIONBAR_PAGE, ns.Prefix.."ActionBar2", UIParent))
-	bar:SetPoint("BOTTOM", -1, 70)
+	bar:SetPoint("BOTTOM", -1, 11 + self:GetBarOffset())
 	bar:SetSize(647, 53)
 	bar:Hide()
 	--bar:SetAttribute("userhidden", true)
@@ -922,6 +922,22 @@ Bars.HasSecondaryBar = function(self)
 	end
 	local secondary = self.Bars.SecondaryActionBar
 	return secondary and secondary:IsShown()
+end
+
+Bars.GetSecondaryBar = function(self)
+	if (not self.Bars) then
+		return
+	end
+	local secondary = self.Bars.SecondaryActionBar
+	return secondary and secondary:IsShown()
+end
+
+Bars.GetSecondaryBarOffset = function(self)
+	return 59
+end
+
+Bars.GetBarOffset = function(self)
+	return self:GetSecondaryBar() and self:GetSecondaryBarOffset() or 0
 end
 
 Bars.UpdateArtwork = function(self)

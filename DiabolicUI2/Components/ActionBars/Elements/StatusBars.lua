@@ -222,11 +222,7 @@ StatusBars.UpdatePosition = function(self)
 	if (not Bars) then
 		return
 	end
-	if (ActionBars:HasSecondaryBar()) then
-		Bars[1]:SetPoint("BOTTOM", 0, 68 + 59)
-	else
-		Bars[1]:SetPoint("BOTTOM", 0, 68)
-	end
+	Bars[1]:SetPoint("BOTTOM", 0, 68 + ActionBars:GetBarOffset())
 end
 
 StatusBars.OnInitialize = function(self)

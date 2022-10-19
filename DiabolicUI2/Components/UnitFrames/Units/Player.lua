@@ -285,7 +285,7 @@ end
 --------------------------------------------
 local PostUpdateAuraPositions = function(self, event, hasSecondary)
 
-	local offset = hasSecondary and 59 or 0
+	local offset = ns:GetModule("ActionBars", true)
 
 	self.Buffs:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -320, 100 + offset)
 	self.Debuffs:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 320, 100 + offset)
