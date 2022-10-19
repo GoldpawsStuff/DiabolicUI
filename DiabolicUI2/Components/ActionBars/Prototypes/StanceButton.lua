@@ -58,6 +58,7 @@ Button.Create = function(self, id, name, parent)
 	button.parent = parent
 
 	button.icon = button.icon
+	button.autoCastable = button.AutoCastable
 	button.autoCastShine = button.AutoCastShine
 	button.border = button.Border
 	button.cooldown = button.cooldown

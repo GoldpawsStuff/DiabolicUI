@@ -398,6 +398,10 @@ Tracker.InitializeTracker = function(self, event, addon)
 		self:UnregisterEvent("ADDON_LOADED", "OnEvent")
 	end
 
+	self.holder = SetObjectScale(CreateFrame("Frame", ns.Prefix.."WatchFrameAnchor", WatchFrame))
+	self.holder:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -410)
+	self.holder:SetSize(280, 22)
+
 	local ObjectiveTrackerFrame = SetObjectScale(ObjectiveTrackerFrame, 1.1)
 	ObjectiveTrackerFrame:SetHeight(480 / 1.1)
 	ObjectiveTrackerFrame:SetAlpha(.9)
@@ -418,7 +422,7 @@ Tracker.InitializeTracker = function(self, event, addon)
 	hooksecurefunc(WORLD_QUEST_TRACKER_MODULE, "AddProgressBar", UpdateProgressBar)
 	hooksecurefunc(SCENARIO_TRACKER_MODULE, "AddProgressBar", UpdateProgressBar)
 
-	local toggleButton = CreateFrame("Button", "DiabolicUI_ObjectiveTrackerToggleButton", UIParent, "SecureActionButtonTemplate")
+	local toggleButton = CreateFrame("Button", ns.Prefix.."_ObjectiveTrackerToggleButton", UIParent, "SecureActionButtonTemplate")
 	toggleButton:SetScript("OnClick", function()
 		if (ObjectiveTrackerFrame:IsVisible()) then
 			ObjectiveTrackerFrame:Hide()
@@ -426,7 +430,7 @@ Tracker.InitializeTracker = function(self, event, addon)
 			ObjectiveTrackerFrame:Show()
 		end
 	end)
-	SetOverrideBindingClick(toggleButton, true, "SHIFT-O", "DiabolicUI_ObjectiveTrackerToggleButton")
+	SetOverrideBindingClick(toggleButton, true, "SHIFT-O", toggleButton:GetName())
 
 	self:InitializeAlphaDriver()
 	self:UpdatePosition()
@@ -457,10 +461,14 @@ Tracker.InitializeWrathTracker = function(self)
 	self.holder:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -410)
 	self.holder:SetSize(280, 22)
 
-	--SetCVar("watchFrameWidth", "1")
-	--WatchFrame_Expand(WatchFrame)
+	SetObjectScale(WatchFrame, 1.125)
 
+	-- UIParent.lua overrides the position if this is false
+	--WatchFrame:SetMovable(true)
+	--WatchFrame:SetUserPlaced(true)
+	WatchFrame.IsUserPlaced = function() return true end
 
+	WatchFrameTitle:SetFontObject(GetFont(12,true))
 
 	-- The local function WatchFrame_GetLinkButton creates the buttons,
 	-- and it's only ever called from these two global functions.
@@ -470,6 +478,15 @@ Tracker.InitializeWrathTracker = function(self)
 	hooksecurefunc("WatchFrame_DisplayTrackedQuests", UpdateWrathTrackerLinkButtons)
 	hooksecurefunc("WatchFrameItem_OnShow", UpdateQuestItemButton)
 
+	local toggleButton = CreateFrame("Button", ns.Prefix.."_ObjectiveTrackerToggleButton", UIParent, "SecureActionButtonTemplate")
+	toggleButton:SetScript("OnClick", function()
+		if (WatchFrame:IsVisible()) then
+			WatchFrame:Hide()
+		else
+			WatchFrame:Show()
+		end
+	end)
+	SetOverrideBindingClick(toggleButton, true, "SHIFT-O", toggleButton:GetName())
 
 	self:UpdateWrathTracker()
 end
@@ -481,15 +498,6 @@ Tracker.UpdateWrathTracker = function(self)
 
 	SetCVar("watchFrameWidth", "1")
 
-	SetObjectScale(WatchFrame, 1.125) -- 1.125
-
-
-	-- UIParent.lua overrides the position if this is false
-	--WatchFrame:SetMovable(true)
-	--WatchFrame:SetUserPlaced(true)
-	WatchFrame.IsUserPlaced = function() return true end
-
-	WatchFrameTitle:SetFontObject(GetFont(12,true))
 	WatchFrame:SetFrameStrata("LOW")
 	WatchFrame:SetFrameLevel(50)
 	WatchFrame:SetClampedToScreen(false)
@@ -521,13 +529,20 @@ Tracker.UpdatePosition = function(self)
 		ObjectiveTrackerFrame.ignoreFramePositionManager = true
 		UIParentRightManagedFrameContainer:RemoveManagedFrame(ObjectiveTrackerFrame)
 
-		ObjectiveTrackerFrame:SetParent(UIParent)
+		--ObjectiveTrackerFrame:SetParent(UIParent)
 		ObjectiveTrackerFrame.IsInDefaultPosition = function() end
 
 	end
 
+	ObjectiveTrackerFrame:SetFrameStrata("LOW")
+	ObjectiveTrackerFrame:SetFrameLevel(50)
+	ObjectiveTrackerFrame:SetClampedToScreen(false)
 	ObjectiveTrackerFrame:ClearAllPoints()
-	ObjectiveTrackerFrame:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT")
+	ObjectiveTrackerFrame:SetPoint("TOP", self.holder, "TOP")
+	ObjectiveTrackerFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 90)
+
+	--ObjectiveTrackerFrame:ClearAllPoints()
+	--ObjectiveTrackerFrame:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT")
 	-- /run print( select(2,ObjectiveTrackerFrame:GetPoint()):GetName() )
 end
 

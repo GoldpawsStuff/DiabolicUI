@@ -39,6 +39,7 @@ local unpack = unpack
 -- WoW API
 local CancelUnitBuff = CancelUnitBuff
 local CreateFrame = CreateFrame
+local HasPetUI = HasPetUI
 local InCombatLockdown = InCombatLockdown
 local UnitExists = UnitExists
 local UnitIsUnit = UnitIsUnit
@@ -283,13 +284,12 @@ end
 -- Callbacks
 --------------------------------------------
 local PostUpdateAuraPositions = function(self, event, hasSecondary)
-	if (hasSecondary) then
-		self.Buffs:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -320, 159)
-		self.Debuffs:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 320, 159)
-	else
-		self.Buffs:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -320, 100)
-		self.Debuffs:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 320, 100)
-	end
+
+	local offset = hasSecondary and 59 or 0
+
+	self.Buffs:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -320, 100 + offset)
+	self.Debuffs:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 320, 100 + offset)
+
 	ns:Fire("UnitFrame_Position_Updated", self:GetName())
 end
 
