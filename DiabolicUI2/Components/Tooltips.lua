@@ -553,6 +553,13 @@ Tooltips.OnTooltipSetUnit = function(self, tooltip)
 
 end
 
+Tooltips.SetDefaultAnchor = function(self, tooltip, parent)
+	if (not tooltip) or (tooltip:IsForbidden()) then return end
+
+	tooltip:SetOwner(parent, "ANCHOR_NONE")
+	tooltip:SetPoint("BOTTOMRIGHT", -60, 60)
+end
+
 Tooltips.SetUnitColor = function(self, unit)
 	local color = GetUnitColor(unit)
 	if (color) then
@@ -611,6 +618,7 @@ Tooltips.SetHooks = function(self)
 
 	self:SecureHook("GameTooltip_UnitColor", "SetUnitColor")
 	self:SecureHook("GameTooltip_ShowCompareItem", "OnCompareItemShow")
+	self:SecureHook("GameTooltip_SetDefaultAnchor", "SetDefaultAnchor")
 
 	self:SecureHookScript(GameTooltip, "OnTooltipCleared", "OnTooltipCleared")
 	self:SecureHookScript(GameTooltip, "OnTooltipSetSpell", "OnTooltipSetSpell")

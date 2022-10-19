@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased] 2022-10-19
 ### Changed
 - Made the full buff display permanently visible and moved it to its expected location up next to the minimap. This is an experiment, and I'm not yet fully convinced I'll leave it in there. It does however allow me to more aggressively filter the centered aura display above the actionbars without too many complaints.
+- Moved the default position of the tooltip slightly.
+- Changed how the minimap and quest tracker are anchored and moved.
+- Changed how width and the general handling of the Wrath quest tracker is done, in an affort to work against the annoying taint where quest buttons will become unclickable if they are spawned during combat. Untested, as it's a bit hard to test this out in Wrath, at least until I hit max level and get some dailies that suit my testing purposes.
 
 ## [2.0.55-RC] 2022-10-16
 ### Changed
