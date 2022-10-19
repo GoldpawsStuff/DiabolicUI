@@ -291,6 +291,11 @@ PetBar.SpawnBar = function(self)
 			else
 				self:SetPoint("BOTTOM", bar, "BOTTOM", 0, 0);
 			end
+			local driver = bar:GetAttribute("visibility-driver");
+			if not driver then return end
+			--local state = SecureCmdOptionParse(driver);
+			UnregisterStateDriver(self, "visibility");
+			RegisterStateDriver(self, "visibility", driver);
 		]])
 		RegisterStateDriver(handle, "visibility", bar:GetAttribute("visibility-driver"))
 
