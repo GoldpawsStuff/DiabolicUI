@@ -49,28 +49,27 @@ local Aura = {}
 
 Aura.Style = function(self)
 
-	self:SetAlpha(.5)
-
-	local icon = self.icon or self:CreateTexture(nil, "BACKGROUND", nil, 1)
+	local icon = self:CreateTexture(nil, "BACKGROUND", nil, 1)
 	icon:SetAllPoints()
 	icon:SetMask(GetMedia("actionbutton-mask-square"))
+	icon:SetVertexColor(.75, .75, .75)
 	self.icon = icon
 
-	local border = self.border or CreateFrame("Frame", nil, self, ns.BackdropTemplate)
+	local border = CreateFrame("Frame", nil, self, ns.BackdropTemplate)
 	border:SetBackdrop({ edgeFile = GetMedia("border-aura"), edgeSize = 12 })
-	border:SetBackdropBorderColor(Colors.xp[1], Colors.xp[2], Colors.xp[3])
+	border:SetBackdropBorderColor(Colors.verydarkgray[1], Colors.verydarkgray[2], Colors.verydarkgray[3])
 	border:SetPoint("TOPLEFT", -6, 6)
 	border:SetPoint("BOTTOMRIGHT", 6, -6)
 	border:SetFrameLevel(self:GetFrameLevel() + 2)
 	self.border = border
 
-	local count = self.count or self.border:CreateFontString(nil, "OVERLAY")
+	local count = self.border:CreateFontString(nil, "OVERLAY")
 	count:SetFontObject(GetFont(12,true))
 	count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	count:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -2, 3)
 	self.count = count
 
-	local bar = self.bar or Auras:CreateSmoothBar(nil, self)
+	local bar = Auras:CreateSmoothBar(nil, self)
 	bar:SetPoint("TOP", self, "BOTTOM", 0, 0)
 	bar:SetPoint("LEFT", self, "LEFT", 1, 0)
 	bar:SetPoint("RIGHT", self, "RIGHT", -1, 0)
@@ -85,9 +84,7 @@ Aura.Style = function(self)
 
 	-- Using a virtual cooldown element with the bar and timer attached,
 	-- allowing them to piggyback on oUF's cooldown updates.
-	if (not self.cd) then
-		self.cd = RegisterCooldown(bar)
-	end
+	self.cd = RegisterCooldown(bar)
 
 end
 
@@ -105,9 +102,9 @@ Aura.Update = function(self, index)
 			self.cd:Show()
 		else
 			self.cd:Hide()
-			if (self.bar) then
-				self.bar:Show()
-			end
+			--if (self.bar) then
+			--	self.bar:Show()
+			--end
 		end
 	else
 		self.icon:SetTexture(nil)
@@ -132,9 +129,9 @@ Aura.UpdateTempEnchant = function(self, slot)
 			self.cd:Show()
 		else
 			self.cd:Hide()
-			if (self.bar) then
-				self.bar:Show()
-			end
+			--if (self.bar) then
+			--	self.bar:Show()
+			--end
 		end
 	else
 		-- sometimes empty temp enchants are shown
@@ -228,18 +225,18 @@ Auras.OnInitialize = function(self)
 	window:SetAttribute("minHeight", 36)
 	window:SetAttribute("minWidth", 36)
 	window:SetAttribute("point", "BOTTOMLEFT")
-	window:SetAttribute("xOffset", 40)
+	window:SetAttribute("xOffset", 42)
 	window:SetAttribute("yOffset", 0)
 	window:SetAttribute("wrapAfter", 8)
-	window:SetAttribute("wrapYOffset", 45)
+	window:SetAttribute("wrapYOffset", 48)
 	window:SetAttribute("filter", "HELPFUL")
 	window:SetAttribute("includeWeapons", 1)
 	window:SetAttribute("sortMethod", "TIME")
 	window:SetAttribute("sortDirection", "+")
 	window.tooltipPoint = "TOPRIGHT"
 	window.tooltipAnchor = "BOTTOMLEFT"
-	window.tooltipOffsetX = -8
-	window.tooltipOffsetY = -8
+	window.tooltipOffsetX = -10
+	window.tooltipOffsetY = -10
 	RegisterAttributeDriver(window, "unit", "[vehicleui] vehicle; player")
 
 	self.Window = window
