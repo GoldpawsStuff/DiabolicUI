@@ -4,12 +4,15 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-19
+## [Unreleased] 2022-10-20
 ### Added
+- Added the `/auras hide` command to always hide the full buff display.
+- Added the `/auras show` command to always show the full buff display. This is the default setting.
+- Added the `/auras auto` command to mostly hide the full buff display. It is shown while holding the Ctrl and Shift modifiers at the same time. It will also be shown in Wrath while grouped and not engaged in combat. Consider this a mode useful for Wrath raiders that prefer less spam but still need to have it visible for the sake of buffing.
 - Some stuff I'd rather not talk about. Currently only available to git users running in dev mode. Which you shouldn't do.
 
 ### Changed
-- Made the full buff display permanently visible and moved it to its expected location up next to the minimap. This is an experiment, and I'm not yet fully convinced I'll leave it in there. It does however allow me to more aggressively filter the centered aura display above the actionbars without too many complaints.
+- Made the full buff display permanently visible and moved it to its expected location up next to the minimap. This is an experiment, and I'm not yet fully convinced I'll leave it in there. It does however allow me to more aggressively filter the centered aura display above the actionbars without too many complaints. In Wrath some auras will be consolidated.
 - Moved the default position of the tooltip slightly.
 - Changed how the minimap and quest tracker are anchored and moved.
 - Changed how width and the general handling of the Wrath quest tracker is done, in an affort to work against the annoying taint where quest buttons will become unclickable if they are spawned during combat. Untested, as it's a bit hard to test this out in Wrath, at least until I hit max level and get some dailies that suit my testing purposes.
