@@ -30,6 +30,7 @@ local Auras = ns:NewModule("Auras", "LibMoreEvents-1.0", "AceTimer-3.0", "AceHoo
 local math_ceil = math.ceil
 local pairs = pairs
 local select = select
+local string_format = string.format
 local string_lower = string.lower
 local table_insert = table.insert
 
@@ -385,7 +386,7 @@ Auras.OnInitialize = function(self)
 	buffs:SetAttribute("point", "TOPRIGHT")
 	buffs:SetAttribute("xOffset", -42)
 	buffs:SetAttribute("yOffset", 0)
-	buffs:SetAttribute("wrapAfter", 8)
+	buffs:SetAttribute("wrapAfter", 6)
 	buffs:SetAttribute("wrapXOffset", 0)
 	buffs:SetAttribute("wrapYOffset", -48)
 	buffs:SetAttribute("filter", "HELPFUL")
@@ -423,15 +424,16 @@ Auras.OnInitialize = function(self)
 		buffs.consolidation:Hide()
 		buffs.consolidation:SetIgnoreParentAlpha(true)
 		buffs.consolidation:SetSize(36, 36)
-		buffs.consolidation:SetPoint("TOPRIGHT", buffs.proxy, "BOTTOMRIGHT", 0, -8)
+		--buffs.consolidation:SetPoint("TOPRIGHT", buffs.proxy, "BOTTOMRIGHT", 0, -8)
+		buffs.consolidation:SetPoint("TOPLEFT", buffs.proxy, "TOPRIGHT", 6, 0)
 		buffs.consolidation:SetAttribute("minHeight", nil)
 		buffs.consolidation:SetAttribute("minWidth", nil)
-		buffs.consolidation:SetAttribute("point", buffs:GetAttribute("point"))
+		buffs.consolidation:SetAttribute("point", "TOPRIGHT")
 		buffs.consolidation:SetAttribute("template", buffs:GetAttribute("template"))
 		buffs.consolidation:SetAttribute("weaponTemplate", buffs:GetAttribute("weaponTemplate"))
 		buffs.consolidation:SetAttribute("xOffset", buffs:GetAttribute("xOffset"))
 		buffs.consolidation:SetAttribute("yOffset", buffs:GetAttribute("yOffset"))
-		buffs.consolidation:SetAttribute("wrapAfter", buffs:GetAttribute("wrapAfter"))
+		buffs.consolidation:SetAttribute("wrapAfter", 6)
 		buffs.consolidation:SetAttribute("wrapYOffset", buffs:GetAttribute("wrapYOffset"))
 		buffs.consolidation.tooltipPoint = buffs.tooltipPoint
 		buffs.consolidation.tooltipAnchor = buffs.tooltipAnchor
@@ -497,7 +499,14 @@ Auras.OnInitialize = function(self)
 		end
 	]])
 
-	visibility:SetAttribute("UpdateDriver", [[
+	local autodriver = "[petbattle]hide;"
+	if (ns.IsWrath) then
+		autodriver = autodriver .. "[group,nocombat]show;"
+	end
+	autodriver = autodriver .. "[mod:ctrl/shift]show;"
+	autodriver = autodriver .. "hide"
+
+	visibility:SetAttribute("UpdateDriver", string_format([[
 		local visdriver;
 		local buffs = self:GetFrameRef("Buffs");
 		local auraMode = self:GetAttribute("auraMode");
@@ -506,25 +515,12 @@ Auras.OnInitialize = function(self)
 		elseif (auraMode == 1) then
 			visdriver = "[petbattle]hide;show";
 		else
-			-- add conditional stuff here
-
-			visdriver = "[petbattle]hide;";
-			visdriver = visdriver .. "[group,nocombat]show;";
-			visdriver = visdriver .. "[nogroup,nostealth,noresting,nomounted,nocombat]show;";
-			visdriver = visdriver .. "hide";
-
-			--visdriver = "[petbattle]hide;";
-			--visdriver = visdriver .. "[mounted,nocombat]hide;";
-			--visdriver = visdriver .. "[flying,nocombat]hide;";
-			--visdriver = visdriver .. "[resting,nocombat]hide;";
-			--visdriver = visdriver .. "[nogroup,nocombat]hide;";
-			--visdriver = visdriver .. "show";
-
+			visdriver = "%s";
 		end
 		self:SetAttribute("visdriver", visdriver);
 		UnregisterStateDriver(self, "vis");
 		RegisterStateDriver(self, "vis", visdriver);
-	]])
+	]], autodriver))
 
 	visibility:SetAttribute("_onstate-vis", [[
 		self:RunAttribute("UpdateVisibility");
