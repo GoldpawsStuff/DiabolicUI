@@ -37,6 +37,10 @@ local defaults = {
 		actionbars = {
 			enableSecondary = false,
 			enablePetBar = true
+		},
+		auras = {
+			alwaysHideAuras = false,
+			alwaysShowAuras = false
 		}
 	},
 	global = {
