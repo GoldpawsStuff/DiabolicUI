@@ -557,7 +557,7 @@ Tooltips.SetDefaultAnchor = function(self, tooltip, parent)
 	if (not tooltip) or (tooltip:IsForbidden()) then return end
 
 	tooltip:SetOwner(parent, "ANCHOR_NONE")
-	tooltip:SetPoint("BOTTOMRIGHT", -60, 60)
+	tooltip:SetPoint("BOTTOMRIGHT", -40, 40)
 end
 
 Tooltips.SetUnitColor = function(self, unit)
