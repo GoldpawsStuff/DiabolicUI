@@ -382,14 +382,14 @@ Auras.OnInitialize = function(self)
 	buffs:SetAttribute("template", "DiabolicAuraTemplate")
 	buffs:SetAttribute("minHeight", 36)
 	buffs:SetAttribute("minWidth", 36)
-	buffs:SetAttribute("point", "BOTTOMLEFT")
-	buffs:SetAttribute("xOffset", 42)
+	buffs:SetAttribute("point", "TOPRIGHT")
+	buffs:SetAttribute("xOffset", -42)
 	buffs:SetAttribute("yOffset", 0)
 	buffs:SetAttribute("wrapAfter", 8)
-	buffs:SetAttribute("wrapYOffset", 48)
+	buffs:SetAttribute("wrapXOffset", 0)
+	buffs:SetAttribute("wrapYOffset", -48)
 	buffs:SetAttribute("filter", "HELPFUL")
 	buffs:SetAttribute("includeWeapons", 1)
-	buffs:SetAttribute("separateOwn", 1)
 	buffs:SetAttribute("sortMethod", "TIME")
 	buffs:SetAttribute("sortDirection", "-")
 
@@ -423,13 +423,13 @@ Auras.OnInitialize = function(self)
 		buffs.consolidation:Hide()
 		buffs.consolidation:SetIgnoreParentAlpha(true)
 		buffs.consolidation:SetSize(36, 36)
-		buffs.consolidation:SetPoint("TOPRIGHT", buffs.proxy, "BOTTOMRIGHT", 0, -5)
-		buffs.consolidation:SetAttribute("point", "TOPRIGHT")
+		buffs.consolidation:SetPoint("TOPRIGHT", buffs.proxy, "BOTTOMRIGHT", 0, -8)
 		buffs.consolidation:SetAttribute("minHeight", nil)
 		buffs.consolidation:SetAttribute("minWidth", nil)
+		buffs.consolidation:SetAttribute("point", buffs:GetAttribute("point"))
 		buffs.consolidation:SetAttribute("template", buffs:GetAttribute("template"))
 		buffs.consolidation:SetAttribute("weaponTemplate", buffs:GetAttribute("weaponTemplate"))
-		buffs.consolidation:SetAttribute("xOffset", -buffs:GetAttribute("xOffset"))
+		buffs.consolidation:SetAttribute("xOffset", buffs:GetAttribute("xOffset"))
 		buffs.consolidation:SetAttribute("yOffset", buffs:GetAttribute("yOffset"))
 		buffs.consolidation:SetAttribute("wrapAfter", buffs:GetAttribute("wrapAfter"))
 		buffs.consolidation:SetAttribute("wrapYOffset", buffs:GetAttribute("wrapYOffset"))
@@ -455,12 +455,21 @@ Auras.OnInitialize = function(self)
 			end
 		]])
 
-		buffs:SetAttribute("consolidateTo", 10000)
+		buffs:SetAttribute("consolidateTo", -1)
 		buffs:SetAttribute("consolidateProxy", buffs.proxy)
 		buffs:SetAttribute("consolidateHeader", buffs.consolidation)
+
+		-- Auras with less remaining duration than
+		-- this many seconds should not be consolidated.
 		buffs:SetAttribute("consolidateThreshold", 10) -- default 10
-		buffs:SetAttribute("consolidateDuration", 301) -- default 30
-		buffs:SetAttribute("consolidateFraction", 1) -- default .10
+
+		-- The minimum total duration an aura should
+		-- have to be considered for consolidation.
+		buffs:SetAttribute("consolidateDuration", 10) -- default 30
+
+		-- The fraction of remaining duration a buff
+		-- should still have to be eligible for consolidation.
+		buffs:SetAttribute("consolidateFraction", .1) -- default .10
 
 		RegisterAttributeDriver(buffs.consolidation, "unit", "[vehicleui] vehicle; player")
 
@@ -500,7 +509,8 @@ Auras.OnInitialize = function(self)
 			-- add conditional stuff here
 
 			visdriver = "[petbattle]hide;";
-			visdriver = visdriver .. "[group,nocombat]show;"; -- when you're buffing up
+			visdriver = visdriver .. "[group,nocombat]show;";
+			visdriver = visdriver .. "[nogroup,nostealth,noresting,nomounted,nocombat]show;";
 			visdriver = visdriver .. "hide";
 
 			--visdriver = "[petbattle]hide;";
