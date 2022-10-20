@@ -405,7 +405,7 @@ Auras.OnInitialize = function(self)
 	if (ns.IsWrath) then
 
 		buffs.proxy = CreateFrame("Button", buffs:GetName().."ProxyButton", buffs, "SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate")
-		--buffs.proxy:Hide()
+		buffs.proxy:Hide()
 		buffs.proxy:SetSize(36,36)
 		buffs.proxy:SetIgnoreParentAlpha(true)
 		buffs.proxy.texture = buffs.proxy:CreateTexture(nil, "BACKGROUND")
@@ -416,6 +416,8 @@ Auras.OnInitialize = function(self)
 		buffs.proxy.count:SetFontObject(GetFont(12,true))
 		buffs.proxy.count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 		buffs.proxy.count:SetPoint("BOTTOMRIGHT", -2, 3)
+
+		self:SecureHookScript(buffs.proxy, "OnShow", "UpdateConsolidationCount")
 
 		buffs.consolidation = CreateFrame("Frame", buffs:GetName().."Consolidation", buffs.proxy, "SecureFrameTemplate")
 		buffs.consolidation:Hide()
@@ -518,8 +520,11 @@ Auras.OnInitialize = function(self)
 		self:RunAttribute("UpdateVisibility");
 	]])
 
+
 	self.Buffs = buffs
 	self.Visibility = visibility
+
+	--self:HookScript(self.Buffs, "OnShow", "UpdateConsolidationCount")
 
 	self:RegisterChatCommand("auras", "OnChatCommand")
 end
