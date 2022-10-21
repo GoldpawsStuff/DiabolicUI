@@ -50,7 +50,11 @@ MicroMenu.UpdateButtonLayout = function(self, event)
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateButtonLayout")
 	end
 	if (event == "PLAYER_REGEN_ENABLED") then
-		self:UnregisterEvent(event, "UpdateButtonLayout")
+		if (InCombatLockdown()) then
+			return
+		else
+			self:UnregisterEvent(event, "UpdateButtonLayout")
+		end
 	end
 	local visible = 0
 	local first, last

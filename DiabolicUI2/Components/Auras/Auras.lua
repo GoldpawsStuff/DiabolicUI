@@ -279,12 +279,15 @@ end
 
 -- Module API
 --------------------------------------------
+-- Embed the aura template methods
+-- into an existing aura frame.
 Auras.Embed = function(self, aura)
 	for method,func in pairs(Aura) do
 		aura[method] = func
 	end
 end
 
+-- Run a member method on all auras.
 Auras.ForAll = function(self, method, ...)
 	local buffs = self.buffs
 	if (not buffs) then
@@ -302,6 +305,8 @@ Auras.ForAll = function(self, method, ...)
 	end
 end
 
+-- Updates
+--------------------------------------------
 Auras.UpdateConsolidationCount = function(self)
 	local buffs = self.buffs
 	if (not buffs or not buffs.consolidation) then
@@ -316,6 +321,9 @@ Auras.UpdateConsolidationCount = function(self)
 end
 
 Auras.UpdateSettings = function(self)
+	if (InCombatLockdown()) then
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+	end
 	local visibility = self.visibility
 	if (not visibility) then
 		return
@@ -331,42 +339,8 @@ Auras.UpdateSettings = function(self)
 	visibility:Execute([[ self:RunAttribute("UpdateDriver"); ]])
 end
 
-Auras.OnChatCommand = function(self, input)
-	if (InCombatLockdown()) then
-		return
-	end
-
-	local arg1, arg2 = self:GetArgs(string_lower(input))
-	local db = ns.db.char.auras
-
-	if (arg1 == "show") then
-		db.alwaysShowAuras = true
-		db.alwaysHideAuras = false
-	elseif (arg1 == "hide") then
-		db.alwaysShowAuras = false
-		db.alwaysHideAuras = true
-	elseif (arg1 == "auto") then
-		db.alwaysShowAuras = false
-		db.alwaysHideAuras = false
-	end
-
-	self:UpdateSettings()
-end
-
-Auras.OnEvent = function(self, event, ...)
-	if (event == "PLAYER_ENTERING_WORLD") then
-		local isInitialLogin, isReloadingUi = ...
-		if (isInitialLogin or isReloadingUi) then
-
-		end
-		self:ForAll("Update")
-		self:UpdateConsolidationCount()
-
-	elseif (event == "UNIT_AURA") then
-		self:UpdateConsolidationCount()
-	end
-end
-
+-- Initialization & Events
+--------------------------------------------
 Auras.SpawnAuras = function(self)
 	if (not self.buffs) then
 
@@ -548,6 +522,48 @@ Auras.SpawnAuras = function(self)
 		]], visdriver))
 
 		self.visibility = visibility
+	end
+end
+
+Auras.OnChatCommand = function(self, input)
+	if (InCombatLockdown()) then
+		return
+	end
+
+	local arg1, arg2 = self:GetArgs(string_lower(input))
+	local db = ns.db.char.auras
+
+	if (arg1 == "show") then
+		db.alwaysShowAuras = true
+		db.alwaysHideAuras = false
+	elseif (arg1 == "hide") then
+		db.alwaysShowAuras = false
+		db.alwaysHideAuras = true
+	elseif (arg1 == "auto") then
+		db.alwaysShowAuras = false
+		db.alwaysHideAuras = false
+	end
+
+	self:UpdateSettings()
+end
+
+Auras.OnEvent = function(self, event, ...)
+	if (event == "PLAYER_ENTERING_WORLD") then
+		local isInitialLogin, isReloadingUi = ...
+		if (isInitialLogin or isReloadingUi) then
+
+		end
+		self:ForAll("Update")
+		self:UpdateConsolidationCount()
+
+	elseif (event == "PLAYER_REGEN_ENABLED") then
+		if (not InCombatLockdown()) then
+			self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+			self:UpdateSettings()
+		end
+
+	elseif (event == "UNIT_AURA") then
+		self:UpdateConsolidationCount()
 	end
 end
 

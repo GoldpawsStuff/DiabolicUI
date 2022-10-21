@@ -464,20 +464,6 @@ UnitFrames.KillNamePlateClutter = function(self)
 		hooksecurefunc(NamePlateDriverFrame, "UpdateNamePlateOptions", self.SetNamePlateSizes)
 	end
 
-	--if (NamePlateDriverFrame.SetupClassNameplateBars) then
-	--	hooksecurefunc(NamePlateDriverFrame, "SetupClassNameplateBars", function(frame)
-	--		if (not frame) or (frame:IsForbidden()) then
-	--			return
-	--		end
-	--		if (frame.classNamePlateMechanicFrame) then
-	--			frame.classNamePlateMechanicFrame:Hide()
-	--		end
-	--		if (frame.classNamePlatePowerBar) then
-	--			frame.classNamePlatePowerBar:Hide()
-	--			frame.classNamePlatePowerBar:UnregisterAllEvents()
-	--		end
-	--	end)
-	--end
 end
 
 UnitFrames.SetNamePlateSizes = function()
@@ -489,23 +475,6 @@ UnitFrames.SetNamePlateSizes = function()
 	C_NamePlate.SetNamePlateSelfSize(w,h)
 end
 
---UnitFrames.SetNamePlateDistance = function(self, event, ...)
---	if (InCombatLockdown()) then
---		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "SetNamePlateDistance")
---	end
---	if (event == "PLAYER_REGEN_ENABLED") then
---		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "SetNamePlateDistance")
---	end
---	local _, instanceType = IsInInstance()
---	if (instanceType == "none") then
---		SetCVar("nameplateMaxDistance", 30)
---		SetCVar("nameplateMaxScaleDistance", 15)
---	else
---		SetCVar("nameplateMaxDistance", 45)
---		SetCVar("nameplateMaxScaleDistance", 30)
---	end
---end
-
 UnitFrames.UpdateScale = function(self)
 	for namePlate in pairs(ns.NamePlates) do
 		SetEffectiveObjectScale(namePlate)
@@ -514,7 +483,6 @@ end
 
 UnitFrames.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") or (event == "VARIABLES_LOADED") then
-		--self:SetNamePlateDistance()
 		self:UpdateScale()
 	elseif (event == "UI_SCALE_CHANGED") or (event == "DISPLAY_SIZE_CHANGED") then
 		self:UpdateScale()
@@ -522,13 +490,11 @@ UnitFrames.OnEvent = function(self, event, ...)
 end
 
 UnitFrames.OnInitialize = function(self)
-
 	self:RegisterMetaFunctions()
 	self:RegisterStyles()
 	self:SpawnUnitFrames()
 	self:SpawnGroupFrames()
 	self:SpawnNamePlates()
-
 end
 
 UnitFrames.OnEnable = function(self)

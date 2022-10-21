@@ -362,9 +362,11 @@ StanceBar.OnEvent = function(self, event, ...)
 		self:ForAll("Update")
 
 	elseif (event == "PLAYER_REGEN_ENABLED") then
-		if (self.updateStateOnCombatLeave) then
-			self.updateStateOnCombatLeave = nil
-			self:UpdateStanceButtons()
+		if (not InCombatLockdown()) then
+			if (self.updateStateOnCombatLeave) then
+				self.updateStateOnCombatLeave = nil
+				self:UpdateStanceButtons()
+			end
 		end
 	else
 		if (event == "PLAYER_ENTERING_WORLD") then

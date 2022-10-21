@@ -563,11 +563,21 @@ Tracker.OnEvent = function(self, event, ...)
 			self:UpdatePosition()
 		end
 
-	elseif (event == "VARIABLES_LOADED") or (event == "SETTINGS_LOADED") or (event == "PLAYER_REGEN_ENABLED") then
+	elseif (event == "VARIABLES_LOADED") or (event == "SETTINGS_LOADED") then
 		if (ns.IsWrath) then
 			self:UpdateWrathTracker()
 		else
 			self:UpdatePosition()
+		end
+
+	elseif (event == "PLAYER_REGEN_ENABLED") then
+		if (not InCombatLockdown()) then
+			self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+			if (ns.IsWrath) then
+				self:UpdateWrathTracker()
+			else
+				self:UpdatePosition()
+			end
 		end
 	end
 end

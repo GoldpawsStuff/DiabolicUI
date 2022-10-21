@@ -854,9 +854,16 @@ Bigmap.OnEvent = function(self, event)
 		self:UpdateTimers()
 		self:UpdatePosition()
 
-	elseif (event == "VARIABLES_LOADED") or (event == "SETTINGS_LOADED") or (event == "PLAYER_REGEN_ENABLED") then
+	elseif (event == "VARIABLES_LOADED") or (event == "SETTINGS_LOADED") then
 		self:UpdateTimers()
 		self:UpdatePosition()
+
+	elseif (event == "PLAYER_REGEN_ENABLED") then
+		if (not InCombatLockdown()) then
+			self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+			self:UpdateTimers()
+			self:UpdatePosition()
+		end
 
 	elseif (event == "CVAR_UPDATE") then
 		self:UpdateTimers()
