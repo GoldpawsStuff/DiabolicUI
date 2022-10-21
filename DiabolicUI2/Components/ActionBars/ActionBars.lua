@@ -29,21 +29,27 @@ local ActionBars = ns:NewModule("ActionBars", "LibMoreEvents-1.0")
 ---------------------------------------------
 -- Proxy Calls
 ---------------------------------------------
+-- Returns 'true' if the secondary bar is currently visible.
 ActionBars.HasSecondaryBar = function(self)
 	local Bars = self:GetModule("Bars", true)
 	return Bars and Bars:HasSecondaryBar()
 end
 
+-- Returns the secondary action bar.
 ActionBars.GetSecondaryBar = function(self)
 	local Bars = self:GetModule("Bars", true)
 	return Bars and Bars:GetSecondaryBar()
 end
 
+-- Returns the currently valid vertical offset
+-- for items positioned above the action bars.
 ActionBars.GetSecondaryBarOffset = function(self)
 	local Bars = self:GetModule("Bars", true)
 	return Bars and Bars:GetSecondaryBarOffset()
 end
 
+-- Returns the value used in the above call
+-- when the secondary bar is visible.
 ActionBars.GetBarOffset = function(self)
 	local Bars = self:GetModule("Bars", true)
 	return Bars and Bars:GetBarOffset()
