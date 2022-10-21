@@ -338,7 +338,7 @@ Bars.SpawnBars = function(self)
 	-------------------------------------------------------
 	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMRIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar1", UIParent))
 	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("MEDIUM")
+	bar:SetFrameStrata("HIGH")
 	bar:SetSize(162, 112)
 	bar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660, 11)
 
@@ -364,7 +364,7 @@ Bars.SpawnBars = function(self)
 	-------------------------------------------------------
 	local bar = SetObjectScale(ns.ActionBar:Create(LEFT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar2", UIParent))
 	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("MEDIUM")
+	bar:SetFrameStrata("HIGH")
 	bar:SetSize(162, 112)
 	bar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660, 140)
 
@@ -390,7 +390,7 @@ Bars.SpawnBars = function(self)
 	-------------------------------------------------------
 	local bar = SetObjectScale(ns.ActionBar:Create(LEFT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar3", UIParent))
 	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("MEDIUM")
+	bar:SetFrameStrata("HIGH")
 	bar:SetSize(162, 112)
 	bar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660, 269)
 
@@ -416,7 +416,7 @@ Bars.SpawnBars = function(self)
 	-------------------------------------------------------
 	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMRIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar4", UIParent))
 	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("MEDIUM")
+	bar:SetFrameStrata("HIGH")
 	bar:SetSize(162, 112)
 	bar:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660, 11)
 
@@ -442,7 +442,7 @@ Bars.SpawnBars = function(self)
 	-------------------------------------------------------
 	local bar = SetObjectScale(ns.ActionBar:Create(RIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar5", UIParent))
 	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("MEDIUM")
+	bar:SetFrameStrata("HIGH")
 	bar:SetSize(162, 112)
 	bar:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660, 140)
 
@@ -468,7 +468,7 @@ Bars.SpawnBars = function(self)
 	-------------------------------------------------------
 	local bar = SetObjectScale(ns.ActionBar:Create(RIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar6", UIParent))
 	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("MEDIUM")
+	bar:SetFrameStrata("HIGH")
 	bar:SetSize(162, 112)
 	bar:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660, 269)
 
@@ -493,6 +493,7 @@ Bars.SpawnBars = function(self)
 	-- Left ToggleButton
 	-------------------------------------------------------
 	local toggle = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
+	toggle:SetFrameStrata("HIGH")
 	toggle:RegisterForClicks("AnyUp")
 	toggle:SetFrameRef("Bar1", self.Bars.SmallActionBar1)
 	toggle:SetFrameRef("Bar2", self.Bars.SmallActionBar2)
@@ -657,6 +658,7 @@ Bars.SpawnBars = function(self)
 	-- Right ToggleButton
 	-------------------------------------------------------
 	local toggle = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
+	toggle:SetFrameStrata("HIGH")
 	toggle:RegisterForClicks("AnyUp")
 	toggle:SetFrameRef("Bar1", self.Bars.SmallActionBar4)
 	toggle:SetFrameRef("Bar2", self.Bars.SmallActionBar5)
