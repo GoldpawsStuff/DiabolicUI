@@ -39,8 +39,8 @@ local defaults = {
 			enablePetBar = true
 		},
 		auras = {
-			alwaysHideAuras = false,
-			alwaysShowAuras = false
+			alwaysHideAuras = false, -- overrides alwaysShow
+			alwaysShowAuras = true
 		}
 	},
 	global = {
