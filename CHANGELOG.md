@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-20
+## [Unreleased] 2022-10-21
 ### Added
 - Added the `/auras hide` command to always hide the full buff display.
 - Added the `/auras show` command to always show the full buff display. This is the default setting.
