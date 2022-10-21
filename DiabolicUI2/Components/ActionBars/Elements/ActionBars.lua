@@ -38,6 +38,8 @@ local tonumber = tonumber
 local CreateFrame = CreateFrame
 local GetBindingKey = GetBindingKey
 local InCombatLockdown = InCombatLockdown
+local IsControlKeyDown = IsControlKeyDown
+local IsShiftKeyDown = IsShiftKeyDown
 local PetDismiss = PetDismiss
 local RegisterStateDriver = RegisterStateDriver
 local UnitExists = UnitExists
@@ -104,6 +106,24 @@ local iconPostSetTexture = function(self, ...)
 		self.desaturator:SetVertexColor(r, g, b)
 	end
 	self.desaturator:SetAlpha(self.desaturator.alpha or .2)
+end
+
+local toggleOnEnter = function(self)
+	self.mouseOver = true
+	self:UpdateAlpha()
+end
+
+local toggleOnLeave = function(self)
+	self.mouseOver = nil
+	self:UpdateAlpha()
+end
+
+local toggleUpdateAlpha = function(self)
+	if (self.mouseOver) or (IsShiftKeyDown() and IsControlKeyDown()) or (self.Bar1:IsShown()) then
+		self:SetAlpha(1)
+	else
+		self:SetAlpha(0)
+	end
 end
 
 local style = function(button)
@@ -278,8 +298,14 @@ Bars.SpawnBars = function(self)
 		end
 		style(button)
 	end
+
 	bar:UpdateStateDriver()
 
+	self.Bars.PrimaryActionBar = bar
+
+
+	-- Pet Battle Keybind Fixer
+	-------------------------------------------------------
 	local buttons = bar.buttons
 	local controller = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
 	controller:SetAttribute("_onstate-petbattle", string_format([[
@@ -305,7 +331,6 @@ Bars.SpawnBars = function(self)
 
 	RegisterStateDriver(controller, "petbattle", "[petbattle]petbattle;nopetbattle")
 
-	self.Bars.PrimaryActionBar = bar
 	self.Bars.PrimaryActionBar.Controller = controller
 
 
@@ -334,492 +359,216 @@ Bars.SpawnBars = function(self)
 	self.Bars.SecondaryActionBar = bar
 
 
-	-- Left Bar 1 (Bottom Right MultiBar, Buttons 1-6)
+	-- Small Action Bars
 	-------------------------------------------------------
-	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMRIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar1", UIParent))
-	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("HIGH")
-	bar:SetSize(162, 112)
-	bar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660, 11)
-
-	local backdrop = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetSize(256,256)
-	backdrop:SetPoint("CENTER", -1, 0)
-	backdrop:SetTexture(GetMedia("bars-floater"))
-	bar.Backdrop = backdrop
-
+	-- 1: Left Bar 1 (Bottom Right 1-6)
+	-- 2: Left Bar 2 (Left Side 1-6)
+	-- 3: Left Bar 3 (Left Side 7-12)
+	-- 4: Right Bar 1 (Bottom Right 7-12)
+	-- 5: Right Bar 2 (Right Side 1-6)
+	-- 6: Right Bar 3 (Right Side 7-12)
+	-------------------------------------------------------
 	for i = 1,6 do
-		local button = bar:CreateButton(i)
-		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
-		style(button)
-	end
 
-	bar:UpdateStateDriver()
-	bar:Enable()
-
-	self.Bars.SmallActionBar1 = bar
-
-
-	-- Left Bar 2 (Left Side MultiBar, Buttons 1-6)
-	-------------------------------------------------------
-	local bar = SetObjectScale(ns.ActionBar:Create(LEFT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar2", UIParent))
-	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("HIGH")
-	bar:SetSize(162, 112)
-	bar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660, 140)
-
-	local backdrop = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetSize(256,256)
-	backdrop:SetPoint("CENTER", -1, 0)
-	backdrop:SetTexture(GetMedia("bars-floater"))
-	bar.Backdrop = backdrop
-
-	for i = 1,6 do
-		local button = bar:CreateButton(i)
-		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
-		style(button)
-	end
-
-	bar:UpdateStateDriver()
-	bar:Enable()
-
-	self.Bars.SmallActionBar2 = bar
-
-
-	-- Left Bar 3 (Left Side MultiBar, Buttons 7-12)
-	-------------------------------------------------------
-	local bar = SetObjectScale(ns.ActionBar:Create(LEFT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar3", UIParent))
-	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("HIGH")
-	bar:SetSize(162, 112)
-	bar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660, 269)
-
-	local backdrop = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetSize(256,256)
-	backdrop:SetPoint("CENTER", -1, 0)
-	backdrop:SetTexture(GetMedia("bars-floater"))
-	bar.Backdrop = backdrop
-
-	for i = 1,6 do
-		local button = bar:CreateButton(i + 6)
-		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
-		style(button)
-	end
-
-	bar:UpdateStateDriver()
-	bar:Enable()
-
-	self.Bars.SmallActionBar3 = bar
-
-
-	-- Right Bar 1 (Bottom Right MultiBar, Buttons 7-12)
-	-------------------------------------------------------
-	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMRIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar4", UIParent))
-	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("HIGH")
-	bar:SetSize(162, 112)
-	bar:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660, 11)
-
-	local backdrop = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetSize(256,256)
-	backdrop:SetPoint("CENTER", -1, 0)
-	backdrop:SetTexture(GetMedia("bars-floater"))
-	bar.Backdrop = backdrop
-
-	for i = 1,6 do
-		local button = bar:CreateButton(i + 6)
-		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
-		style(button)
-	end
-
-	bar:UpdateStateDriver()
-	bar:Enable()
-
-	self.Bars.SmallActionBar4 = bar
-
-
-	-- Right Bar 2 (Right Side MultiBar, Buttons 1-6)
-	-------------------------------------------------------
-	local bar = SetObjectScale(ns.ActionBar:Create(RIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar5", UIParent))
-	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("HIGH")
-	bar:SetSize(162, 112)
-	bar:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660, 140)
-
-	local backdrop = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetSize(256,256)
-	backdrop:SetPoint("CENTER", -1, 0)
-	backdrop:SetTexture(GetMedia("bars-floater"))
-	bar.Backdrop = backdrop
-
-	for i = 1,6 do
-		local button = bar:CreateButton(i)
-		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
-		style(button)
-	end
-
-	bar:UpdateStateDriver()
-	bar:Enable()
-
-	self.Bars.SmallActionBar5 = bar
-
-
-	-- Right Bar 3 (Right Side MultiBar, Buttons 7-12)
-	-------------------------------------------------------
-	local bar = SetObjectScale(ns.ActionBar:Create(RIGHT_ACTIONBAR_PAGE, ns.Prefix.."SmallActionBar6", UIParent))
-	bar:SetAttribute("userhidden", true)
-	bar:SetFrameStrata("HIGH")
-	bar:SetSize(162, 112)
-	bar:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660, 269)
-
-	local backdrop = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetSize(256,256)
-	backdrop:SetPoint("CENTER", -1, 0)
-	backdrop:SetTexture(GetMedia("bars-floater"))
-	bar.Backdrop = backdrop
-
-	for i = 1,6 do
-		local button = bar:CreateButton(i + 6)
-		button:SetPoint("TOPLEFT", ((i-1)%3)*54, -(math_floor((i-1)/3))*(53 + 6))
-		style(button)
-	end
-
-	bar:UpdateStateDriver()
-	bar:Enable()
-
-	self.Bars.SmallActionBar6 = bar
-
-
-	-- Left ToggleButton
-	-------------------------------------------------------
-	local toggle = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
-	toggle:SetFrameStrata("HIGH")
-	toggle:RegisterForClicks("AnyUp")
-	toggle:SetFrameRef("Bar1", self.Bars.SmallActionBar1)
-	toggle:SetFrameRef("Bar2", self.Bars.SmallActionBar2)
-	toggle:SetFrameRef("Bar3", self.Bars.SmallActionBar3)
-	toggle:SetAttribute("_onclick", [[
-
-		local bar1 = self:GetFrameRef("Bar1");
-		local bar2 = self:GetFrameRef("Bar2");
-		local bar3 = self:GetFrameRef("Bar3");
-
-		if (button == "LeftButton") then
-			if (not bar1:IsShown()) then
-				bar1:Show();
-			elseif (not bar2:IsShown()) then
-				bar2:Show();
-			elseif (not bar3:IsShown()) then
-				bar3:Show();
-			end
-		elseif (button == "RightButton") then
-			if (bar3:IsShown()) then
-				bar3:Hide();
-			elseif (bar2:IsShown()) then
-				bar2:Hide();
-			elseif (bar1:IsShown()) then
-				bar1:Hide();
-			end
+		local name = "SmallActionBar"..i
+		local barID
+		if (i == 1 or i == 4) then
+			barID = BOTTOMRIGHT_ACTIONBAR_PAGE
+		elseif (i == 2 or i == 3) then
+			barID = LEFT_ACTIONBAR_PAGE
+		elseif (i == 5 or i == 6) then
+			barID = RIGHT_ACTIONBAR_PAGE
 		end
 
-		bar1:UnregisterAutoHide();
-		bar2:UnregisterAutoHide();
-		bar3:UnregisterAutoHide();
+		local bar = SetObjectScale(ns.ActionBar:Create(barID, ns.Prefix..name, UIParent))
+		bar:SetAttribute("userhidden", true)
+		bar:SetFrameStrata("HIGH")
+		bar:SetSize(162, 112)
 
-		if (bar1:IsShown()) then
+		if (i > 3) then
+			bar:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660, 11 + (i-4)*129)
+		else
+			bar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660, 11 + (i-1)*129)
+		end
 
-			-- Register autohider for bar1
-			bar1:RegisterAutoHide(.75);
-			bar1:AddToAutoHide(self);
-			for i = 1,6 do
-				button = bar1:GetFrameRef("Button"..i);
-				if (button:IsShown()) then
-					bar1:AddToAutoHide(button);
+		local backdrop = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
+		backdrop:SetSize(256,256)
+		backdrop:SetPoint("CENTER", -1, 0)
+		backdrop:SetTexture(GetMedia("bars-floater"))
+		bar.Backdrop = backdrop
+
+		local buttonOffset = (i == 3 or i == 4 or i == 6) and 6 or 0
+		for j = 1,6 do
+			local button = bar:CreateButton(i + buttonOffset)
+			button:SetPoint("TOPLEFT", ((j-1)%3)*54, -(math_floor((j-1)/3))*(53 + 6))
+			style(button)
+		end
+
+		bar:UpdateStateDriver()
+		bar:Enable()
+
+		self.Bars[name] = bar
+	end
+
+
+	-- ToggleButtons
+	-------------------------------------------------------
+	for i = 1,2 do
+
+		local name = ns.Prefix..(i == 1 and "Left" or "Right").."SmallBarToggleButton"
+
+		local toggle = SetObjectScale(CreateFrame("CheckButton", name, UIParent, "SecureHandlerClickTemplate"))
+		toggle:SetFrameStrata("HIGH")
+		toggle:RegisterForClicks("AnyUp")
+		toggle:SetSize(48,48)
+		toggle.OnEnter = toggleOnEnter
+		toggle.OnLeave = toggleOnLeave
+		toggle.UpdateAlpha = toggleUpdateAlpha
+
+		if (i == 1) then
+			toggle:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660 + 54, 11)
+		else
+			toggle:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660 - 54, 11)
+		end
+
+		local texture = toggle:CreateTexture(nil, "ARTWORK", nil, 0)
+		texture:SetSize(64,64)
+		texture:SetPoint("CENTER")
+		texture:SetTexture(GetMedia("button-toggle-plus"))
+		toggle.texture = texture
+
+		for j = 1,3 do
+			local barKey, smallBarKey = "Bar"..j, "SmallActionBar"..((i-1)*3 + j)
+			toggle:SetFrameRef(barKey, self.Bars[smallBarKey])
+			toggle[barKey] = self.Bars[smallBarKey]
+			toggle[barKey]:HookScript("OnHide", function() toggle:UpdateAlpha() end)
+		end
+
+		toggle:SetAttribute("_onclick", [[
+
+			local bar1 = self:GetFrameRef("Bar1");
+			local bar2 = self:GetFrameRef("Bar2");
+			local bar3 = self:GetFrameRef("Bar3");
+
+			if (button == "LeftButton") then
+				if (not bar1:IsShown()) then
+					bar1:Show();
+				elseif (not bar2:IsShown()) then
+					bar2:Show();
+				elseif (not bar3:IsShown()) then
+					bar3:Show();
+				end
+			elseif (button == "RightButton") then
+				if (bar3:IsShown()) then
+					bar3:Hide();
+				elseif (bar2:IsShown()) then
+					bar2:Hide();
+				elseif (bar1:IsShown()) then
+					bar1:Hide();
 				end
 			end
 
-			if (bar2:IsShown()) then
+			bar1:UnregisterAutoHide();
+			bar2:UnregisterAutoHide();
+			bar3:UnregisterAutoHide();
 
-				-- Add bar2 to bar1's autohider
-				bar1:AddToAutoHide(bar2);
+			if (bar1:IsShown()) then
+
+				-- Register autohider for bar1
+				bar1:RegisterAutoHide(.75);
+				bar1:AddToAutoHide(self);
 				for i = 1,6 do
-					button = bar2:GetFrameRef("Button"..i);
+					button = bar1:GetFrameRef("Button"..i);
 					if (button:IsShown()) then
 						bar1:AddToAutoHide(button);
 					end
 				end
 
-				-- Register autohider for bar2, include bar1
-				bar2:RegisterAutoHide(.75);
-				bar2:AddToAutoHide(self);
-				bar2:AddToAutoHide(bar1);
-				for i = 1,6 do
-					button = bar2:GetFrameRef("Button"..i);
-					if (button:IsShown()) then
-						bar2:AddToAutoHide(button);
-					end
-					button = bar1:GetFrameRef("Button"..i);
-					if (button:IsShown()) then
-						bar2:AddToAutoHide(button);
-					end
-				end
+				if (bar2:IsShown()) then
 
-				if (bar3:IsShown()) then
-
-					-- Add bar3 to bar1 and bar2's autohiders
-					bar1:AddToAutoHide(bar3);
-					bar2:AddToAutoHide(bar3);
+					-- Add bar2 to bar1's autohider
+					bar1:AddToAutoHide(bar2);
 					for i = 1,6 do
-						button = bar3:GetFrameRef("Button"..i);
+						button = bar2:GetFrameRef("Button"..i);
 						if (button:IsShown()) then
 							bar1:AddToAutoHide(button);
+						end
+					end
+
+					-- Register autohider for bar2, include bar1
+					bar2:RegisterAutoHide(.75);
+					bar2:AddToAutoHide(self);
+					bar2:AddToAutoHide(bar1);
+					for i = 1,6 do
+						button = bar2:GetFrameRef("Button"..i);
+						if (button:IsShown()) then
+							bar2:AddToAutoHide(button);
+						end
+						button = bar1:GetFrameRef("Button"..i);
+						if (button:IsShown()) then
 							bar2:AddToAutoHide(button);
 						end
 					end
 
-					-- Register autohider for bar3, include bar1 and bar2
-					bar3:RegisterAutoHide(.75);
-					bar3:AddToAutoHide(self);
-					bar3:AddToAutoHide(bar1);
-					bar3:AddToAutoHide(bar2);
-					for i = 1,6 do
-						button = bar3:GetFrameRef("Button"..i);
-						if (button:IsShown()) then
-							bar3:AddToAutoHide(button);
-						end
-						button = bar2:GetFrameRef("Button"..i);
-						if (button:IsShown()) then
-							bar3:AddToAutoHide(button);
-						end
-						button = bar1:GetFrameRef("Button"..i);
-						if (button:IsShown()) then
-							bar3:AddToAutoHide(button);
-						end
-					end
+					if (bar3:IsShown()) then
 
+						-- Add bar3 to bar1 and bar2's autohiders
+						bar1:AddToAutoHide(bar3);
+						bar2:AddToAutoHide(bar3);
+						for i = 1,6 do
+							button = bar3:GetFrameRef("Button"..i);
+							if (button:IsShown()) then
+								bar1:AddToAutoHide(button);
+								bar2:AddToAutoHide(button);
+							end
+						end
+
+						-- Register autohider for bar3, include bar1 and bar2
+						bar3:RegisterAutoHide(.75);
+						bar3:AddToAutoHide(self);
+						bar3:AddToAutoHide(bar1);
+						bar3:AddToAutoHide(bar2);
+						for i = 1,6 do
+							button = bar3:GetFrameRef("Button"..i);
+							if (button:IsShown()) then
+								bar3:AddToAutoHide(button);
+							end
+							button = bar2:GetFrameRef("Button"..i);
+							if (button:IsShown()) then
+								bar3:AddToAutoHide(button);
+							end
+							button = bar1:GetFrameRef("Button"..i);
+							if (button:IsShown()) then
+								bar3:AddToAutoHide(button);
+							end
+						end
+
+					end
 				end
 			end
-		end
+		]])
 
-	]])
+		toggle:SetAttribute("_onstate-vis", [[
+			if (not newstate) then
+				return
+			end
+			if (newstate == "hide") then
+				self:Hide();
+			else
+				self:Show();
+				self:RunMethod("UpdateAlpha");
+			end
+		]])
 
-	toggle:SetSize(48,48)
-	toggle:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -660 + 54, 11)
+		toggle:SetScript("OnEnter", toggle.OnEnter)
+		toggle:SetScript("OnLeave", toggle.OnLeave)
+		toggle:SetScript("OnEvent", toggle.UpdateAlpha)
+		toggle:RegisterEvent("MODIFIER_STATE_CHANGED")
+		toggle:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-	toggle:SetScript("OnEnter", function(self)
-		self.mouseOver = true
-		self:UpdateAlpha()
-	end)
+		RegisterStateDriver(toggle, "state-vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show")
 
-	toggle:SetScript("OnLeave", function(self)
-		self.mouseOver = nil
-		self:UpdateAlpha()
-	end)
-
-	toggle.UpdateAlpha = function(self)
-		if (self.mouseOver) or (IsShiftKeyDown() and IsControlKeyDown()) or (self.Bar1:IsShown()) then
-			self:SetAlpha(1)
-		else
-			self:SetAlpha(0)
-		end
 	end
-
-	toggle:SetAttribute("_onstate-vis", [[
-		if (not newstate) then
-			return
-		end
-		if (newstate == "hide") then
-			self:Hide();
-		else
-			self:Show();
-			self:RunMethod("UpdateAlpha");
-		end
-	]])
-
-	toggle:SetScript("OnEvent", toggle.UpdateAlpha)
-	toggle:RegisterEvent("MODIFIER_STATE_CHANGED")
-	toggle:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-	RegisterStateDriver(toggle, "state-vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show")
-
-	toggle.Bar1 = self.Bars.SmallActionBar1
-	toggle.Bar2 = self.Bars.SmallActionBar2
-	toggle.Bar3 = self.Bars.SmallActionBar3
-	toggle.Bar1:HookScript("OnHide", function() toggle:UpdateAlpha() end)
-	toggle.Bar2:HookScript("OnHide", function() toggle:UpdateAlpha() end)
-	toggle.Bar3:HookScript("OnHide", function() toggle:UpdateAlpha() end)
-
-	toggle.Texture = toggle:CreateTexture(nil, "ARTWORK", nil, 0)
-	toggle.Texture:SetSize(64,64)
-	toggle.Texture:SetPoint("CENTER")
-	toggle.Texture:SetTexture(GetMedia("button-toggle-plus"))
-
-
-	-- Right ToggleButton
-	-------------------------------------------------------
-	local toggle = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
-	toggle:SetFrameStrata("HIGH")
-	toggle:RegisterForClicks("AnyUp")
-	toggle:SetFrameRef("Bar1", self.Bars.SmallActionBar4)
-	toggle:SetFrameRef("Bar2", self.Bars.SmallActionBar5)
-	toggle:SetFrameRef("Bar3", self.Bars.SmallActionBar6)
-	toggle:SetAttribute("_onclick", [[
-
-		local bar1 = self:GetFrameRef("Bar1");
-		local bar2 = self:GetFrameRef("Bar2");
-		local bar3 = self:GetFrameRef("Bar3");
-
-		if (button == "LeftButton") then
-			if (not bar1:IsShown()) then
-				bar1:Show();
-			elseif (not bar2:IsShown()) then
-				bar2:Show();
-			elseif (not bar3:IsShown()) then
-				bar3:Show();
-			end
-		elseif (button == "RightButton") then
-			if (bar3:IsShown()) then
-				bar3:Hide();
-			elseif (bar2:IsShown()) then
-				bar2:Hide();
-			elseif (bar1:IsShown()) then
-				bar1:Hide();
-			end
-		end
-
-		bar1:UnregisterAutoHide();
-		bar2:UnregisterAutoHide();
-		bar3:UnregisterAutoHide();
-
-		if (bar1:IsShown()) then
-			self:SetAttribute("barsVisible", true);
-
-			-- Register autohider for bar1
-			bar1:RegisterAutoHide(.75);
-			bar1:AddToAutoHide(self);
-			for i = 1,6 do
-				button = bar1:GetFrameRef("Button"..i);
-				if (button:IsShown()) then
-					bar1:AddToAutoHide(button);
-				end
-			end
-
-			if (bar2:IsShown()) then
-
-				-- Add bar2 to bar1's autohider
-				bar1:AddToAutoHide(bar2);
-				for i = 1,6 do
-					button = bar2:GetFrameRef("Button"..i);
-					if (button:IsShown()) then
-						bar1:AddToAutoHide(button);
-					end
-				end
-
-				-- Register autohider for bar2, include bar1
-				bar2:RegisterAutoHide(.75);
-				bar2:AddToAutoHide(self);
-				bar2:AddToAutoHide(bar1);
-				for i = 1,6 do
-					button = bar2:GetFrameRef("Button"..i);
-					if (button:IsShown()) then
-						bar2:AddToAutoHide(button);
-					end
-					button = bar1:GetFrameRef("Button"..i);
-					if (button:IsShown()) then
-						bar2:AddToAutoHide(button);
-					end
-				end
-
-				if (bar3:IsShown()) then
-
-					-- Add bar3 to bar1 and bar2's autohiders
-					bar1:AddToAutoHide(bar3);
-					bar2:AddToAutoHide(bar3);
-					for i = 1,6 do
-						button = bar3:GetFrameRef("Button"..i);
-						if (button:IsShown()) then
-							bar1:AddToAutoHide(button);
-							bar2:AddToAutoHide(button);
-						end
-					end
-
-					-- Register autohider for bar3, include bar1 and bar2
-					bar3:RegisterAutoHide(.75);
-					bar3:AddToAutoHide(self);
-					bar3:AddToAutoHide(bar1);
-					bar3:AddToAutoHide(bar2);
-					for i = 1,6 do
-						button = bar3:GetFrameRef("Button"..i);
-						if (button:IsShown()) then
-							bar3:AddToAutoHide(button);
-						end
-						button = bar2:GetFrameRef("Button"..i);
-						if (button:IsShown()) then
-							bar3:AddToAutoHide(button);
-						end
-						button = bar1:GetFrameRef("Button"..i);
-						if (button:IsShown()) then
-							bar3:AddToAutoHide(button);
-						end
-					end
-
-				end
-			end
-		else
-			self:SetAttribute("barsVisible", nil);
-		end
-
-	]])
-
-	toggle:SetSize(48,48)
-	toggle:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 660 - 54, 11)
-
-	toggle:SetScript("OnEnter", function(self)
-		self.mouseOver = true
-		self:UpdateAlpha()
-	end)
-	toggle:SetScript("OnLeave", function(self)
-		self.mouseOver = nil
-		self:UpdateAlpha()
-	end)
-
-	toggle.UpdateAlpha = function(self)
-		if (self.mouseOver) or (IsShiftKeyDown() and IsControlKeyDown()) or (self.Bar1:IsShown()) then
-			self:SetAlpha(1)
-		else
-			self:SetAlpha(0)
-		end
-	end
-
-	toggle:SetAttribute("_onstate-vis", [[
-		if (not newstate) then
-			return
-		end
-		if (newstate == "hide") then
-			self:Hide();
-		else
-			self:Show();
-			self:RunMethod("UpdateAlpha");
-		end
-	]])
-
-	RegisterStateDriver(toggle, "state-vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show")
-
-	toggle:SetScript("OnEvent", toggle.UpdateAlpha)
-	toggle:RegisterEvent("MODIFIER_STATE_CHANGED")
-	toggle:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-	toggle.Bar1 = self.Bars.SmallActionBar4
-	toggle.Bar2 = self.Bars.SmallActionBar5
-	toggle.Bar3 = self.Bars.SmallActionBar6
-	toggle.Bar1:HookScript("OnHide", function() toggle:UpdateAlpha() end)
-	toggle.Bar2:HookScript("OnHide", function() toggle:UpdateAlpha() end)
-	toggle.Bar3:HookScript("OnHide", function() toggle:UpdateAlpha() end)
-
-	toggle.Texture = toggle:CreateTexture(nil, "ARTWORK", nil, 0)
-	toggle.Texture:SetSize(64,64)
-	toggle.Texture:SetPoint("CENTER")
-	toggle.Texture:SetTexture(GetMedia("button-toggle-plus"))
 
 	-- Inform the environment about the spawned bars
 	ns:Fire("ActionBar_Created", ns.Prefix.."PrimaryActionBar")
