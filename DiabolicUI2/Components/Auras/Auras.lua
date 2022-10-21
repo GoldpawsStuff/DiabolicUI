@@ -286,7 +286,7 @@ Auras.Embed = function(self, aura)
 end
 
 Auras.ForAll = function(self, method, ...)
-	local buffs = self.Buffs
+	local buffs = self.buffs
 	if (not buffs) then
 		return
 	end
@@ -303,8 +303,8 @@ Auras.ForAll = function(self, method, ...)
 end
 
 Auras.UpdateConsolidationCount = function(self)
-	local buffs = self.Buffs
-	if (not buffs) then
+	local buffs = self.buffs
+	if (not buffs or not buffs.consolidation) then
 		return
 	end
 	local numChild, child = 0
@@ -316,11 +316,10 @@ Auras.UpdateConsolidationCount = function(self)
 end
 
 Auras.UpdateSettings = function(self)
-	local visibility = self.Visibility
+	local visibility = self.visibility
 	if (not visibility) then
 		return
 	end
-
 	local db = ns.db.char.auras
 	if (db.alwaysHideAuras) then
 		visibility:SetAttribute("auraMode", -1)
@@ -329,7 +328,6 @@ Auras.UpdateSettings = function(self)
 	else
 		visibility:SetAttribute("auraMode", 0)
 	end
-
 	visibility:Execute([[ self:RunAttribute("UpdateDriver"); ]])
 end
 
@@ -374,7 +372,7 @@ Auras.OnInitialize = function(self)
 	-----------------------------------------
 	-- Header
 	-----------------------------------------
-
+	-- The primary buff window.
 	local buffs = SetObjectScale(CreateFrame("Frame", ns.Prefix.."BuffHeader", UIParent, "SecureAuraHeaderTemplate"))
 	buffs:SetFrameLevel(10)
 	buffs:SetSize(36,36)
@@ -398,98 +396,133 @@ Auras.OnInitialize = function(self)
 	buffs.tooltipAnchor = "BOTTOMLEFT"
 	buffs.tooltipOffsetX = -10
 	buffs.tooltipOffsetY = -10
+
+	-- Aura slot index where the
+	-- consolidation button will appear.
+	buffs:SetAttribute("consolidateTo", -1)
+
+	-- Auras with less remaining duration than
+	-- this many seconds should not be consolidated.
+	buffs:SetAttribute("consolidateThreshold", 10) -- default 10
+
+	-- The minimum total duration an aura should
+	-- have to be considered for consolidation.
+	buffs:SetAttribute("consolidateDuration", 10) -- default 30
+
+	-- The fraction of remaining duration a buff
+	-- should still have to be eligible for consolidation.
+	buffs:SetAttribute("consolidateFraction", .1) -- default .10
+
+	-- Add a vehicle switcher
 	RegisterAttributeDriver(buffs, "unit", "[vehicleui] vehicle; player")
+
+	self.buffs = buffs
+
 
 	-----------------------------------------
 	-- Consolidation
 	-----------------------------------------
-	if (ns.IsWrath) then
+	-- The proxybutton appearing in the aura listing
+	-- representing the existence of consolidated auras.
+	local proxy = CreateFrame("Button", buffs:GetName().."ProxyButton", buffs, "SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate")
+	proxy:Hide()
+	proxy:SetSize(36,36)
+	proxy:SetIgnoreParentAlpha(true)
+	buffs.proxy = proxy
 
-		buffs.proxy = CreateFrame("Button", buffs:GetName().."ProxyButton", buffs, "SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate")
-		buffs.proxy:Hide()
-		buffs.proxy:SetSize(36,36)
-		buffs.proxy:SetIgnoreParentAlpha(true)
-		buffs.proxy.texture = buffs.proxy:CreateTexture(nil, "BACKGROUND")
-		buffs.proxy.texture:SetSize(64,64)
-		buffs.proxy.texture:SetPoint("CENTER")
-		buffs.proxy.texture:SetTexture(GetMedia("chatbutton-maximize"))
-		buffs.proxy.count = buffs.proxy:CreateFontString(nil, "OVERLAY")
-		buffs.proxy.count:SetFontObject(GetFont(12,true))
-		buffs.proxy.count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
-		buffs.proxy.count:SetPoint("BOTTOMRIGHT", -2, 3)
+	local texture = proxy:CreateTexture(nil, "BACKGROUND")
+	texture:SetSize(64,64)
+	texture:SetPoint("CENTER")
+	texture:SetTexture(GetMedia("chatbutton-maximize"))
+	proxy.texture = texture
 
-		self:SecureHookScript(buffs.proxy, "OnShow", "UpdateConsolidationCount")
+	local count = proxy:CreateFontString(nil, "OVERLAY")
+	count:SetFontObject(GetFont(12,true))
+	count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
+	count:SetPoint("BOTTOMRIGHT", -2, 3)
+	proxy.count = count
 
-		buffs.consolidation = CreateFrame("Frame", buffs:GetName().."Consolidation", buffs.proxy, "SecureFrameTemplate")
-		buffs.consolidation:Hide()
-		buffs.consolidation:SetIgnoreParentAlpha(true)
-		buffs.consolidation:SetSize(36, 36)
-		--buffs.consolidation:SetPoint("TOPRIGHT", buffs.proxy, "BOTTOMRIGHT", 0, -8)
-		buffs.consolidation:SetPoint("TOPLEFT", buffs.proxy, "TOPRIGHT", 6, 0)
-		buffs.consolidation:SetAttribute("minHeight", nil)
-		buffs.consolidation:SetAttribute("minWidth", nil)
-		buffs.consolidation:SetAttribute("point", "TOPRIGHT")
-		buffs.consolidation:SetAttribute("template", buffs:GetAttribute("template"))
-		buffs.consolidation:SetAttribute("weaponTemplate", buffs:GetAttribute("weaponTemplate"))
-		buffs.consolidation:SetAttribute("xOffset", buffs:GetAttribute("xOffset"))
-		buffs.consolidation:SetAttribute("yOffset", buffs:GetAttribute("yOffset"))
-		buffs.consolidation:SetAttribute("wrapAfter", 6)
-		buffs.consolidation:SetAttribute("wrapYOffset", buffs:GetAttribute("wrapYOffset"))
-		buffs.consolidation.tooltipPoint = buffs.tooltipPoint
-		buffs.consolidation.tooltipAnchor = buffs.tooltipAnchor
-		buffs.consolidation.tooltipOffsetX = buffs.tooltipOffsetX
-		buffs.consolidation.tooltipOffsetY = buffs.tooltipOffsetY
+	buffs:SetAttribute("consolidateProxy", proxy)
 
-		buffs.dropdown = CreateFrame("Button", "$parentDropDown", buffs.proxy, "SecureHandlerClickTemplate")
-		buffs.dropdown:SetAllPoints()
-		buffs.dropdown:SetFrameRef("buffs", buffs)
-		buffs.dropdown:SetFrameRef("consolidation", buffs.consolidation)
-		buffs.dropdown:RegisterForClicks("AnyUp")
-		buffs.dropdown:SetAttribute("_onclick", [[
-			local consolidation = self:GetFrameRef("consolidation")
-			local buffs = self:GetFrameRef("buffs")
-			if consolidation:IsShown() then
-				consolidation:Hide()
-				buffs:SetAlpha(1)
-			else
-				consolidation:Show()
-				buffs:SetAlpha(.5)
-			end
-		]])
+	-- The other updates aren't called when it is hidden,
+	-- so to have the correct count when toggling through chat commands,
+	-- we need to have this extra update on each show.
+	self:SecureHookScript(proxy, "OnShow", "UpdateConsolidationCount")
 
-		buffs:SetAttribute("consolidateTo", -1)
-		buffs:SetAttribute("consolidateProxy", buffs.proxy)
-		buffs:SetAttribute("consolidateHeader", buffs.consolidation)
+	-- Consolidation frame where the consolidated auras appear.
+	local consolidation = CreateFrame("Frame", buffs:GetName().."Consolidation", buffs.proxy, "SecureFrameTemplate")
+	consolidation:Hide()
+	consolidation:SetIgnoreParentAlpha(true)
+	consolidation:SetSize(36, 36)
+	consolidation:SetPoint("TOPLEFT", proxy, "TOPRIGHT", 6, 0)
+	consolidation:SetAttribute("minHeight", nil)
+	consolidation:SetAttribute("minWidth", nil)
+	consolidation:SetAttribute("point", "TOPRIGHT")
+	consolidation:SetAttribute("template", buffs:GetAttribute("template"))
+	consolidation:SetAttribute("weaponTemplate", buffs:GetAttribute("weaponTemplate"))
+	consolidation:SetAttribute("xOffset", buffs:GetAttribute("xOffset"))
+	consolidation:SetAttribute("yOffset", buffs:GetAttribute("yOffset"))
+	consolidation:SetAttribute("wrapAfter", buffs:GetAttribute("wrapAfter"))
+	consolidation:SetAttribute("wrapYOffset", buffs:GetAttribute("wrapYOffset"))
 
-		-- Auras with less remaining duration than
-		-- this many seconds should not be consolidated.
-		buffs:SetAttribute("consolidateThreshold", 10) -- default 10
+	consolidation.tooltipPoint = buffs.tooltipPoint
+	consolidation.tooltipAnchor = buffs.tooltipAnchor
+	consolidation.tooltipOffsetX = buffs.tooltipOffsetX
+	consolidation.tooltipOffsetY = buffs.tooltipOffsetY
 
-		-- The minimum total duration an aura should
-		-- have to be considered for consolidation.
-		buffs:SetAttribute("consolidateDuration", 10) -- default 30
+	buffs:SetAttribute("consolidateHeader", consolidation)
 
-		-- The fraction of remaining duration a buff
-		-- should still have to be eligible for consolidation.
-		buffs:SetAttribute("consolidateFraction", .1) -- default .10
+	-- Add a vehicle switcher
+	RegisterAttributeDriver(consolidation, "unit", "[vehicleui] vehicle; player")
 
-		RegisterAttributeDriver(buffs.consolidation, "unit", "[vehicleui] vehicle; player")
+	buffs.consolidation = consolidation
 
-		Auras:RegisterUnitEvent("UNIT_AURA", "UpdateConsolidationCount", "player", "vehicle")
-	end
+	-- Clickbutton to toggle the consolidation window.
+	local button = CreateFrame("Button", proxy:GetName().."ClickButton", proxy, "SecureHandlerClickTemplate")
+	button:SetAllPoints()
+	button:SetFrameRef("buffs", buffs)
+	button:SetFrameRef("consolidation", consolidation)
+	button:RegisterForClicks("AnyUp")
+	button:SetAttribute("_onclick", [[
+		local consolidation = self:GetFrameRef("consolidation")
+		local buffs = self:GetFrameRef("buffs")
+		if consolidation:IsShown() then
+			consolidation:Hide()
+			buffs:SetAlpha(1)
+		else
+			consolidation:Show()
+			buffs:SetAlpha(.5)
+		end
+	]])
+
+	proxy.button = button
+
 
 	-----------------------------------------
 	-- Visibility
 	-----------------------------------------
-	local visibility = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
-	visibility:SetFrameRef("Buffs", buffs)
+	-- The visibility driver used when
+	-- visibility mode is set to auto.
+	local visdriver = "[petbattle]hide;"
 
+	-- In Wrath we still buff people before pulling,
+	-- so this seems like a reasonable compromise.
+	if (ns.IsWrath) then
+		visdriver = visdriver .. "[group,nocombat]show;"
+	end
+
+	visdriver = visdriver .. "[mod:ctrl/shift]show;"
+	visdriver = visdriver .. "hide"
+
+	local visibility = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+	visibility:SetFrameRef("buffs", buffs)
+	visibility:SetAttribute("_onstate-vis", [[ self:RunAttribute("UpdateVisibility"); ]])
 	visibility:SetAttribute("UpdateVisibility", [[
 		local visdriver = self:GetAttribute("visdriver");
 		if (not visdriver) then
 			return
 		end
-		local buffs = self:GetFrameRef("Buffs");
+		local buffs = self:GetFrameRef("buffs");
 		local shouldhide = SecureCmdOptionParse(visdriver) == "hide";
 		local isshown = buffs:IsShown();
 		if (shouldhide and isshown) then
@@ -499,16 +532,9 @@ Auras.OnInitialize = function(self)
 		end
 	]])
 
-	local autodriver = "[petbattle]hide;"
-	if (ns.IsWrath) then
-		autodriver = autodriver .. "[group,nocombat]show;"
-	end
-	autodriver = autodriver .. "[mod:ctrl/shift]show;"
-	autodriver = autodriver .. "hide"
-
 	visibility:SetAttribute("UpdateDriver", string_format([[
 		local visdriver;
-		local buffs = self:GetFrameRef("Buffs");
+		local buffs = self:GetFrameRef("buffs");
 		local auraMode = self:GetAttribute("auraMode");
 		if (auraMode == -1) then
 			visdriver = "hide";
@@ -520,22 +546,16 @@ Auras.OnInitialize = function(self)
 		self:SetAttribute("visdriver", visdriver);
 		UnregisterStateDriver(self, "vis");
 		RegisterStateDriver(self, "vis", visdriver);
-	]], autodriver))
+	]], visdriver))
 
-	visibility:SetAttribute("_onstate-vis", [[
-		self:RunAttribute("UpdateVisibility");
-	]])
-
-
-	self.Buffs = buffs
-	self.Visibility = visibility
-
-	--self:HookScript(self.Buffs, "OnShow", "UpdateConsolidationCount")
+	self.visibility = visibility
 
 	self:RegisterChatCommand("auras", "OnChatCommand")
+
 end
 
 Auras.OnEnable = function(self)
 	self:UpdateSettings()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	self:RegisterUnitEvent("UNIT_AURA", "UpdateConsolidationCount", "player", "vehicle")
 end
