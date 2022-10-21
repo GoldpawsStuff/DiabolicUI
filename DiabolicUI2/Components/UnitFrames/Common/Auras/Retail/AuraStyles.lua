@@ -44,17 +44,17 @@ ns.AuraStyles.PlayerPostUpdateIcon = function(element, button, unit, data, posit
 		color = Colors.xp
 	end
 	if (color) then
-		button.border:SetBackdropBorderColor(color[1], color[2], color[3])
-		button.bar:SetStatusBarColor(color[1], color[2], color[3])
+		button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+		button.Bar:SetStatusBarColor(color[1], color[2], color[3])
 	end
 
 	-- Icon Coloring
 	if (data.isFromPlayerOrPlayerPet or button.isDebuff) then
-		button.icon:SetDesaturated(false)
-		button.icon:SetVertexColor(1, 1, 1)
+		button.Icon:SetDesaturated(false)
+		button.Icon:SetVertexColor(1, 1, 1)
 	else
-		button.icon:SetDesaturated(true)
-		button.icon:SetVertexColor(.6, .6, .6)
+		button.Icon:SetDesaturated(true)
+		button.Icon:SetVertexColor(.6, .6, .6)
 	end
 
 end
@@ -73,16 +73,16 @@ ns.AuraStyles.TargetPostUpdateIcon = function(element, button, unit, data, posit
 		color = Colors.verydarkgray
 	end
 	if (color) then
-		button.border:SetBackdropBorderColor(color[1], color[2], color[3])
+		button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 	end
 
 	-- Icon Coloring
 	if (data.isFromPlayerOrPlayerPet) then
-		button.icon:SetDesaturated(false)
-		button.icon:SetVertexColor(1, 1, 1)
+		button.Icon:SetDesaturated(false)
+		button.Icon:SetVertexColor(1, 1, 1)
 	else
-		button.icon:SetDesaturated(true)
-		button.icon:SetVertexColor(.6, .6, .6)
+		button.Icon:SetDesaturated(true)
+		button.Icon:SetVertexColor(.6, .6, .6)
 	end
 
 end
@@ -101,7 +101,7 @@ ns.AuraStyles.NameplatePostUpdateIcon = function(element, button, unit, data, po
 		color = Colors.verydarkgray
 	end
 	if (color) then
-		button.border:SetBackdropBorderColor(color[1], color[2], color[3])
+		button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 	end
 
 end

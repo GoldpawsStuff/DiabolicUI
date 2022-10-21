@@ -74,7 +74,7 @@ ns.AuraStyles.CreateIconWithBar = function(element, position)
 	local icon = aura:CreateTexture(nil, "BACKGROUND", nil, 1)
 	icon:SetAllPoints()
 	icon:SetMask(GetMedia("actionbutton-mask-square"))
-	aura.icon = icon
+	aura.Icon = icon
 
 	local border = CreateFrame("Frame", nil, aura, ns.BackdropTemplate)
 	border:SetBackdrop({ edgeFile = GetMedia("border-aura"), edgeSize = 12 })
@@ -82,19 +82,19 @@ ns.AuraStyles.CreateIconWithBar = function(element, position)
 	border:SetPoint("TOPLEFT", -6, 6)
 	border:SetPoint("BOTTOMRIGHT", 6, -6)
 	border:SetFrameLevel(aura:GetFrameLevel() + 2)
-	aura.border = border
+	aura.Border = border
 
-	local count = aura.border:CreateFontString(nil, "OVERLAY")
+	local count = aura.Border:CreateFontString(nil, "OVERLAY")
 	count:SetFontObject(GetFont(14,true))
 	count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	count:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", -2, 3)
-	aura.count = count
+	aura.Count = count
 
-	local time = aura.border:CreateFontString(nil, "OVERLAY")
+	local time = aura.Border:CreateFontString(nil, "OVERLAY")
 	time:SetFontObject(GetFont(14,true))
 	time:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	time:SetPoint("TOPLEFT", aura, "TOPLEFT", -4, 4)
-	aura.time = time
+	aura.Time = time
 
 	local bar = element.__owner:CreateBar(nil, aura)
 	bar:SetPoint("TOP", aura, "BOTTOM", 0, 0)
@@ -106,11 +106,11 @@ ns.AuraStyles.CreateIconWithBar = function(element, position)
 	bar.bg:SetPoint("TOPLEFT", -1, 1)
 	bar.bg:SetPoint("BOTTOMRIGHT", 1, -1)
 	bar.bg:SetColorTexture(.05, .05, .05, .85)
-	aura.bar = bar
+	aura.Bar = bar
 
 	-- Using a virtual cooldown element with the bar and timer attached,
 	-- allowing them to piggyback on oUF's cooldown updates.
-	aura.cd = ns.Widgets.RegisterCooldown(bar, time)
+	aura.Cooldown = ns.Widgets.RegisterCooldown(bar, time)
 
 	-- Replacing oUF's aura tooltips, as they are not secure.
 	if (not element.disableMouse) then
@@ -129,7 +129,7 @@ ns.AuraStyles.CreateIcon = function(element, position)
 	local icon = aura:CreateTexture(nil, "BACKGROUND", nil, 1)
 	icon:SetAllPoints()
 	icon:SetMask(GetMedia("actionbutton-mask-square"))
-	aura.icon = icon
+	aura.Icon = icon
 
 	local border = CreateFrame("Frame", nil, aura, ns.BackdropTemplate)
 	border:SetBackdrop({ edgeFile = GetMedia("border-aura"), edgeSize = 12 })
@@ -137,23 +137,23 @@ ns.AuraStyles.CreateIcon = function(element, position)
 	border:SetPoint("TOPLEFT", -6, 6)
 	border:SetPoint("BOTTOMRIGHT", 6, -6)
 	border:SetFrameLevel(aura:GetFrameLevel() + 2)
-	aura.border = border
+	aura.Border = border
 
-	local count = aura.border:CreateFontString(nil, "OVERLAY")
+	local count = aura.Border:CreateFontString(nil, "OVERLAY")
 	count:SetFontObject(GetFont(12,true))
 	count:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	count:SetPoint("BOTTOMRIGHT", aura, "BOTTOMRIGHT", -2, 3)
-	aura.count = count
+	aura.Count = count
 
-	local time = aura.border:CreateFontString(nil, "OVERLAY")
+	local time = aura.Border:CreateFontString(nil, "OVERLAY")
 	time:SetFontObject(GetFont(12,true))
 	time:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	time:SetPoint("TOPLEFT", aura, "TOPLEFT", -3, 3)
-	aura.time = time
+	aura.Time = time
 
 	-- Using a virtual cooldown element with the timer attached,
 	-- allowing them to piggyback on the back-end's cooldown updates.
-	aura.cd = ns.Widgets.RegisterCooldown(time)
+	aura.Cooldown = ns.Widgets.RegisterCooldown(time)
 
 	-- Replacing oUF's aura tooltips, as they are not secure.
 	if (not element.disableMouse) then
