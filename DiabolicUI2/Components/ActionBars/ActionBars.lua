@@ -43,16 +43,16 @@ end
 
 -- Returns the currently valid vertical offset
 -- for items positioned above the action bars.
-ActionBars.GetSecondaryBarOffset = function(self)
-	local Bars = self:GetModule("Bars", true)
-	return Bars and Bars:GetSecondaryBarOffset()
-end
-
--- Returns the value used in the above call
--- when the secondary bar is visible.
 ActionBars.GetBarOffset = function(self)
 	local Bars = self:GetModule("Bars", true)
 	return Bars and Bars:GetBarOffset()
+end
+
+-- Returns the value used in the GetBarOffset
+-- when the secondary bar is visible.
+ActionBars.GetSecondaryBarOffset = function(self)
+	local Bars = self:GetModule("Bars", true)
+	return Bars and Bars:GetSecondaryBarOffset()
 end
 
 ActionBars.OnInitialize = function(self)

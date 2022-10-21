@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.56-RC] 2022-10-21
+## [2.0.57-RC] 2022-10-21
 ### Added
 - Added the `/auras hide` command to always hide the full buff display.
 - Added the `/auras show` command to always show the full buff display. This is the default setting.
@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Moved the default position of the tooltip slightly.
 - Changed how the minimap and quest tracker are anchored and moved.
 - Changed how width and the general handling of the Wrath quest tracker is done, in an affort to work against the annoying taint where quest buttons will become unclickable if they are spawned during combat. Untested, as it's a bit hard to test this out in Wrath, at least until I hit max level and get some dailies that suit my testing purposes.
+
+### Fixed
+- The bug in 2.0.56-RC causing the secondary bar to spawn underneath the primary bar has been fixed.
 
 ## [2.0.55-RC] 2022-10-16
 ### Changed

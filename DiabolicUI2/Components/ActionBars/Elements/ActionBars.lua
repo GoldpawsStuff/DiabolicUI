@@ -312,7 +312,7 @@ Bars.SpawnBars = function(self)
 	-- Secondary ActionBar (Bottom Left MultiBar)
 	-------------------------------------------------------
 	local bar = SetObjectScale(ns.ActionBar:Create(BOTTOMLEFT_ACTIONBAR_PAGE, ns.Prefix.."ActionBar2", UIParent))
-	bar:SetPoint("BOTTOM", -1, 11 + self:GetBarOffset())
+	bar:SetPoint("BOTTOM", -1, 11 + self:GetSecondaryBarOffset())
 	bar:SetSize(647, 53)
 	bar:Hide()
 	--bar:SetAttribute("userhidden", true)
@@ -818,7 +818,6 @@ Bars.SpawnBars = function(self)
 	toggle.Texture:SetSize(64,64)
 	toggle.Texture:SetPoint("CENTER")
 	toggle.Texture:SetTexture(GetMedia("button-toggle-plus"))
-
 
 	-- Inform the environment about the spawned bars
 	ns:Fire("ActionBar_Created", ns.Prefix.."PrimaryActionBar")
