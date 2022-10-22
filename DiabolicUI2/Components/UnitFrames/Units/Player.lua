@@ -283,12 +283,25 @@ end
 
 -- Callbacks
 --------------------------------------------
-local PostUpdateAuraPositions = function(self, event, hasSecondary)
+local PostUpdateAuraPositions = function(self, event, ...)
 
-	local offset = ns:GetModule("ActionBars"):GetBarOffset()
+	local ActionBars = ns:GetModule("ActionBars")
+	local PetBar = ActionBars:GetModule("PetBar", true)
+	local StanceBar = ActionBars:GetModule("StanceBar", true)
+	local offset = ActionBars:GetBarOffset()
+	local stanceOffset = 0
+
+	self.hasStanceBar = StanceBar and StanceBar.Bar and StanceBar.Bar:IsShown()
+	self.hasPetBar = PetBar and PetBar.Bar and PetBar.Bar:IsShown()
+
+	if (self.hasPetBar) then
+		offset = offset + 40
+	elseif (self.hasStanceBar) then
+		stanceOffset = 40
+	end
 
 	self.Buffs:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -320, 100 + offset)
-	self.Debuffs:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 320, 100 + offset)
+	self.Debuffs:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 320, 100 + offset + stanceOffset)
 
 	ns:Fire("UnitFrame_Position_Updated", self:GetName())
 end
@@ -618,5 +631,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	self:PostUpdateAuraPositions()
 
 	ns.RegisterCallback(self, "ActionBars_SecondaryBar_Updated", "PostUpdateAuraPositions")
+	ns.RegisterCallback(self, "ActionBars_PetBar_Updated", "PostUpdateAuraPositions")
+	ns.RegisterCallback(self, "ActionBars_StanceBar_Updated", "PostUpdateAuraPositions")
 
 end
