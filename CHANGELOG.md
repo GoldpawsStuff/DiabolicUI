@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-10-23
+### Added
+- Added pet bar.
+- Added stance bar.
+
+### Fixed
+- Added custom unit drivers for the player- and pet unit frames in Wrath to work around the Wrath bug where these frames refuse to toggle for vehicles.
+
 ## [2.0.57-RC] 2022-10-21
 ### Added
 - Added the `/auras hide` command to always hide the full buff display.
