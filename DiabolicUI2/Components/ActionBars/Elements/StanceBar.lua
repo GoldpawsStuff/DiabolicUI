@@ -43,7 +43,6 @@ local SetObjectScale = ns.API.SetObjectScale
 local UIHider = ns.Hider
 local noop = ns.Noop
 
-
 local buttonOnEnter = function(self)
 	self.icon.darken:SetAlpha(0)
 	if (self.OnEnter) then
@@ -89,6 +88,32 @@ local iconPostSetTexture = function(self, ...)
 		self.desaturator:SetVertexColor(r, g, b)
 	end
 	self.desaturator:SetAlpha(self.desaturator.alpha or .2)
+end
+
+local handleOnClick = function(self)
+	if (self.bar:IsShown()) then
+		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
+	else
+		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF, "SFX")
+	end
+end
+
+local handleOnEnter = function(self)
+	self:SetAlpha(1)
+end
+
+local handleOnLeave = function(self)
+	if (self.bar:IsShown()) then
+		self:SetAlpha(0)
+	end
+end
+
+local handleUpdateAlpha = function(self)
+	if (self:IsMouseOver(10,-10,-10,10)) then
+		self:OnEnter()
+	else
+		self:OnLeave()
+	end
 end
 
 local style = function(button)
@@ -229,14 +254,16 @@ end
 
 StanceBar.SpawnBar = function(self)
 	if (not self.Bar) then
-		local bar = SetObjectScale(ns.StanceBar:Create(ns.Prefix.."StanceBar", UIParent))
-		bar:Hide()
-		bar:SetFrameStrata("MEDIUM")
-		bar.customVisibilityDriver = "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide"
 
-		bar.UpdateBackdrop = function(self)
-		end
+		-- Create stance bar
+		local scale = .8
+		local bar = SetObjectScale(ns.StanceBar:Create(ns.Prefix.."StanceBar", UIParent), scale)
+		bar:SetFrameStrata("BACKGROUND")
+		bar:SetFrameLevel(1)
+		bar:SetHeight(54)
+		bar.scale = scale
 
+		-- Create the stance buttons
 		local button
 		for id = 1,10 do
 			button = bar:CreateButton(id, bar:GetName().."Button"..id)
@@ -244,72 +271,215 @@ StanceBar.SpawnBar = function(self)
 			bar:SetFrameRef("Button"..id, button)
 			style(button)
 		end
-		bar:UpdateVisibilityDriver()
 
-		local button = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
-		button:SetFrameRef("StanceBar", bar)
-		button:RegisterForClicks("AnyUp")
-		button:SetAttribute("_onclick", [[
-			local bar = self:GetFrameRef("StanceBar");
-			bar:UnregisterAutoHide();
-			bar:Show();
+		-- Lua callback to update saved settings
+		bar.UpdateSettings = function(self)
+			ns.db.char.actionbars.enableStanceBar = self:GetAttribute("enableStanceBar")
+			ns.db.char.actionbars.preferPetOrStanceBar = self:GetAttribute("preferPetOrStanceBar")
+		end
 
-			local button;
+		-- Store saved settings as bar attributes
+		bar:SetAttribute("enableStanceBar", ns.db.char.actionbars.enableStanceBar)
+		bar:SetAttribute("preferPetOrStanceBar", ns.db.char.actionbars.preferPetOrStanceBar)
+
+		-- Environment callback to signal pet bar visibility changes.
+		local onVisibility = function(self) ns:Fire("ActionBars_StanceBar_Updated", self:IsShown() and true or false) end
+		bar:HookScript("OnHide", onVisibility)
+		bar:HookScript("OnShow", onVisibility)
+
+		-- Create pull-out handle
+		local handle = SetObjectScale(CreateFrame("CheckButton", bar:GetName().."Handle", UIParent, "SecureHandlerClickTemplate"))
+		handle:SetSize(64,12)
+		handle:SetFrameStrata("MEDIUM")
+		handle:RegisterForClicks("AnyUp")
+		handle.bar = bar
+
+		local texture = handle:CreateTexture()
+		texture:SetColorTexture(.5, 0, 0, .5)
+		texture:SetAllPoints()
+		handle.texture = texture
+
+		handle.OnEnter = handleOnEnter
+		handle.OnLeave = handleOnLeave
+		handle.UpdateAlpha = handleUpdateAlpha
+		handle:HookScript("OnClick", handleOnClick)
+		handle:SetScript("OnEnter", handleOnEnter)
+		handle:SetScript("OnLeave", handleOnLeave)
+
+		-- Handle onclick handler triggering visibility changes
+		-- for both the the stance bar and the pet bar, if it exists.
+		handle:SetAttribute("_onclick", [[
+
+			-- Retrieve and update the visibility setting
+			local bar = self:GetFrameRef("Bar");
+			local enableStanceBar = not bar:GetAttribute("enableStanceBar")
+
+			-- Handle pet bar visibility, if it exists
+			local pet = self:GetFrameRef("PetBar");
+			if (pet) then
+
+				-- If pet bar should be shown,
+				-- we need to handle the pet bar.
+				if (enableStanceBar) then
+
+					-- Check if the pet bar is currently shown
+					if (pet:GetAttribute("enablePetBar")) then
+
+						-- Create a temporary setting to restore
+						-- the pet if we close the stance bar.
+						-- This is saved through sessions.
+						bar:SetAttribute("restorePetOrStanceBar", "pet");
+						pet:SetAttribute("restorePetOrStanceBar", "pet");
+
+						-- Disable the saved setting to show the pet bar
+						pet:SetAttribute("enablePetBar", false);
+
+						-- Save stance bar settings in lua
+						pet:CallMethod("UpdateSettings");
+
+						-- Update pet bar visibility driver
+						pet:RunAttribute("UpdateVisibility");
+
+					else
+
+						-- Stance bar was not enabled when closed, so we clear this setting.
+						bar:SetAttribute("restorePetOrStanceBar", false);
+						pet:SetAttribute("restorePetOrStanceBar", false);
+
+						-- Save pet bar settings in lua
+						pet:CallMethod("UpdateSettings");
+					end
+
+				else
+
+					-- Check if the pet bar was previously shown
+					if (bar:GetAttribute("restorePetOrStanceBar") == "pet") then
+
+						-- Restore the pet bar's saved visibility setting
+						pet:SetAttribute("enablePetBar", true);
+
+						-- Save pet bar settings in lua
+						pet:CallMethod("UpdateSettings");
+
+						-- Update the pet bar's visibility driver
+						pet:RunAttribute("UpdateVisibility");
+					end
+
+					-- Whether or not the pet bar was previously shown,
+					-- this setting is no longer needed.
+					bar:SetAttribute("restorePetOrStanceBar", false);
+					pet:SetAttribute("restorePetOrStanceBar", false);
+				end
+			end
+
+			-- Update the stance bar's saved visibility setting
+			bar:SetAttribute("enableStanceBar", enableStanceBar);
+
+			-- Save stance bar settings in lua
+			bar:CallMethod("UpdateSettings");
+
+			-- Update the stance bar's visibility driver
+			bar:RunAttribute("UpdateVisibility");
+		]])
+
+		-- Handle visibility updater
+		-- This is where the actualy visibility driver is applied.
+		-- Can't rely only on macros, since we don't always have stances.
+		handle:SetAttribute("UpdateVisibility", [[
+			local bar = self:GetFrameRef("Bar");
+			local driver = bar:GetAttribute("visibility-driver");
+			local newstate = SecureCmdOptionParse(driver);
+			local numButtons = bar:GetAttribute("numButtons");
+			UnregisterStateDriver(self, "visibility");
+			if (numButtons and numButtons > 0 and newstate == "show") then
+				RegisterStateDriver(self, "visibility", driver);
+			else
+				RegisterStateDriver(self, "visibility", "hide");
+			end
+		]])
+
+		-- Handle position updater
+		-- Triggered by the bar's UpdateVisibility attribute
+		handle:SetAttribute("UpdatePosition", [[
+			self:ClearAllPoints();
+			local bar = self:GetFrameRef("Bar");
+			if (bar:IsShown()) then
+				self:SetPoint("BOTTOM", bar, "TOP", 0, 2);
+			else
+				self:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", -40, 0);
+			end
+			self:RunAttribute("UpdateVisibility");
+			self:CallMethod("UpdateAlpha");
+		]])
+
+		-- The handle's state handler reacting to visibility driver suggestions.
+		handle:SetAttribute("_onstate-vis", [[
+			if not newstate then return end
+			self:RunAttribute("UpdateVisibility");
+		]])
+
+		-- Custom visibility updater
+		-- Also triggers handle position change
+		bar:SetAttribute("UpdateVisibility", [[
+			local driver = self:GetAttribute("visibility-driver");
+			if not driver then return end
+			local newstate = SecureCmdOptionParse(driver);
+			local enabled = self:GetAttribute("enableStanceBar");
+			-- Count number of buttons
 			local numButtons = 0;
+			local button;
 			for i = 1,10 do
-				button = bar:GetFrameRef("Button"..i);
+				button = self:GetFrameRef("Button"..i);
 				if (button:IsShown()) then
 					numButtons = numButtons + 1;
 				end
 			end
+			self:SetAttribute("numButtons", numButtons);
+			-- Adjust bar size to button count
 			if (numButtons > 0) then
-				bar:SetWidth(numButtons*54 + (numButtons-1));
-				bar:SetHeight(54);
+				self:SetWidth(numButtons*54 + (numButtons-1));
+				self:SetHeight(54);
 			else
-				bar:SetWidth(2);
-				bar:SetHeight(2);
+				self:SetWidth(2);
+				self:SetHeight(2);
 			end
-			bar:CallMethod("UpdateBackdrop");
-
-			bar:RegisterAutoHide(.75);
-			bar:AddToAutoHide(self);
-
-			for i = 1,numButtons do
-				button = bar:GetFrameRef("Button"..i);
-				if (button:IsShown()) then
-					bar:AddToAutoHide(button);
-				end
+			-- Toggle bar visibility
+			if (enabled and newstate == "show") then
+				self:Show();
+				--local point, anchor, rpoint, x, y = self:GetPoint();
+				--self:SetPoint(point, anchor, rpoint, x, y);
+			else
+				self:Hide();
 			end
+			-- Run handle's visibility update
+			local handle = self:GetFrameRef("Handle");
+			handle:RunAttribute("UpdatePosition");
 		]])
 
-		button:SetSize(32,32)
-		bar:SetPoint("BOTTOM", button, "TOP", 0, 4)
+		-- State handler reacting to visibility driver updates.
+		bar:SetAttribute("_onstate-vis", [[
+			if not newstate then return end
+			self:RunAttribute("UpdateVisibility");
+		]])
 
-		local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
-		backdrop:SetSize(32,32)
-		backdrop:SetPoint("CENTER")
-		--backdrop:SetTexture(GetMedia("plus"))
-		button.Backdrop = backdrop
+		-- Cross reference the bar and its handle
+		bar:SetFrameRef("Handle", handle)
+		handle:SetFrameRef("Bar", bar)
 
-		-- Called after secure click handler, I think.
-		button:HookScript("OnClick", function()
-			if (bar:IsShown()) then
-				PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
-			else
-				PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF, "SFX")
-			end
-		end)
+		-- Run once to initially set the bar's visibility-driver
+		--bar:Enable()
 
-		button:HookScript("OnEnter", function(self)
-		end)
-
-		button:HookScript("OnLeave", function(self)
-		end)
+		-- Adopt the same baseline visibility driver for the handle as for its bar.
+		-- Note that this doesn't directly affect visibility, it merely suggests
+		-- as the actual visibility also relies on whether stances exist.
+		--RegisterStateDriver(handle, "vis", bar:GetAttribute("visibility-driver"))
 
 		self.Bar = bar
-		self.ToggleButton = button
+		self.Bar.Handle = handle
 
 	end
+
+	self:UpdatePosition()
 end
 
 StanceBar.ForAll = function(self, method, ...)
@@ -330,30 +500,27 @@ StanceBar.UpdateBindings = function(self)
 	end
 end
 
+StanceBar.UpdatePosition = function(self)
+	if (not self.Bar) then
+		return
+	end
+	self.Bar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 380, (84 + ActionBars:GetBarOffset()) / self.Bar.scale)
+end
+
 StanceBar.UpdateStanceButtons = function(self)
 	if (InCombatLockdown()) then
 		self.updateStateOnCombatLeave = true
-		return
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
 	if (self.Bar) then
 		self.Bar:UpdateButtons()
+		self.Bar:Execute([[ self:RunAttribute("UpdateVisibility"); ]])
 		local numStances = GetNumShapeshiftForms()
 		if (numStances and numStances > 0) then
-			self.ToggleButton:Show()
+			self.Bar.Handle:Show()
 		else
-			self.ToggleButton:Hide()
+			self.Bar.Handle:Hide()
 		end
-	end
-end
-
-StanceBar.UpdateToggleButton = function(self)
-	if (not self.ToggleButton) then
-		return
-	end
-	if (ActionBars:HasSecondaryBar()) then
-		self.ToggleButton:SetPoint("BOTTOM", 0, 70 + 100)
-	else
-		self.ToggleButton:SetPoint("BOTTOM", 0, 11 + 100)
 	end
 end
 
@@ -363,6 +530,7 @@ StanceBar.OnEvent = function(self, event, ...)
 
 	elseif (event == "PLAYER_REGEN_ENABLED") then
 		if (not InCombatLockdown()) then
+			self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 			if (self.updateStateOnCombatLeave) then
 				self.updateStateOnCombatLeave = nil
 				self:UpdateStanceButtons()
@@ -370,19 +538,17 @@ StanceBar.OnEvent = function(self, event, ...)
 		end
 	else
 		if (event == "PLAYER_ENTERING_WORLD") then
-			if (self.Bar) then
-				self.Bar:Hide()
+			local isInitialLogin, isReloadingUi = ...
+			if (isInitialLogin or isReloadingUi) then
+				local PetBar = ActionBars:GetModule("PetBar", true)
+				if (PetBar and PetBar.Bar) then
+					self.Bar:SetFrameRef("PetBar", PetBar.Bar)
+				end
+				self.Bar:Enable()
 			end
-			self:UpdateStanceButtons()
-			self:UpdateToggleButton()
-			return
 		end
-		if (InCombatLockdown()) then
-			self.updateStateOnCombatLeave = true
-			self:ForAll("Update")
-		else
-			self:UpdateStanceButtons()
-		end
+		self:ForAll("Update")
+		self:UpdateStanceButtons()
 	end
 end
 
@@ -411,7 +577,6 @@ StanceBar.OnEnable = function(self)
 	self:RegisterEvent("UPDATE_BINDINGS", "UpdateBindings")
 	self:UpdateBindings()
 
-	self:UpdateToggleButton()
-	ns.RegisterCallback(self, "ActionBars_SecondaryBar_Updated", "UpdateToggleButton")
+	ns.RegisterCallback(self, "ActionBars_Artwork_Updated", "UpdatePosition")
 
 end

@@ -37,6 +37,7 @@ local ClearOverrideBindings = ClearOverrideBindings
 local CreateFrame = CreateFrame
 local GetBindingKey = GetBindingKey
 local InCombatLockdown = InCombatLockdown
+local PlaySound = PlaySound
 local SetOverrideBindingClick = SetOverrideBindingClick
 
 -- Addon API
@@ -47,7 +48,6 @@ local RegisterCooldown = ns.Widgets.RegisterCooldown
 local SetObjectScale = ns.API.SetObjectScale
 local UIHider = ns.Hider
 local noop = ns.Noop
-
 
 local buttonOnEnter = function(self)
 	self.icon.darken:SetAlpha(0)
@@ -94,6 +94,32 @@ local iconPostSetTexture = function(self, ...)
 		self.desaturator:SetVertexColor(r, g, b)
 	end
 	self.desaturator:SetAlpha(self.desaturator.alpha or .2)
+end
+
+local handleOnClick = function(self)
+	if (self.bar:IsShown()) then
+		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
+	else
+		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF, "SFX")
+	end
+end
+
+local handleOnEnter = function(self)
+	self:SetAlpha(1)
+end
+
+local handleOnLeave = function(self)
+	if (self.bar:IsShown()) then
+		self:SetAlpha(0)
+	end
+end
+
+local handleUpdateAlpha = function(self)
+	if (self:IsMouseOver(10,-10,-10,10)) then
+		self:OnEnter()
+	else
+		self:OnLeave()
+	end
 end
 
 local style = function(button)
@@ -245,18 +271,15 @@ end
 PetBar.SpawnBar = function(self)
 	if (not self.Bar) then
 
-		-- Create bar
+		-- Create pet bar
 		local scale = .8
 		local bar = SetObjectScale(ns.PetBar:Create(ns.Prefix.."PetActionBar", UIParent), scale)
 		bar:SetFrameStrata("MEDIUM")
 		bar:SetWidth(549)
 		bar:SetHeight(54)
-		bar:SetAttribute("enablePetBar", ns.db.char.actionbars.enablePetBar and true or false)
 		bar.scale = scale
-		bar.UpdateSettings = function(self)
-			ns.db.char.actionbars.enablePetBar = self:GetAttribute("enablePetBar")
-		end
 
+		-- Create pet buttons
 		local button
 		for id = 1,10 do
 			button = bar:CreateButton(id, bar:GetName().."Button"..id)
@@ -265,24 +288,118 @@ PetBar.SpawnBar = function(self)
 			style(button)
 		end
 
-		local onVisibility = function(self)
-			ns:Fire("ActionBars_PetBar_Updated", self:IsShown() and true or false)
+		-- Lua callback to update saved settings
+		bar.UpdateSettings = function(self)
+			ns.db.char.actionbars.enablePetBar = self:GetAttribute("enablePetBar")
+			ns.db.char.actionbars.preferPetOrStanceBar = self:GetAttribute("preferPetOrStanceBar")
 		end
+
+		-- Store saved settings as bar attributes
+		bar:SetAttribute("enablePetBar", ns.db.char.actionbars.enablePetBar)
+		bar:SetAttribute("preferPetOrStanceBar", ns.db.char.actionbars.preferPetOrStanceBar)
+
+		-- Environment callback to signal pet bar visibility changes.
+		local onVisibility = function(self) ns:Fire("ActionBars_PetBar_Updated", self:IsShown() and true or false) end
 		bar:HookScript("OnHide", onVisibility)
 		bar:HookScript("OnShow", onVisibility)
 
 		-- Create pull-out handle
-		local handle = SetObjectScale(CreateFrame("CheckButton", nil, UIParent, "SecureHandlerClickTemplate"))
+		local handle = SetObjectScale(CreateFrame("CheckButton", bar:GetName().."Handle", UIParent, "SecureHandlerClickTemplate"))
 		handle:SetSize(64,12)
 		handle:SetFrameStrata("MEDIUM")
 		handle:RegisterForClicks("AnyUp")
-		handle:SetFrameRef("Bar", bar)
+		handle.bar = bar
+
+		local texture = handle:CreateTexture()
+		texture:SetColorTexture(.5, 0, 0, .5)
+		texture:SetAllPoints()
+		handle.texture = texture
+
+		handle.OnEnter = handleOnEnter
+		handle.OnLeave = handleOnLeave
+		handle.UpdateAlpha = handleUpdateAlpha
+		handle:HookScript("OnClick", handleOnClick)
+		handle:SetScript("OnEnter", handleOnEnter)
+		handle:SetScript("OnLeave", handleOnLeave)
+
+		-- Handle onclick handler triggering visibility changes
+		-- for both the pet bar and the stance bar, if it exists.
 		handle:SetAttribute("_onclick", [[
+
+			-- Retrieve and update the visibility setting
 			local bar = self:GetFrameRef("Bar");
-			bar:SetAttribute("enablePetBar", not bar:GetAttribute("enablePetBar"));
+			local enablePetBar = not bar:GetAttribute("enablePetBar")
+
+			-- Handle stance bar visibility, if it exists
+			local stance = self:GetFrameRef("StanceBar");
+			if (stance) then
+
+				-- If pet bar should be shown,
+				-- we need to handle the stance bar.
+				if (enablePetBar) then
+
+					-- Check if the stance bar is currently shown
+					if (stance:GetAttribute("enableStanceBar")) then
+
+						-- Create a temporary setting to restore
+						-- the stancebar if we close the pet bar.
+						-- This is saved through sessions.
+						bar:SetAttribute("restorePetOrStanceBar", "stance");
+						stance:SetAttribute("restorePetOrStanceBar", "stance");
+
+						-- Disable the saved setting to show the stance bar
+						stance:SetAttribute("enableStanceBar", false);
+
+						-- Save stance bar settings in lua
+						stance:CallMethod("UpdateSettings");
+
+						-- Update stance bar visibility driver
+						stance:RunAttribute("UpdateVisibility");
+
+					else
+
+						-- Pet bar was not enabled when closed, so we clear this setting.
+						bar:SetAttribute("restorePetOrStanceBar", false);
+						stance:SetAttribute("restorePetOrStanceBar", false);
+
+						-- Save stance bar settings in lua
+						stance:CallMethod("UpdateSettings");
+					end
+
+				else
+
+					-- Check if the stance bar was previously shown
+					if (bar:GetAttribute("restorePetOrStanceBar") == "stance") then
+
+						-- Restore the stance bar's saved visibility setting
+						stance:SetAttribute("enableStanceBar", true);
+
+						-- Save stance bar settings in lua
+						stance:CallMethod("UpdateSettings");
+
+						-- Update the stance bar's visibility driver
+						stance:RunAttribute("UpdateVisibility");
+					end
+
+					-- Whether or not the stance bar was previously shown,
+					-- this setting is no longer needed.
+					bar:SetAttribute("restorePetOrStanceBar", false);
+					stance:SetAttribute("restorePetOrStanceBar", false);
+				end
+			end
+
+			-- Update the pet bar's saved visibility setting
+			bar:SetAttribute("enablePetBar", enablePetBar);
+
+			-- Save pet bar settings in lua
 			bar:CallMethod("UpdateSettings");
+
+			-- Update the pet bar's visibility driver
 			bar:RunAttribute("UpdateVisibility");
 		]])
+
+		-- Handle position updater
+		-- Triggered by the bar's UpdateVisibility attribute
 		handle:SetAttribute("UpdatePosition", [[
 			self:ClearAllPoints();
 			local bar = self:GetFrameRef("Bar");
@@ -293,17 +410,13 @@ PetBar.SpawnBar = function(self)
 			end
 			local driver = bar:GetAttribute("visibility-driver");
 			if not driver then return end
-			--local state = SecureCmdOptionParse(driver);
 			UnregisterStateDriver(self, "visibility");
 			RegisterStateDriver(self, "visibility", driver);
+			self:CallMethod("UpdateAlpha");
 		]])
-		RegisterStateDriver(handle, "visibility", bar:GetAttribute("visibility-driver"))
 
-		handle.texture = handle:CreateTexture()
-		handle.texture:SetColorTexture(.5, 0, 0, .5)
-		handle.texture:SetAllPoints()
-
-		bar:SetFrameRef("Handle", handle)
+		-- Custom visibility updater
+		-- Also triggers handle position change
 		bar:SetAttribute("UpdateVisibility", [[
 			local driver = self:GetAttribute("visibility-driver");
 			if not driver then return end
@@ -318,20 +431,24 @@ PetBar.SpawnBar = function(self)
 			handle:RunAttribute("UpdatePosition");
 		]])
 
+		-- State handler reacting to visibility driver updates.
 		bar:SetAttribute("_onstate-vis", [[
 			if not newstate then return end
 			self:RunAttribute("UpdateVisibility");
 		]])
 
-		--handle:Execute([[ self:RunAttribute("UpdatePosition"); ]]);
-		--bar:Execute([[ self:RunAttribute("UpdateVisibility"); ]]);
+		-- Cross reference the bar and its handle
+		bar:SetFrameRef("Handle", handle)
+		handle:SetFrameRef("Bar", bar)
 
+		-- Run once to initially set the bar's visibility-driver
+		--bar:Enable()
+
+		-- Adopt the same baseline visibility driver for the handle as for its bar.
+		--RegisterStateDriver(handle, "visibility", bar:GetAttribute("visibility-driver"))
 
 		self.Bar = bar
 		self.Bar.Handle = handle
-
-		--bar:UpdateVisibilityDriver()
-		bar:Enable()
 
 	end
 
@@ -381,6 +498,16 @@ PetBar.OnEvent = function(self, event, ...)
 
 	elseif (event == "PET_BAR_HIDEGRID") then
 		self:ForAll("HideGrid")
+
+	elseif (event == "PLAYER_ENTERING_WORLD") then
+		local isInitialLogin, isReloadingUi = ...
+		if (isInitialLogin or isReloadingUi) then
+			local StanceBar = ActionBars:GetModule("StanceBar", true)
+			if (StanceBar and StanceBar.Bar) then
+				self.Bar:SetFrameRef("StanceBar", StanceBar.Bar)
+			end
+			self.Bar:Enable()
+		end
 	end
 end
 
@@ -407,6 +534,7 @@ PetBar.OnEnable = function(self)
 	self:RegisterEvent("PET_BAR_UPDATE_USABLE", "OnEvent")
 	self:RegisterEvent("PET_BAR_SHOWGRID", "OnEvent")
 	self:RegisterEvent("PET_BAR_HIDEGRID", "OnEvent")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 
 	if (ns.IsRetail) then
 		self:RegisterEvent("PET_SPECIALIZATION_CHANGED", "OnEvent")
