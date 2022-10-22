@@ -369,6 +369,17 @@ UnitFrames.SpawnUnitFrames = function(self)
 		oUF:Spawn("pet", prefix.."Pet")
 		oUF:Spawn("focus", prefix.."Focus")
 
+		-- Vehicle switching is currently broken in Wrath.
+		if (ns.IsWrath) then
+			local player = _G[prefix.."Player"]
+			player:SetAttribute("toggleForVehicle", false)
+			RegisterAttributeDriver(player, "unit", "[vehicleui] vehicle; player")
+
+			local pet = _G[prefix.."Pet"]
+			pet:SetAttribute("toggleForVehicle", false)
+			RegisterAttributeDriver(pet, "unit", "[vehicleui] player; pet")
+		end
+
 		-- Retrieve the dock manager.
 		local dockManager = self:GetDockManager()
 
