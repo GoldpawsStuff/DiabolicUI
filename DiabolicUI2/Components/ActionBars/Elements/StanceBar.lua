@@ -553,7 +553,7 @@ StanceBar.OnEvent = function(self, event, ...)
 end
 
 StanceBar.OnInitialize = function(self)
-	if (not ns.db.global.core.enableDevelopmentMode or not ns.IsDevelopment) then
+	if (not ns.db.global.core.enableDevelopmentMode) then
 		self:Disable()
 		return
 	end
