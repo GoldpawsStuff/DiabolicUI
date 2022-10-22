@@ -32,14 +32,18 @@ ns.Noop = function() end
 _G[Addon] = ns
 
 -- Default settings
+-- *don't modify these as they only
+--  affect clean installs or new characters.
 local defaults = {
 	char = {
 		actionbars = {
 			enableSecondary = false,
-			enablePetBar = true
+			enablePetBar = true,
+			enableStanceBar = false,
+			restorePetOrStanceBar = false
 		},
 		auras = {
-			alwaysHideAuras = false, -- overrides alwaysShow
+			alwaysHideAuras = false,
 			alwaysShowAuras = true
 		}
 	},
