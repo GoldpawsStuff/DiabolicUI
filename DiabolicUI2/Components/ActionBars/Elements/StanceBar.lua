@@ -109,7 +109,7 @@ local handleOnLeave = function(self)
 end
 
 local handleUpdateAlpha = function(self)
-	if (self:IsMouseOver(10,-10,-10,10)) then
+	if (self:IsMouseOver(20, 0, -20, 20)) then
 		self:OnEnter()
 	else
 		self:OnLeave()
@@ -292,19 +292,19 @@ StanceBar.SpawnBar = function(self)
 		handle:SetSize(64,12)
 		handle:SetFrameStrata("MEDIUM")
 		handle:RegisterForClicks("AnyUp")
+		handle:SetHitRectInsets(-20, -20, -20, 0)
+		handle:HookScript("OnClick", handleOnClick)
+		handle:SetScript("OnEnter", handleOnEnter)
+		handle:SetScript("OnLeave", handleOnLeave)
+		handle.OnEnter = handleOnEnter
+		handle.OnLeave = handleOnLeave
+		handle.UpdateAlpha = handleUpdateAlpha
 		handle.bar = bar
 
 		local texture = handle:CreateTexture()
 		texture:SetColorTexture(.5, 0, 0, .5)
 		texture:SetAllPoints()
 		handle.texture = texture
-
-		handle.OnEnter = handleOnEnter
-		handle.OnLeave = handleOnLeave
-		handle.UpdateAlpha = handleUpdateAlpha
-		handle:HookScript("OnClick", handleOnClick)
-		handle:SetScript("OnEnter", handleOnEnter)
-		handle:SetScript("OnLeave", handleOnLeave)
 
 		-- Handle onclick handler triggering visibility changes
 		-- for both the the stance bar and the pet bar, if it exists.
