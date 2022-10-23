@@ -71,7 +71,7 @@ button.isPlayer - indicates if the aura caster is the player or their vehicle (b
 
 local _, ns = ...
 local oUF = ns.oUF
-if (oUF.clientMajor >= 10) then
+if (ns.oUF.WoW10) then
 	return
 end
 
