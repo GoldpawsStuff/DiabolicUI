@@ -4,12 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-23
+## [2.0.59-RC] 2022-10-23
 ### Changed
 - New and prettier addon naming pattern.
 
 ### Fixed
 - Fixed some inconsistencies with the Wrath consolidation counter and buff frame alpha.
+- Removed tooltip widget handlers that no longer exist in Dragonflight.
 
 ## [2.0.58-RC] 2022-10-23
 ### Fixed
