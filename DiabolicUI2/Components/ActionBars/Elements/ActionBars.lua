@@ -399,7 +399,7 @@ Bars.SpawnBars = function(self)
 
 		local buttonOffset = (i == 3 or i == 4 or i == 6) and 6 or 0
 		for j = 1,6 do
-			local button = bar:CreateButton(i + buttonOffset)
+			local button = bar:CreateButton(j + buttonOffset)
 			button:SetPoint("TOPLEFT", ((j-1)%3)*54, -(math_floor((j-1)/3))*(53 + 6))
 			style(button)
 		end
