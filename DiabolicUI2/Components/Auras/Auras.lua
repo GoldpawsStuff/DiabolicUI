@@ -28,11 +28,13 @@ local Auras = ns:NewModule("Auras", "LibMoreEvents-1.0", "AceTimer-3.0", "AceHoo
 
 -- Lua API
 local math_ceil = math.ceil
+local math_max = math.max
 local pairs = pairs
 local select = select
 local string_format = string.format
 local string_lower = string.lower
 local table_insert = table.insert
+local tonumber = tonumber
 
 -- WoW API
 local CreateFrame = CreateFrame
@@ -307,20 +309,43 @@ end
 
 -- Updates
 --------------------------------------------
-Auras.UpdateConsolidationCount = function(self)
+Auras.UpdateAlpha = function(self)
 	local buffs = self.buffs
-	if (not buffs or not buffs.consolidation) then
+	if (not buffs) then
 		return
 	end
-	local numChild, child = 0
-	repeat
-		numChild = numChild + 1
-		child = buffs.consolidation:GetAttribute("child" .. numChild)
-	until not(child and child:IsShown())
-	buffs.proxy.count:SetText(numChild - 1)
-end
 
-Auras.UpdateAlpha = function(self)
+	local consolidateDuration = tonumber(buffs:GetAttribute("consolidateDuration")) or 30
+	local consolidateThreshold = tonumber(buffs:GetAttribute("consolidateThreshold")) or 10
+	local consolidateFraction = tonumber(buffs:GetAttribute("consolidateFraction")) or 0.1
+	local unit, filter = buffs:GetAttribute("unit"), buffs:GetAttribute("filter")
+	local slot, consolidated, time = 1, 0, GetTime()
+	local name, duration, expires, caster, shouldConsolidate, _
+
+	repeat
+		-- Sourced from FrameXML\SecureGroupHeaders.lua
+		name, _, _, _, duration, expires, caster, _, _, _, _, _, _, _, _, shouldConsolidate = UnitAura(unit, slot, filter)
+		if (name and shouldConsolidate) then
+			if (not expires or duration > consolidateDuration or (expires - time >= math_max(consolidateThreshold, duration * consolidateFraction)) ) then
+				consolidated = consolidated + 1
+			end
+		end
+		slot = slot + 1
+	until (not name)
+
+	-- Update count and counter.
+	buffs.numConsolidated = consolidated
+	buffs.proxy.count:SetText(buffs.numConsolidated > 0 and buffs.numConsolidated or "")
+
+	-- If there are currently consolidated buffs and both
+	-- the proxy button and the consolidation frame are shown,
+	-- reduce the alpha of the buff window.
+	if (buffs.numConsolidated > 0 and buffs.proxy:IsShown() and buffs.consolidation:IsShown()) then
+		buffs:SetAlpha(.5)
+	else
+		buffs:SetAlpha(1)
+	end
+
 end
 
 Auras.UpdateSettings = function(self)
@@ -370,6 +395,7 @@ Auras.SpawnAuras = function(self)
 		buffs:SetAttribute("sortMethod", "TIME")
 		buffs:SetAttribute("sortDirection", "-")
 
+		buffs.UpdateAlpha = function() Auras:UpdateAlpha() end
 		buffs.tooltipPoint = "TOPRIGHT"
 		buffs.tooltipAnchor = "BOTTOMLEFT"
 		buffs.tooltipOffsetX = -10
@@ -424,7 +450,8 @@ Auras.SpawnAuras = function(self)
 		-- The other updates aren't called when it is hidden,
 		-- so to have the correct count when toggling through chat commands,
 		-- we need to have this extra update on each show.
-		self:SecureHookScript(proxy, "OnShow", "UpdateConsolidationCount")
+		self:SecureHookScript(proxy, "OnShow", "UpdateAlpha")
+		self:SecureHookScript(proxy, "OnHide", "UpdateAlpha")
 
 		-- Consolidation frame where the consolidated auras appear.
 		local consolidation = CreateFrame("Frame", buffs:GetName().."Consolidation", buffs.proxy, "SecureFrameTemplate")
@@ -465,10 +492,10 @@ Auras.SpawnAuras = function(self)
 			local buffs = self:GetFrameRef("buffs")
 			if consolidation:IsShown() then
 				consolidation:Hide()
-				buffs:SetAlpha(1)
+				buffs:CallMethod("UpdateAlpha")
 			else
 				consolidation:Show()
-				buffs:SetAlpha(.5)
+				buffs:CallMethod("UpdateAlpha")
 			end
 		]])
 
@@ -557,16 +584,13 @@ Auras.OnEvent = function(self, event, ...)
 
 		end
 		self:ForAll("Update")
-		self:UpdateConsolidationCount()
+		self:UpdateAlpha()
 
 	elseif (event == "PLAYER_REGEN_ENABLED") then
 		if (not InCombatLockdown()) then
 			self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 			self:UpdateSettings()
 		end
-
-	elseif (event == "UNIT_AURA") then
-		self:UpdateConsolidationCount()
 	end
 end
 
@@ -578,5 +602,5 @@ end
 Auras.OnEnable = function(self)
 	self:UpdateSettings()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
-	self:RegisterUnitEvent("UNIT_AURA", "UpdateConsolidationCount", "player", "vehicle")
+	self:RegisterUnitEvent("UNIT_AURA", "UpdateAlpha", "player", "vehicle")
 end
