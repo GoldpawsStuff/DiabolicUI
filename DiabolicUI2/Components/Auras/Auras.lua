@@ -220,7 +220,7 @@ Auras.OnUpdate = function(self, elapsed)
 
 	local timeLeft
 	if (self.enchant) then
-		local expiration = select(enchant, GetWeaponEnchantInfo())
+		local expiration = select(self.enchant, GetWeaponEnchantInfo())
 		timeLeft = expiration and (expiration / 1e3) or 0
 	else
 		timeLeft = self.timeLeft - elapsed
