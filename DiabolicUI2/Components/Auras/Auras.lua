@@ -137,7 +137,7 @@ Aura.Update = function(self, index)
 			local timeLeft = expirationTime - GetTime()
 
 			self.timeLeft = timeLeft
-			self:SetScript("OnUpdate", Auras.OnUpdate)
+			self:SetScript("OnUpdate", self.OnUpdate)
 
 			-- Fade short duration auras in and out
 			if (timeLeft < 10) then
@@ -194,7 +194,7 @@ Aura.UpdateTempEnchant = function(self, slot)
 		self.enchant = enchant
 		self.cd:SetCooldown(GetTime(), expiration / 1e3)
 		self.cd:Show()
-		self:SetScript("OnUpdate", Auras.OnUpdate)
+		self:SetScript("OnUpdate", self.OnUpdate)
 	else
 		self.cd:Hide()
 		self.enchant = nil
@@ -211,7 +211,7 @@ Aura.UpdateTooltip = function(self)
 	GameTooltip:SetUnitAura(self:GetParent():GetAttribute("unit"), self:GetID(), self.filter)
 end
 
-Auras.OnUpdate = function(self, elapsed)
+Aura.OnUpdate = function(self, elapsed)
 	self.elapsed = (self.elapsed or 0) - elapsed
 	if (self.elapsed > 0) then
 		return
@@ -318,6 +318,9 @@ Auras.UpdateConsolidationCount = function(self)
 		child = buffs.consolidation:GetAttribute("child" .. numChild)
 	until not(child and child:IsShown())
 	buffs.proxy.count:SetText(numChild - 1)
+end
+
+Auras.UpdateAlpha = function(self)
 end
 
 Auras.UpdateSettings = function(self)
