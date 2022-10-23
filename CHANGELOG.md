@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added pet bar.
 - Added stance bar.
 
+## [2.0.58-RC] 2022-10-23
 ### Fixed
+- Weapon enchants should no longer cause non-stop bugs in Wrath.
 - Added custom unit drivers for the player- and pet unit frames in Wrath to work around the Wrath bug where these frames refuse to toggle for vehicles.
 
 ## [2.0.57-RC] 2022-10-21
