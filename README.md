@@ -11,7 +11,8 @@ There's a selection of my own all-purpose addons that I recommend using along wi
 * BigGameMenu: [www.curseforge.com/wow/addons/biggamemenu](https://www.curseforge.com/wow/addons/biggamemenu)
 * BigInputBox: [www.curseforge.com/wow/addons/big-input-box](https://www.curseforge.com/wow/addons/big-input-box)
 * ChatCleaner: [www.curseforge.com/wow/addons/chat-cleaner](https://www.curseforge.com/wow/addons/chat-cleaner)
-* CleanWorldMap: [www.curseforge.com/wow/addons/world-map-shrinker](https://www.curseforge.com/wow/addons/world-map-shrinker)
+* CleanWorldMap: [www.curseforge.com/wow/addons/world-map-shrinker](https://www.curseforge.com/wow/addons/world-map-shrinker) (Retail)
+* EnhancedWorldMap: [www.curseforge.com/wow/addons/enhanced-world-map-for-wow-classic](https://www.curseforge.com/wow/addons/enhanced-world-map-for-wow-classic) (Classics)
 * Immersion: [www.curseforge.com/wow/addons/immersion](https://www.curseforge.com/wow/addons/immersion)
 
 ## Extensions
