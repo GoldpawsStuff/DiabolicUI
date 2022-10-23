@@ -5,9 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased] 2022-10-23
-### Added
-- Added pet bar.
-- Added stance bar.
+### Changed
+- New and prettier addon naming pattern.
+
+### Fixed
+- Fixed some inconsistencies with the Wrath consolidation counter and buff frame alpha.
 
 ## [2.0.58-RC] 2022-10-23
 ### Fixed
