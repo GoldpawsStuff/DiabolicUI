@@ -352,6 +352,16 @@ UnitStyles["Player"] = function(self, unit, id)
 	self.Health = health
 	self.Health.Override = ns.API.UpdateHealth
 
+	-- CombatFeedback
+	--------------------------------------------
+	local feedbackText = overlay:CreateFontString(nil, "OVERLAY")
+	feedbackText:SetPoint("CENTER", 0, 0)
+	feedbackText.feedbackFont = GetFont(20, true)
+	feedbackText.feedbackFontLarge = GetFont(24, true)
+	feedbackText.feedbackFontSmall = GetFont(18, true)
+
+	self.CombatFeedback = feedbackText
+
 	-- Power Orb
 	--------------------------------------------
 	local power = self:CreateOrb()
