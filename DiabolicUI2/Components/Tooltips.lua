@@ -66,6 +66,7 @@ local UnitRace = UnitRace
 local UnitReaction = UnitReaction
 
 -- Addon API
+local Colors = ns.Colors
 local AbbreviateNumber = ns.API.AbbreviateNumber
 local AbbreviateNumberBalanced = ns.API.AbbreviateNumberBalanced
 local GetDifficultyColorByLevel = ns.API.GetDifficultyColorByLevel
@@ -561,7 +562,7 @@ Tooltips.SetDefaultAnchor = function(self, tooltip, parent)
 end
 
 Tooltips.SetUnitColor = function(self, unit)
-	local color = GetUnitColor(unit)
+	local color = GetUnitColor(unit) or Colors.reaction[5]
 	if (color) then
 		GameTooltip.StatusBar:SetStatusBarColor(color[1], color[2], color[3])
 	end
