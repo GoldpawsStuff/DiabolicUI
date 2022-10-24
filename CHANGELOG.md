@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-10-24
+### Added
+- Added combat feedback text to the player health orb.
+
 ## [2.0.60-RC] 2022-10-23
 ### Fixed
 - The side action bars should once again have different buttons, and not all be copies of the same one.
