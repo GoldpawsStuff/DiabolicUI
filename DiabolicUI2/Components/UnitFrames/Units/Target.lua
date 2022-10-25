@@ -329,6 +329,18 @@ UnitStyles["Target"] = function(self, unit, id)
 
 	self.Name = name
 
+	-- CombatFeedback
+	--------------------------------------------
+	local feedbackText = self:CreateFontString(nil, "OVERLAY")
+	feedbackText:SetPoint("LEFT", self, "RIGHT", -6, 2)
+	feedbackText.maxAlpha = .8
+	feedbackText.feedbackFont = GetFont(20, true)
+	feedbackText.feedbackFontLarge = GetFont(24, true)
+	feedbackText.feedbackFontSmall = GetFont(18, true)
+	feedbackText:SetFontObject(feedbackText.feedbackFont)
+
+	self.CombatFeedback = feedbackText
+
 	-- Cast Bar
 	--------------------------------------------
 	local cast = self:CreateBar(self:GetName())
