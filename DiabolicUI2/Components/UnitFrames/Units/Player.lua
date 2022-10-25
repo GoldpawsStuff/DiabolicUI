@@ -355,7 +355,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	-- CombatFeedback
 	--------------------------------------------
 	local feedbackText = overlay:CreateFontString(nil, "OVERLAY")
-	feedbackText:SetPoint("CENTER", health, "CENTER", 2, 2) -- testing if it's there at all
+	feedbackText:SetPoint("CENTER", health, "CENTER", 2, 2)
 	feedbackText.maxAlpha = .8
 	feedbackText.feedbackFont = GetFont(24, true)
 	feedbackText.feedbackFontLarge = GetFont(24, true)
