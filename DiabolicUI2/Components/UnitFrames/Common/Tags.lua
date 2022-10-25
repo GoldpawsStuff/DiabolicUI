@@ -208,7 +208,7 @@ Methods["Diabolic:Name"] = function(unit, realUnit)
 	return name
 end
 
-Events["Diabolic:Power:Full"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+Events["Diabolic:Power:Full"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER"
 Methods["Diabolic:Power:Full"] = function(unit)
 	if (UnitIsDeadOrGhost(unit)) then
 		return
