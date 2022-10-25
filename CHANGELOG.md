@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-24
+## [Unreleased] 2022-10-25
 ### Added
 - Added combat feedback text to the player health orb.
+- Added combat feedback text to the right of the target unit frame.
+- Added health preview and heal prediction to the target frame.
 
 ## [2.0.60-RC] 2022-10-23
 ### Fixed
