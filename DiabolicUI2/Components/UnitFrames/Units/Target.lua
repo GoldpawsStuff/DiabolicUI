@@ -52,6 +52,123 @@ local IsWrath = ns.IsWrath
 
 -- Callbacks
 --------------------------------------------
+local Health_PostUpdateColor = function(element, unit, r, g, b)
+	local preview = element.Preview
+	if (preview) then
+		preview:SetStatusBarColor(r * .7, g * .7, b * .7)
+	end
+end
+
+local HealPredict_PostUpdate = function(element, unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb, curHealth, maxHealth)
+
+	local allIncomingHeal = myIncomingHeal + otherIncomingHeal
+	local allNegativeHeals = healAbsorb
+	local showPrediction, change
+
+	if ((allIncomingHeal > 0) or (allNegativeHeals > 0)) and (maxHealth > 0) then
+		local startPoint = curHealth/maxHealth
+
+		-- Dev switch to test absorbs with normal healing
+		--allIncomingHeal, allNegativeHeals = allNegativeHeals, allIncomingHeal
+
+		-- Hide elementions if the change is very small, or if the unit is at max health.
+		change = (allIncomingHeal - allNegativeHeals)/maxHealth
+		if ((curHealth < maxHealth) and (change > (element.health.elementThreshold or .05))) then
+			local endPoint = startPoint + change
+
+			-- Crop heal elemention overflows
+			if (endPoint > 1) then
+				endPoint = 1
+				change = endPoint - startPoint
+			end
+
+			-- Crop heal absorb overflows
+			if (endPoint < 0) then
+				endPoint = 0
+				change = -startPoint
+			end
+
+			-- This shouldn't happen, but let's do it anyway.
+			if (startPoint ~= endPoint) then
+				showPrediction = true
+			end
+		end
+	end
+
+	if (showPrediction) then
+
+		local preview = element.preview
+		local growth = preview:GetGrowth()
+		local min,max = preview:GetMinMaxValues()
+		local value = preview:GetValue() / max
+		local previewTexture = preview:GetStatusBarTexture()
+		local previewWidth, previewHeight = preview:GetSize()
+		local left, right, top, bottom = preview:GetTexCoord()
+
+		if (growth == "RIGHT") then
+
+			local texValue, texChange = value, change
+			local rangeH, rangeV
+
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+
+			if (change > 0) then
+				element:ClearAllPoints()
+				element:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMRIGHT", 0, 0)
+				element:SetSize(change*previewWidth, previewHeight)
+				element:SetTexCoord(texValue, texValue + texChange, top, bottom)
+				element:SetVertexColor(0, .7, 0, .25)
+				element:Show()
+
+			elseif (change < 0) then
+				element:ClearAllPoints()
+				element:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMRIGHT", 0, 0)
+				element:SetSize((-change)*previewWidth, previewHeight)
+				element:SetTexCoord(texValue + texChange, texValue, top, bottom)
+				element:SetVertexColor(.5, 0, 0, .75)
+				element:Show()
+
+			else
+				element:Hide()
+			end
+
+		elseif (growth == "LEFT") then
+			local texValue, texChange = value, change
+			local rangeH, rangeV
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+
+			if (change > 0) then
+				element:ClearAllPoints()
+				element:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMLEFT", 0, 0)
+				element:SetSize(change*previewWidth, previewHeight)
+				element:SetTexCoord(texValue + texChange, texValue, top, bottom)
+				element:SetVertexColor(0, .7, 0, .25)
+				element:Show()
+
+			elseif (change < 0) then
+				element:ClearAllPoints()
+				element:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMLEFT", 0, 0)
+				element:SetSize((-change)*previewWidth, previewHeight)
+				element:SetTexCoord(texValue, texValue + texChange, top, bottom)
+				element:SetVertexColor(.5, 0, 0, .75)
+				element:Show()
+
+			else
+				element:Hide()
+			end
+		end
+	else
+		element:Hide()
+	end
+
+end
+
 local Cast_CustomDelayText = function(element, duration)
 	if (element.casting) then
 		duration = element.max - duration
@@ -143,7 +260,10 @@ UnitStyles["Target"] = function(self, unit, id)
 	eliteBg:SetAlpha(0)
 	self.eliteBg = eliteBg
 
-	local health = self:CreateBar()
+	-- Health
+	--------------------------------------------
+	local health = self:CreateBar(self:GetName().."HealthBar")
+	health:SetFrameLevel(health:GetFrameLevel() + 2)
 	health:SetSize(291,43)
 	health:SetPoint("CENTER")
 	health:SetStatusBarTexture(GetMedia("target-bar-normal-diabolic"))
@@ -158,12 +278,44 @@ UnitStyles["Target"] = function(self, unit, id)
 
 	self.Health = health
 	self.Health.Override = ns.API.UpdateHealth
+	self.Health.PostUpdateColor = Health_PostUpdateColor
+
+	-- Health Preview
+	--------------------------------------------
+	local preview = self:CreateBar(health:GetName().."Preview", health)
+	preview:SetFrameLevel(health:GetFrameLevel() - 1)
+	preview:SetSize(291,43)
+	preview:SetPoint("CENTER")
+	preview:SetStatusBarTexture(GetMedia("target-bar-normal-diabolic"))
+	preview:GetStatusBarTexture():SetTexCoord(221/1024, 803/1024, 85/256, 171/256)
+	preview:SetSparkTexture(GetMedia("blank"))
+	preview:SetAlpha(.5)
+	preview:DisableSmoothing(true)
+
+	self.Health.Preview = preview
+
+	-- Health Prediction
+	--------------------------------------------
+	local healPredictFrame = CreateFrame("Frame", nil, health)
+	healPredictFrame:SetFrameLevel(health:GetFrameLevel() + 2)
+	healPredictFrame:SetAllPoints()
+
+	local healPredict = healPredictFrame:CreateTexture(health:GetName().."Prediction", "OVERLAY")
+	healPredict:SetTexture(GetMedia("target-bar-normal-diabolic"))
+	healPredict.health = health
+	healPredict.preview = preview
+	healPredict.maxOverflow = 1
+
+	self.HealthPrediction = healPredict
+	self.HealthPrediction.PostUpdate = HealPredict_PostUpdate
 
 	local healthValue = health:CreateFontString(nil, "OVERLAY", nil, 0)
 	healthValue:SetFontObject(GetFont(16,true))
 	healthValue:SetTextColor(unpack(self.colors.offwhite))
 	healthValue:SetPoint("CENTER", 0, 0)
+
 	self:Tag(healthValue, "[Diabolic:Health]")
+
 	self.Health.Value = healthValue
 
 	local name = self:CreateFontString(nil, "OVERLAY", nil, 0)
@@ -172,11 +324,15 @@ UnitStyles["Target"] = function(self, unit, id)
 	name:SetTextColor(unpack(self.colors.offwhite))
 	name:SetAlpha(.85)
 	name:SetPoint("BOTTOM", self, "TOP", 0, 0)
+
 	self:Tag(name, "[Diabolic:Level:Prefix][name][Diabolic:Rare:Suffix]")
+
 	self.Name = name
 
-	local cast = self:CreateBar()
-	cast:SetFrameLevel(health:GetFrameLevel() + 1)
+	-- Cast Bar
+	--------------------------------------------
+	local cast = self:CreateBar(self:GetName())
+	cast:SetFrameLevel(health:GetFrameLevel() + 3)
 	cast:SetSize(291,43)
 	cast:SetPoint("CENTER")
 	cast:SetStatusBarTexture(GetMedia("target-bar-normal-diabolic"))
@@ -208,6 +364,8 @@ UnitStyles["Target"] = function(self, unit, id)
 
 	self.Castbar = cast
 
+	-- Auras
+	--------------------------------------------
 	local auras = CreateFrame("Frame", nil, self)
 	auras:SetSize(40*7-4, 36)
 	auras:SetPoint("TOP", self, "BOTTOM", 0, -12)

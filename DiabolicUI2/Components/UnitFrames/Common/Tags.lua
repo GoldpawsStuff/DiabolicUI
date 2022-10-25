@@ -155,7 +155,7 @@ end
 
 Events["Diabolic:Level"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
 if (oUF.isClassic or oUF.isTBC or oUF.isWrath) then
-	Methods["Diabolic:Level"] = function(unit)
+	Methods["Diabolic:Level"] = function(unit, asPrefix)
 		local l = UnitLevel(unit)
 		local c = UnitClassification(unit)
 		if (c == "worldboss" or (not l) or (l < 1)) then
@@ -165,10 +165,14 @@ if (oUF.isClassic or oUF.isTBC or oUF.isWrath) then
 		if (c == "elite" or c == "rareelite") then
 			return colorCode..l..r..c_red.."+"..r
 		end
-		return colorCode..l..r
+		if (asPrefix) then
+			return colorCode..l..r..c_gray..":"..r
+		else
+			return colorCode..l..r
+		end
 	end
 else
-	Methods["Diabolic:Level"] = function(unit)
+	Methods["Diabolic:Level"] = function(unit, asPrefix)
 		local l = UnitLevel(unit)
 		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
 			l = UnitBattlePetLevel(unit)
@@ -181,13 +185,17 @@ else
 		if (c == "elite" or c == "rareelite") then
 			return colorCode..l..r..c_red.."+"..r
 		end
-		return colorCode..l..r
+		if (asPrefix) then
+			return colorCode..l..r..c_gray..":"..r
+		else
+			return colorCode..l..r
+		end
 	end
 end
 
 Events["Diabolic:Level:Prefix"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
 Methods["Diabolic:Level:Prefix"] = function(unit)
-	local l = Methods["Diabolic:Level"](unit)
+	local l = Methods["Diabolic:Level"](unit, true)
 	return (l and l ~= T_BOSS) and l.." " or l
 end
 
