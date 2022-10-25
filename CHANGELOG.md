@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-25
+## [2.0.61-RC] 2022-10-25
+- Bumped retail version to the 10.0.0 client patch.
+
 ### Added
 - Added combat feedback text to the player health orb.
 - Added combat feedback text to the right of the target unit frame.
