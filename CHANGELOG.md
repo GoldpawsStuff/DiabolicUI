@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-25
+## [2.0.62-RC] 2022-10-25
 ### Changed
 - The power orb value display now uses frequent updates for more accurate values.
+
+### Fixed
+- The blizzard debuff frame has once again been hidden in retail.
+- Aura buttons are once again styled properly in retail.
 
 ## [2.0.61-RC] 2022-10-25
 - Bumped retail version to the 10.0.0 client patch.
