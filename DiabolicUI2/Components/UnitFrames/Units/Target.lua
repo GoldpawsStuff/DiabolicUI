@@ -232,12 +232,10 @@ local UpdateArtwork = function(self)
 	end
 	local c = UnitClassification(unit)
 	if (c == "worldboss" or (l and l < 1) or c == "elite" or c == "rareelite" or c == "rare") then
-		self.normalBg:SetAlpha(0)
-		self.eliteBg:SetAlpha(1)
+		self.Backdrop:SetTexture(GetMedia("target-elite-diabolic"))
 		self.Health:SetStatusBarTexture(GetMedia("target-bar-elite-diabolic"))
 	else
-		self.normalBg:SetAlpha(1)
-		self.eliteBg:SetAlpha(0)
+		self.Backdrop:SetTexture(GetMedia("target-normal-diabolic"))
 		self.Health:SetStatusBarTexture(GetMedia("target-bar-normal-diabolic"))
 	end
 end
@@ -246,19 +244,11 @@ UnitStyles["Target"] = function(self, unit, id)
 
 	self:SetSize(350,75)
 
-	local normalBg = self:CreateTexture(nil, "BACKGROUND", nil, -1)
-	normalBg:SetSize(512,128)
-	normalBg:SetPoint("CENTER")
-	normalBg:SetTexture(GetMedia("target-normal-diabolic"))
-	normalBg:SetAlpha(1)
-	self.normalBg = normalBg
+	local backdrop = self:CreateTexture(self:GetName().."Backdrop", "BACKGROUND", nil, -1)
+	backdrop:SetSize(512,128)
+	backdrop:SetPoint("CENTER")
 
-	local eliteBg = self:CreateTexture(nil, "BACKGROUND", nil, -1)
-	eliteBg:SetSize(512,128)
-	eliteBg:SetPoint("CENTER")
-	eliteBg:SetTexture(GetMedia("target-elite-diabolic"))
-	eliteBg:SetAlpha(0)
-	self.eliteBg = eliteBg
+	self.Backdrop = backdrop
 
 	-- Health
 	--------------------------------------------
@@ -309,6 +299,8 @@ UnitStyles["Target"] = function(self, unit, id)
 	self.HealthPrediction = healPredict
 	self.HealthPrediction.PostUpdate = HealPredict_PostUpdate
 
+	-- Health Value
+	--------------------------------------------
 	local healthValue = health:CreateFontString(nil, "OVERLAY", nil, 0)
 	healthValue:SetFontObject(GetFont(16,true))
 	healthValue:SetTextColor(unpack(self.colors.offwhite))
@@ -318,6 +310,8 @@ UnitStyles["Target"] = function(self, unit, id)
 
 	self.Health.Value = healthValue
 
+	-- Unit Name
+	--------------------------------------------
 	local name = self:CreateFontString(nil, "OVERLAY", nil, 0)
 	name:SetJustifyH("CENTER")
 	name:SetFontObject(GetFont(16,true))
@@ -332,12 +326,12 @@ UnitStyles["Target"] = function(self, unit, id)
 	-- CombatFeedback
 	--------------------------------------------
 	local feedbackText = self:CreateFontString(nil, "OVERLAY")
-	feedbackText:SetPoint("LEFT", self, "RIGHT", -6, 2)
 	feedbackText.maxAlpha = .8
 	feedbackText.feedbackFont = GetFont(20, true)
 	feedbackText.feedbackFontLarge = GetFont(24, true)
 	feedbackText.feedbackFontSmall = GetFont(18, true)
 	feedbackText:SetFontObject(feedbackText.feedbackFont)
+	feedbackText:SetPoint("RIGHT", self, "LEFT", -4, 2)
 
 	self.CombatFeedback = feedbackText
 

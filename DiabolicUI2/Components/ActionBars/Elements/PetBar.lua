@@ -441,12 +441,6 @@ PetBar.SpawnBar = function(self)
 		bar:SetFrameRef("Handle", handle)
 		handle:SetFrameRef("Bar", bar)
 
-		-- Run once to initially set the bar's visibility-driver
-		--bar:Enable()
-
-		-- Adopt the same baseline visibility driver for the handle as for its bar.
-		--RegisterStateDriver(handle, "visibility", bar:GetAttribute("visibility-driver"))
-
 		self.Bar = bar
 		self.Bar.Handle = handle
 
@@ -477,7 +471,7 @@ PetBar.UpdatePosition = function(self)
 	if (not self.Bar) then
 		return
 	end
-	self.Bar:SetPoint("BOTTOM", 0, (84 + ActionBars:GetBarOffset()) / self.Bar.scale)
+	self.Bar:SetPoint("BOTTOM", 4, (84 + ActionBars:GetBarOffset()) / self.Bar.scale)
 end
 
 PetBar.OnEvent = function(self, event, ...)

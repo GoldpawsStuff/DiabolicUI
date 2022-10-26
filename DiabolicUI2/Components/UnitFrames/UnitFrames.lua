@@ -434,7 +434,7 @@ UnitFrames.SpawnUnitFrames = function(self)
 		-- Spawn general frames
 		Spawn("player", "Player"):SetPoint("BOTTOM", -440, 6)
 		Spawn("target", "Target"):SetPoint("TOP", 0, -40)
-		Spawn("targettarget", "TargetOfTarget"):SetPoint("CENTER", ns.UnitFramesByName["Target"], "CENTER", 0, -24)
+		Spawn("targettarget", "TargetOfTarget"):SetPoint("CENTER", ns.UnitFramesByName["Target"], "CENTER", 0, -26)
 		Spawn("pet", "Pet")
 		Spawn("focus", "Focus")
 

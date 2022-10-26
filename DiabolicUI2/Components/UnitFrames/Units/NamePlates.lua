@@ -127,7 +127,7 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 
 	-- Health
 	--------------------------------------------
-	local health = self:CreateBar()
+	local health = self:CreateBar(self:GetName().."HealthBar")
 	health:SetSize(75,5) -- 90,6
 	health:SetPoint("CENTER")
 	health:SetStatusBarTexture(GetMedia("bar-small"))
@@ -154,6 +154,33 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	self.Health = health
 	self.Health.Override = ns.API.UpdateHealth
 
+	-- Health Preview
+	--------------------------------------------
+	local preview = self:CreateBar(health:GetName().."Preview", health)
+	preview:SetFrameLevel(health:GetFrameLevel() - 1)
+	preview:SetSize(75,5)
+	preview:SetPoint("CENTER")
+	preview:SetStatusBarTexture(GetMedia("bar-small"))
+	preview:SetSparkTexture(GetMedia("blank"))
+	preview:SetAlpha(.5)
+	preview:DisableSmoothing(true)
+
+	self.Health.Preview = preview
+
+	-- Health Prediction
+	--------------------------------------------
+	local healPredictFrame = CreateFrame("Frame", nil, health)
+	healPredictFrame:SetFrameLevel(health:GetFrameLevel() + 2)
+	healPredictFrame:SetAllPoints()
+
+	local healPredict = healPredictFrame:CreateTexture(health:GetName().."Prediction", "OVERLAY")
+	healPredict:SetTexture(GetMedia("bar-small"))
+	healPredict.health = health
+	healPredict.preview = preview
+	healPredict.maxOverflow = 1
+
+	self.HealthPrediction = healPredict
+	self.HealthPrediction.PostUpdate = HealPredict_PostUpdate
 
 	-- Power
 	--------------------------------------------
@@ -182,7 +209,6 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	self.Power = power
 	self.Power.Override = ns.API.UpdatePower
 
-
 	-- Highlight
 	--------------------------------------------
 	local highlight = CreateFrame("Frame", nil, health, ns.BackdropTemplate)
@@ -198,7 +224,6 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	self:RegisterEvent("PLAYER_FOCUS_CHANGED", Plate_UpdateHighlight, true)
 	self:RegisterEvent("NAME_PLATE_UNIT_ADDED", Plate_UpdateHighlight, true)
 	self:RegisterEvent("NAME_PLATE_UNIT_REMOVED", Plate_UpdateHighlight, true)
-
 
 	-- Castbar
 	--------------------------------------------

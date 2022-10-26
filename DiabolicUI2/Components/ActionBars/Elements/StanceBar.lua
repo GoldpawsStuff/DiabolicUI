@@ -466,14 +466,6 @@ StanceBar.SpawnBar = function(self)
 		bar:SetFrameRef("Handle", handle)
 		handle:SetFrameRef("Bar", bar)
 
-		-- Run once to initially set the bar's visibility-driver
-		--bar:Enable()
-
-		-- Adopt the same baseline visibility driver for the handle as for its bar.
-		-- Note that this doesn't directly affect visibility, it merely suggests
-		-- as the actual visibility also relies on whether stances exist.
-		--RegisterStateDriver(handle, "vis", bar:GetAttribute("visibility-driver"))
-
 		self.Bar = bar
 		self.Bar.Handle = handle
 

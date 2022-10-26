@@ -41,7 +41,9 @@ UnitStyles["Pet"] = function(self, unit, id)
 	self:SetSize(60,72)
 	self:SetHitRectInsets(0,0,0,-16)
 
-	local health = self:CreateBar()
+	-- Health
+	--------------------------------------------
+	local health = self:CreateBar(self:GetName().."HealthBar")
 	health:SetHeight(9)
 	health:SetPoint("TOP", 0, -1)
 	health:SetPoint("LEFT", 2, 0)
@@ -50,13 +52,15 @@ UnitStyles["Pet"] = function(self, unit, id)
 	health.colorHealth = true
 	health.colorClass = false
 	health.colorReaction = true
+
 	self.Health = health
 	self.Health.Override = ns.API.UpdateHealth
 
-	local healthBg = health:CreateTexture(nil, "BACKGROUND", nil, -7)
+	local healthBg = health:CreateTexture(health:GetName().."Backdrop", "BACKGROUND", nil, -7)
 	healthBg:SetPoint("TOPLEFT", -1, 1)
 	healthBg:SetPoint("BOTTOMRIGHT", 1, -1)
 	healthBg:SetColorTexture(.05, .05, .05, .85)
+
 	self.Health.bg = healthBg
 
 	local name = self:CreateFontString(nil, "OVERLAY", nil, 6)
@@ -68,32 +72,52 @@ UnitStyles["Pet"] = function(self, unit, id)
 	name:SetPoint("LEFT", self, -20, 0)
 	name:SetPoint("RIGHT", self, 20, 0)
 	self:Tag(name, "[Diabolic:Name]")
+
 	self.Name = name
 
-	local portrait = CreateFrame("PlayerModel", nil, self)
+	-- Portrait
+	--------------------------------------------
+	local portrait = CreateFrame("PlayerModel", self:GetName().."Portrait", self)
 	portrait:SetPoint("TOP", 0, -18)
     portrait:SetPoint("BOTTOM", 0, 6)
 	portrait:SetPoint("LEFT", 6, 0)
 	portrait:SetPoint("RIGHT", -6, 0)
 	portrait:SetAlpha(.85)
+
     self.Portrait = portrait
 
-	local backdrop = portrait:CreateTexture(nil, "BACKGROUND", nil, -7)
+	local backdrop = portrait:CreateTexture(portrait:GetName().."Backdrop", "BACKGROUND", nil, -7)
 	backdrop:SetIgnoreParentAlpha(true)
 	backdrop:SetAllPoints()
 	backdrop:SetColorTexture(.05, .05, .05, .85)
+
 	self.Portrait.Backdrop = backdrop
 
-	local border = CreateFrame("Frame", nil, portrait, ns.BackdropTemplate)
+	local border = CreateFrame("Frame", portrait:GetName().."BorderFrame", portrait, ns.BackdropTemplate)
 	border:SetIgnoreParentAlpha(true)
 	border:SetBackdrop({ edgeFile = GetMedia("border-aura"), edgeSize = 16 })
 	border:SetBackdropBorderColor(unpack(self.colors.cast))
 	border:SetPoint("TOPLEFT", -13, 13)
 	border:SetPoint("BOTTOMRIGHT", 13, -13)
 	border:SetFrameLevel(self:GetFrameLevel() + 2)
+
 	self.Portrait.Border = border
 
-	local cast = self:CreateBar()
+	-- CombatFeedback
+	--------------------------------------------
+	local feedbackText = border:CreateFontString(nil, "OVERLAY")
+	feedbackText.maxAlpha = .8
+	feedbackText.feedbackFont = GetFont(18, true)
+	feedbackText.feedbackFontLarge = GetFont(18, true)
+	feedbackText.feedbackFontSmall = GetFont(13, true)
+	feedbackText:SetPoint("CENTER", 0, 0)
+	feedbackText:SetFontObject(feedbackText.feedbackFont)
+
+	self.CombatFeedback = feedbackText
+
+	-- Cast
+	--------------------------------------------
+	local cast = self:CreateBar(self:GetName().."CastBar")
 	cast:Hide()
 	cast:SetFrameLevel(health:GetFrameLevel() + 1)
 	cast:SetHeight(9)
@@ -102,8 +126,9 @@ UnitStyles["Pet"] = function(self, unit, id)
 	cast:SetPoint("RIGHT", -2, 0)
 	cast:SetStatusBarTexture(GetMedia("bar-small"))
 	cast:SetStatusBarColor(1, 1, 1, .25)
-	cast:SetSparkTexture(GetMedia("bar-small"))
+	cast:SetSparkTexture(GetMedia("blank"))
 	cast:DisableSmoothing(true)
+
 	self.Castbar = cast
 
 end
