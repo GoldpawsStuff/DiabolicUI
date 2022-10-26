@@ -263,6 +263,7 @@ local UpdateWrathTrackerLinkButtons = function()
 			clickFrame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 			clickFrame:SetAllPoints()
 			clickFrame:SetScript("OnClick", LinkButton_OnClick)
+			Handled[linkButton] = true
 		end
 	end
 end
