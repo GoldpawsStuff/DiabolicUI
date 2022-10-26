@@ -206,7 +206,7 @@ UnitStyles["ToT"] = function(self, unit, id)
 	preview:SetFrameLevel(health:GetFrameLevel() - 1)
 	preview:SetSize(116,14)
 	preview:SetPoint("CENTER")
-	preview:SetStatusBarTexture(GetMedia("tot-large-bar-diabolic"))
+	preview:SetStatusBarTexture(GetMedia("statusbars-tot-diabolic"))
 	preview:GetStatusBarTexture():SetTexCoord(36/256, 220/256, 0/16, 16/16)
 	preview:SetSparkTexture(GetMedia("blank"))
 	preview:SetAlpha(.5)
@@ -221,7 +221,7 @@ UnitStyles["ToT"] = function(self, unit, id)
 	healPredictFrame:SetAllPoints()
 
 	local healPredict = healPredictFrame:CreateTexture(health:GetName().."Prediction", "OVERLAY")
-	healPredict:SetTexture(GetMedia("tot-large-bar-diabolic"))
+	healPredict:SetTexture(GetMedia("statusbars-tot-diabolic"))
 	healPredict.health = health
 	healPredict.preview = preview
 	healPredict.maxOverflow = 1
