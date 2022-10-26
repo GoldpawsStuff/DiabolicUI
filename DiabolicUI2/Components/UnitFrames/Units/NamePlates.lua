@@ -270,8 +270,8 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	auras.sortMethod = "TIME_REMAINING"
 	auras.sortDirection = "DESCENDING"
 	auras.CustomFilter = ns.AuraFilters.NameplateAuraFilter
-	auras.CreateIcon = ns.AuraStyles.CreateIcon
-	auras.PostUpdateIcon = ns.AuraStyles.NameplatePostUpdateIcon
+	auras.CreateButton = ns.AuraStyles.CreateButton
+	auras.PostUpdateButton = ns.AuraStyles.NameplatePostUpdateButton
 	auras.PreSetPosition = ns.AuraSorts.Default
 
 	self.Auras = auras

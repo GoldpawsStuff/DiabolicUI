@@ -396,8 +396,8 @@ UnitStyles["Target"] = function(self, unit, id)
 	auras.tooltipAnchor = "ANCHOR_BOTTOMRIGHT"
 	auras.sortMethod = "TIME_REMAINING"
 	auras.sortDirection = "DESCENDING"
-	auras.CreateIcon = ns.AuraStyles.CreateIcon
-	auras.PostUpdateIcon = ns.AuraStyles.TargetPostUpdateIcon
+	auras.CreateButton = ns.AuraStyles.CreateButton
+	auras.PostUpdateButton = ns.AuraStyles.TargetPostUpdateButton
 	auras.CustomFilter = ns.AuraFilters.TargetAuraFilter
 	auras.PreSetPosition = ns.AuraSorts.Default
 
