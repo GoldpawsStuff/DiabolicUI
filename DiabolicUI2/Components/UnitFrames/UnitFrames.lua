@@ -28,8 +28,10 @@ local UnitFrames = ns:NewModule("UnitFrames", "LibMoreEvents-1.0")
 local oUF = ns.oUF
 
 -- Globally available registries
-ns.UnitStyles = {}
 ns.NamePlates = {}
+ns.UnitStyles = {}
+ns.UnitFrames = {}
+ns.UnitFramesByName = {}
 
 -- Lua API
 local string_format = string.format
@@ -50,9 +52,141 @@ local SetObjectScale = ns.API.SetObjectScale
 local SetEffectiveObjectScale = ns.API.SetEffectiveObjectScale
 local IsAddOnEnabled = ns.API.IsAddOnEnabled
 
+-- Utility
+-----------------------------------------------------
+local Spawn = function(unit, name)
+	local fullName = ns.Prefix.."UnitFrame"..name
+	local frame = oUF:Spawn(unit, fullName)
+
+	-- Vehicle switching is currently broken in Wrath.
+	if (ns.IsWrath) then
+		if (unit == "player") then
+			frame:SetAttribute("toggleForVehicle", false)
+			RegisterAttributeDriver(frame, "unit", "[vehicleui] vehicle; player")
+		elseif (unit == "pet") then
+			frame:SetAttribute("toggleForVehicle", false)
+			RegisterAttributeDriver(frame, "unit", "[vehicleui] player; pet")
+		end
+	end
+
+	-- Add to our registries.
+	ns.UnitFramesByName[name] = frame
+	ns.UnitFrames[#ns.UnitFrames + 1] = frame
+
+	-- Inform the environment it was created.
+	ns:Fire("UnitFrame_Created", unit, fullName)
+
+	return frame
+end
+
+-- Styling
+-----------------------------------------------------
+local UnitSpecific = function(self, unit)
+	local id, style
+	if (unit == "player") then
+		style = "Player"
+
+	elseif (unit == "target") then
+		style = "Target"
+
+	elseif (unit == "targettarget") then
+		style = "ToT"
+
+	elseif (unit == "pet") then
+		style = "Pet"
+
+	elseif (unit == "focus") then
+		style = "Focus"
+
+	elseif (unit == "focustarget") then
+		style = "FocusTarget"
+
+	elseif (string_match(unit, "party%d?$")) then
+		id = string_match(unit, "party(%d)")
+		style = "Party"
+
+	elseif (string_match(unit, "raid%d+$")) then
+		id = string_match(unit, "raid(%d+)")
+		style = "Raid"
+
+	elseif (string_match(unit, "boss%d?$")) then
+		id = string_match(unit, "boss(%d)")
+		style = "Boss"
+
+	elseif (string_match(unit, "arena%d?$")) then
+		id = string_match(unit, "arena(%d)")
+		style = "Arena"
+
+	elseif (string_match(unit, "nameplate%d+$")) then
+		id = string_match(unit, "nameplate(%d+)")
+		style = "NamePlate"
+	end
+
+	if (style and ns.UnitStyles[style]) then
+		return ns.UnitStyles[style](self, unit, id)
+	end
+end
+
+-- UnitFrame Callbacks
+-----------------------------------------------------
+local OnEnter = function(self, ...)
+	self.isMouseOver = true
+	if (self.OnEnter) then
+		self:OnEnter(...)
+	end
+	if (self.isUnitFrame) then
+		return _G.UnitFrame_OnEnter(self, ...)
+	end
+end
+
+local OnLeave = function(self, ...)
+	self.isMouseOver = nil
+	if (self.OnLeave) then
+		self:OnLeave(...)
+	end
+	if (self.isUnitFrame) then
+		return _G.UnitFrame_OnLeave(self, ...)
+	end
+end
+
+local OnHide = function(self, ...)
+	self.isMouseOver = nil
+	if (self.OnHide) then
+		self:OnHide(...)
+	end
+end
+
+local AddForceUpdate = function(self, func)
+	if (not self._forceUpdates) then
+		self._forceUpdates = {}
+	end
+	table_insert(self._forceUpdates, func)
+end
+
+local RemoveForceUpdate = function(self, func)
+	if (not self._forceUpdates) then
+		return
+	end
+	for i,updateFunc in next,self._forceUpdates do
+		if (updateFunc == func) then
+			table_remove(self._forceUpdates, i)
+			break
+		end
+	end
+end
+
+local ForceUpdate = function(self)
+	if (self._forceUpdates) then
+		for _,updateFunc in next,self._forceUpdates do
+			updateFunc(self)
+		end
+	end
+	self:UpdateAllElements("ForceUpdate")
+end
+
 -- NamePlates
 -----------------------------------------------------
-local cvars = {
+local NamePlate_Cvars = {
 	-- Visibility
 	-- *Don't adjust these, let the user decide.
 	--["nameplateShowAll"] = 1, -- 0 = only in combat, 1 = always
@@ -138,7 +272,7 @@ local cvars = {
 	["nameplateTargetBehindMaxDistance"] = 15 -- 15
 }
 
-local callback = function(self, event, unit)
+local NamePlate_Callback = function(self, event, unit)
 	if (event == "PLAYER_TARGET_CHANGED") then
 	elseif (event == "NAME_PLATE_UNIT_ADDED") then
 		self.isPRD = UnitIsUnit(unit, "player")
@@ -148,102 +282,41 @@ local callback = function(self, event, unit)
 	end
 end
 
-local UnitSpecific = function(self, unit)
-	local id, style
-	if (unit == "player") then
-		style = "Player"
-
-	elseif (unit == "target") then
-		style = "Target"
-
-	elseif (unit == "targettarget") then
-		style = "ToT"
-
-	elseif (unit == "pet") then
-		style = "Pet"
-
-	elseif (unit == "focus") then
-		style = "Focus"
-
-	elseif (unit == "focustarget") then
-		style = "FocusTarget"
-
-	elseif (string_match(unit, "party%d?$")) then
-		id = string_match(unit, "party(%d)")
-		style = "Party"
-
-	elseif (string_match(unit, "raid%d+$")) then
-		id = string_match(unit, "raid(%d+)")
-		style = "Raid"
-
-	elseif (string_match(unit, "boss%d?$")) then
-		id = string_match(unit, "boss(%d)")
-		style = "Boss"
-
-	elseif (string_match(unit, "arena%d?$")) then
-		id = string_match(unit, "arena(%d)")
-		style = "Arena"
-
-	elseif (string_match(unit, "nameplate%d+$")) then
-		id = string_match(unit, "nameplate(%d+)")
-		style = "NamePlate"
-	end
-
-	if (style and ns.UnitStyles[style]) then
-		return ns.UnitStyles[style](self, unit, id)
-	end
-end
-
-local OnEnter = function(self, ...)
-	self.isMouseOver = true
-	if (self.OnEnter) then
-		self:OnEnter(...)
-	end
-	if (self.isUnitFrame) then
-		return _G.UnitFrame_OnEnter(self, ...)
-	end
-end
-
-local OnLeave = function(self, ...)
-	self.isMouseOver = nil
-	if (self.OnLeave) then
-		self:OnLeave(...)
-	end
-	if (self.isUnitFrame) then
-		return _G.UnitFrame_OnLeave(self, ...)
-	end
-end
-
-local OnHide = function(self, ...)
-	self.isMouseOver = nil
-	if (self.OnHide) then
-		self:OnHide(...)
-	end
-end
-
+-- Module API
+-----------------------------------------------------
 UnitFrames.RegisterStyles = function(self)
 
-	oUF:RegisterStyle("Diabolic", function(self, unit)
+	oUF:RegisterStyle(ns.Prefix, function(self, unit)
 
 		SetObjectScale(self)
+
+		self.isUnitFrame = true
+		self.colors = ns.Colors
 
 		self:RegisterForClicks("LeftButtonDown", "RightButtonDown")
 		self:SetScript("OnEnter", OnEnter)
 		self:SetScript("OnLeave", OnLeave)
 		self:SetScript("OnHide", OnHide)
-		self.colors = ns.Colors
-		self.isUnitFrame = true
+
+		self.ForceUpdate = ForceUpdate
+		self.AddForceUpdate = AddForceUpdate
+		self.RemoveForceUpdate = RemoveForceUpdate
 
 		return UnitSpecific(self, unit)
 	end)
 
-	oUF:RegisterStyle("DiabolicNamePlates", function(self, unit)
+	oUF:RegisterStyle(ns.Prefix.."NamePlates", function(self, unit)
 
 		SetEffectiveObjectScale(self)
 
-		self:SetPoint("CENTER",0,0)
-		self.colors = ns.Colors
 		self.isNamePlate = true
+		self.colors = ns.Colors
+
+		self:SetPoint("CENTER",0,0)
+
+		self.ForceUpdate = ForceUpdate
+		self.AddForceUpdate = AddForceUpdate
+		self.RemoveForceUpdate = RemoveForceUpdate
 
 		return UnitSpecific(self, unit)
 	end)
@@ -355,30 +428,15 @@ end
 
 UnitFrames.SpawnUnitFrames = function(self)
 
-
 	oUF:Factory(function(oUF)
-		oUF:SetActiveStyle("Diabolic")
+		oUF:SetActiveStyle(ns.Prefix)
 
-		local prefix = ns.Prefix.."UnitFrame"
-
-		-- Spawn the individual frames.
-		oUF:Spawn("player", prefix.."Player"):SetPoint("BOTTOM", -440, 6)
-		oUF:Spawn("target", prefix.."Target"):SetPoint("TOP", 0, -40)
-		oUF:Spawn("targettarget", prefix.."TargetOfTarget"):SetPoint("CENTER", _G[prefix.."Target"], "CENTER", 0, -24)
-		--oUF:Spawn("targettarget", prefix.."TargetOfTarget"):SetPoint("LEFT", _G[prefix.."Target"], "RIGHT", 0, 0)
-		oUF:Spawn("pet", prefix.."Pet")
-		oUF:Spawn("focus", prefix.."Focus")
-
-		-- Vehicle switching is currently broken in Wrath.
-		if (ns.IsWrath) then
-			local player = _G[prefix.."Player"]
-			player:SetAttribute("toggleForVehicle", false)
-			RegisterAttributeDriver(player, "unit", "[vehicleui] vehicle; player")
-
-			local pet = _G[prefix.."Pet"]
-			pet:SetAttribute("toggleForVehicle", false)
-			RegisterAttributeDriver(pet, "unit", "[vehicleui] player; pet")
-		end
+		-- Spawn general frames
+		Spawn("player", "Player"):SetPoint("BOTTOM", -440, 6)
+		Spawn("target", "Target"):SetPoint("TOP", 0, -40)
+		Spawn("targettarget", "TargetOfTarget"):SetPoint("CENTER", ns.UnitFramesByName["Target"], "CENTER", 0, -24)
+		Spawn("pet", "Pet")
+		Spawn("focus", "Focus")
 
 		-- Retrieve the dock manager.
 		local dockManager = self:GetDockManager()
@@ -392,8 +450,8 @@ UnitFrames.SpawnUnitFrames = function(self)
 		dockManager:SetAttribute("maxCols", 6)
 
 		-- Reference the frames to be docked.
-		dockManager:SetFrameRef("Pet", _G[prefix.."Pet"])
-		dockManager:SetFrameRef("Focus", _G[prefix.."Focus"])
+		dockManager:SetFrameRef("Pet", ns.UnitFramesByName["Pet"])
+		dockManager:SetFrameRef("Focus", ns.UnitFramesByName["Focus"])
 
 		-- Append the frames to the layout cache.
 		-- The order we insert them into the table
@@ -410,18 +468,13 @@ UnitFrames.SpawnUnitFrames = function(self)
 		-- Inform the environment that frames have been created and initialized.
 		-- We're intentionally starting with the dock manager to allow changes to it prior to the dockable frames.
 		ns:Fire("UnitFrame_DockManager_Initialized", ns.Prefix.."UnitFrameDockManager")
-		ns:Fire("UnitFrame_Created", "player", prefix.."Player")
-		ns:Fire("UnitFrame_Created", "target", prefix.."Target")
-		ns:Fire("UnitFrame_Created", "targettarget", prefix.."TargetOfTarget")
-		ns:Fire("UnitFrame_Created", "pet", prefix.."Pet")
-		ns:Fire("UnitFrame_Created", "focus", prefix.."Focus")
 
 	end)
 end
 
 UnitFrames.SpawnGroupFrames = function(self)
 	oUF:Factory(function(oUF)
-		oUF:SetActiveStyle("Diabolic")
+		oUF:SetActiveStyle(ns.Prefix)
 
 		-- oUF:SpawnHeader(overrideName, overrideTemplate, visibility, attributes ...)
 		--local party = oUF:SpawnHeader(nil, nil, "raid,party,solo",
@@ -452,10 +505,25 @@ UnitFrames.SpawnNamePlates = function(self)
 		end
 	end
 	oUF:Factory(function(oUF)
-		oUF:SetActiveStyle("DiabolicNamePlates")
-		oUF:SpawnNamePlates(ns.Prefix, callback, cvars)
+		oUF:SetActiveStyle(ns.Prefix.."NamePlates")
+		oUF:SpawnNamePlates(ns.Prefix, NamePlate_Callback, NamePlate_Cvars)
 		self:KillNamePlateClutter()
 	end)
+end
+
+UnitFrames.SetNamePlateSizes = function()
+	if (InCombatLockdown()) then return end
+
+	local w,h = 90,45 -- 110,45
+	C_NamePlate.SetNamePlateFriendlySize(w,h)
+	C_NamePlate.SetNamePlateEnemySize(w,h)
+	C_NamePlate.SetNamePlateSelfSize(w,h)
+end
+
+UnitFrames.SetNamePlateScales = function(self)
+	for namePlate in pairs(ns.NamePlates) do
+		SetEffectiveObjectScale(namePlate)
+	end
 end
 
 UnitFrames.KillNamePlateClutter = function(self)
@@ -477,26 +545,11 @@ UnitFrames.KillNamePlateClutter = function(self)
 
 end
 
-UnitFrames.SetNamePlateSizes = function()
-	if (InCombatLockdown()) then return end
-
-	local w,h = 90,45 -- 110,45
-	C_NamePlate.SetNamePlateFriendlySize(w,h)
-	C_NamePlate.SetNamePlateEnemySize(w,h)
-	C_NamePlate.SetNamePlateSelfSize(w,h)
-end
-
-UnitFrames.UpdateScale = function(self)
-	for namePlate in pairs(ns.NamePlates) do
-		SetEffectiveObjectScale(namePlate)
-	end
-end
-
 UnitFrames.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") or (event == "VARIABLES_LOADED") then
-		self:UpdateScale()
+		self:SetNamePlateScales()
 	elseif (event == "UI_SCALE_CHANGED") or (event == "DISPLAY_SIZE_CHANGED") then
-		self:UpdateScale()
+		self:SetNamePlateScales()
 	end
 end
 
