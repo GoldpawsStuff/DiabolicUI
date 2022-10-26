@@ -394,7 +394,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	glass:SetSize(330,330)
 	glass:SetPoint("CENTER", power)
 	glass:SetTexture(GetMedia("orb-glass"))
-	glass:SetAlpha(.6)
+	glass:SetAlpha(1) -- .6
 
 	local backdrop = power:CreateTexture(nil, "BACKGROUND", nil, -7)
 	backdrop:SetAllPoints(glass)
