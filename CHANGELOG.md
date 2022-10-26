@@ -4,7 +4,16 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.62-RC] 2022-10-25
+## [Unreleased] 2022-10-26
+### Added
+- Added health preview and heal prediction to nameplates.
+- Added combat feedback text to the pet- and focus unit frames.
+
+### Changed
+- Overhauled the orb library and unit frame code for brighter and more colorful orbs.
+- Moved the target unit frame combat feedback to its left side.
+
+## [2.0.62-RC] 2022-10-26
 ### Changed
 - The power orb value display now uses frequent updates for more accurate values.
 
