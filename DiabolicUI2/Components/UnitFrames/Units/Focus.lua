@@ -71,7 +71,7 @@ UnitStyles["Focus"] = function(self, unit, id)
 	name:SetPoint("TOP", self, "BOTTOM", 0, -4)
 	name:SetPoint("LEFT", self, -20, 0)
 	name:SetPoint("RIGHT", self, 20, 0)
-	self:Tag(name, "[Diabolic:Name]")
+	self:Tag(name, "["..ns.Prefix..":Name]")
 
 	self.Name = name
 

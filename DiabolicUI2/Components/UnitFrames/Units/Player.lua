@@ -563,9 +563,9 @@ UnitStyles["Player"] = function(self, unit, id)
 	healthValue:SetAlpha(.85)
 	healthValue:SetPoint("BOTTOM", health, "TOP", 0, 16)
 	if (ns.IsWrath) then
-		self:Tag(healthValue, "[Diabolic:Health:Full]")
+		self:Tag(healthValue, "["..ns.Prefix..":Health:Full]")
 	else
-		self:Tag(healthValue, "[Diabolic:Health:Full][Diabolic:Absorb]")
+		self:Tag(healthValue, "["..ns.Prefix..":Health:Full]["..ns.Prefix..":Absorb]")
 	end
 	self.Health.Value = healthValue
 
@@ -575,7 +575,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	powerValue:SetTextColor(unpack(self.colors.offwhite))
 	powerValue:SetAlpha(.85)
 	powerValue:SetPoint("BOTTOM", power, "TOP", 0, 16)
-	self:Tag(powerValue, "[Diabolic:Power:Full]")
+	self:Tag(powerValue, "["..ns.Prefix..":Power:Full]")
 	self.Power.Value = powerValue
 
 	-- Auras

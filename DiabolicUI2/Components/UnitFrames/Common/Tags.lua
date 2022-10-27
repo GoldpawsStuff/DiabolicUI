@@ -70,8 +70,8 @@ local T_BOSS = "|TInterface\\TargetingFrame\\UI-TargetingFrame-Skull:14:14:-2:1|
 
 -- Tags
 ---------------------------------------------------------------------
-Events["Diabolic:Absorb"] = "UNIT_ABSORB_AMOUNT_CHANGED"
-Methods["Diabolic:Absorb"] = function(unit)
+Events[ns.Prefix..":Absorb"] = "UNIT_ABSORB_AMOUNT_CHANGED"
+Methods[ns.Prefix..":Absorb"] = function(unit)
 	if (UnitIsDeadOrGhost(unit)) then
 		return
 	else
@@ -82,9 +82,9 @@ Methods["Diabolic:Absorb"] = function(unit)
 	end
 end
 
-Events["Diabolic:Classification"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
+Events[ns.Prefix..":Classification"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
 if (oUF.isClassic or oUF.isTBC or oUF.isWrath) then
-	Methods["Diabolic:Classification"] = function(unit)
+	Methods[ns.Prefix..":Classification"] = function(unit)
 		local l = UnitLevel(unit)
 		local c = UnitClassification(unit)
 		if (c == "worldboss" or (not l) or (l < 1)) then
@@ -96,7 +96,7 @@ if (oUF.isClassic or oUF.isTBC or oUF.isWrath) then
 		return " "
 	end
 else
-	Methods["Diabolic:Classification"] = function(unit)
+	Methods[ns.Prefix..":Classification"] = function(unit)
 		local l = UnitLevel(unit)
 		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
 			l = UnitBattlePetLevel(unit)
@@ -112,8 +112,8 @@ else
 	end
 end
 
-Events["Diabolic:Health"] = "UNIT_HEALTH UNIT_MAXHEALTH"
-Methods["Diabolic:Health"] = function(unit)
+Events[ns.Prefix..":Health"] = "UNIT_HEALTH UNIT_MAXHEALTH"
+Methods[ns.Prefix..":Health"] = function(unit)
 	if (UnitIsDeadOrGhost(unit)) then
 		return L_DEAD
 	else
@@ -124,8 +124,8 @@ Methods["Diabolic:Health"] = function(unit)
 	end
 end
 
-Events["Diabolic:Health:Full"] = "UNIT_HEALTH UNIT_MAXHEALTH"
-Methods["Diabolic:Health:Full"] = function(unit)
+Events[ns.Prefix..":Health:Full"] = "UNIT_HEALTH UNIT_MAXHEALTH"
+Methods[ns.Prefix..":Health:Full"] = function(unit)
 	if (UnitIsDeadOrGhost(unit)) then
 		return
 	else
@@ -136,8 +136,8 @@ Methods["Diabolic:Health:Full"] = function(unit)
 	end
 end
 
-Events["Diabolic:Health:Smart"] = "UNIT_HEALTH UNIT_MAXHEALTH"
-Methods["Diabolic:Health:Smart"] = function(unit)
+Events[ns.Prefix..":Health:Smart"] = "UNIT_HEALTH UNIT_MAXHEALTH"
+Methods[ns.Prefix..":Health:Smart"] = function(unit)
 	if (UnitIsDeadOrGhost(unit)) then
 		return L_DEAD
 	else
@@ -153,9 +153,9 @@ Methods["Diabolic:Health:Smart"] = function(unit)
 	end
 end
 
-Events["Diabolic:Level"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
+Events[ns.Prefix..":Level"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
 if (oUF.isClassic or oUF.isTBC or oUF.isWrath) then
-	Methods["Diabolic:Level"] = function(unit, asPrefix)
+	Methods[ns.Prefix..":Level"] = function(unit, asPrefix)
 		local l = UnitLevel(unit)
 		local c = UnitClassification(unit)
 		if (c == "worldboss" or (not l) or (l < 1)) then
@@ -172,7 +172,7 @@ if (oUF.isClassic or oUF.isTBC or oUF.isWrath) then
 		end
 	end
 else
-	Methods["Diabolic:Level"] = function(unit, asPrefix)
+	Methods[ns.Prefix..":Level"] = function(unit, asPrefix)
 		local l = UnitLevel(unit)
 		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
 			l = UnitBattlePetLevel(unit)
@@ -193,14 +193,14 @@ else
 	end
 end
 
-Events["Diabolic:Level:Prefix"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
-Methods["Diabolic:Level:Prefix"] = function(unit)
-	local l = Methods["Diabolic:Level"](unit, true)
+Events[ns.Prefix..":Level:Prefix"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
+Methods[ns.Prefix..":Level:Prefix"] = function(unit)
+	local l = Methods[ns.Prefix..":Level"](unit, true)
 	return (l and l ~= T_BOSS) and l.." " or l
 end
 
-Events["Diabolic:Name"] = "UNIT_NAME_UPDATE"
-Methods["Diabolic:Name"] = function(unit, realUnit)
+Events[ns.Prefix..":Name"] = "UNIT_NAME_UPDATE"
+Methods[ns.Prefix..":Name"] = function(unit, realUnit)
 	local name = UnitName(realUnit or unit)
 	if (name and string_find(name, "%s")) then
 		name = AbbreviateName(name)
@@ -208,8 +208,8 @@ Methods["Diabolic:Name"] = function(unit, realUnit)
 	return name
 end
 
-Events["Diabolic:Power:Full"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER"
-Methods["Diabolic:Power:Full"] = function(unit)
+Events[ns.Prefix..":Power:Full"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER"
+Methods[ns.Prefix..":Power:Full"] = function(unit)
 	if (UnitIsDeadOrGhost(unit)) then
 		return
 	else
@@ -220,8 +220,8 @@ Methods["Diabolic:Power:Full"] = function(unit)
 	end
 end
 
-Events["Diabolic:Rare"] = "UNIT_CLASSIFICATION_CHANGED"
-Methods["Diabolic:Rare"] = function(unit)
+Events[ns.Prefix..":Rare"] = "UNIT_CLASSIFICATION_CHANGED"
+Methods[ns.Prefix..":Rare"] = function(unit)
 	local classification = UnitClassification(unit)
 	local rare = classification == "rare" or classification == "rareelite"
 	if (rare) then
@@ -229,8 +229,8 @@ Methods["Diabolic:Rare"] = function(unit)
 	end
 end
 
-Events["Diabolic:Rare:Suffix"] = "UNIT_CLASSIFICATION_CHANGED"
-Methods["Diabolic:Rare:Suffix"] = function(unit)
-	local r = Methods["Diabolic:Rare"](unit)
+Events[ns.Prefix..":Rare:Suffix"] = "UNIT_CLASSIFICATION_CHANGED"
+Methods[ns.Prefix..":Rare:Suffix"] = function(unit)
+	local r = Methods[ns.Prefix..":Rare"](unit)
 	return r and " "..r
 end

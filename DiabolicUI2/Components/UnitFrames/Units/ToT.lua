@@ -236,7 +236,7 @@ UnitStyles["ToT"] = function(self, unit, id)
 	healthValue:SetTextColor(unpack(self.colors.offwhite))
 	healthValue:SetAlpha(.85)
 	healthValue:SetPoint("CENTER", 0, 0)
-	self:Tag(healthValue, "[Diabolic:Health:Smart]")
+	self:Tag(healthValue, "["..ns.Prefix..":Health:Smart]")
 
 	self.Health.Value = healthValue
 

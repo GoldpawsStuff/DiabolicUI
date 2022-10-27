@@ -306,7 +306,7 @@ UnitStyles["Target"] = function(self, unit, id)
 	healthValue:SetTextColor(unpack(self.colors.offwhite))
 	healthValue:SetPoint("CENTER", 0, 0)
 
-	self:Tag(healthValue, "[Diabolic:Health]")
+	self:Tag(healthValue, "["..ns.Prefix..":Health]")
 
 	self.Health.Value = healthValue
 
@@ -319,7 +319,7 @@ UnitStyles["Target"] = function(self, unit, id)
 	name:SetAlpha(.85)
 	name:SetPoint("BOTTOM", self, "TOP", 0, 0)
 
-	self:Tag(name, "[Diabolic:Level:Prefix][name][Diabolic:Rare:Suffix]")
+	self:Tag(name, "["..ns.Prefix..":Level:Prefix][name]["..ns.Prefix..":Rare:Suffix]")
 
 	self.Name = name
 
