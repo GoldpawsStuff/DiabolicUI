@@ -30,19 +30,11 @@ if (not UnitStyles) then
 end
 
 -- Lua API
-local getmetatable = getmetatable
-local math_huge = math.huge
-local pairs = pairs
-local table_sort = table.sort
+local select = select
 local unpack = unpack
 
 -- WoW API
-local CancelUnitBuff = CancelUnitBuff
 local CreateFrame = CreateFrame
-local HasPetUI = HasPetUI
-local InCombatLockdown = InCombatLockdown
-local UnitExists = UnitExists
-local UnitIsUnit = UnitIsUnit
 
 -- Addon API
 local Colors = ns.Colors
@@ -51,57 +43,86 @@ local GetMedia = ns.API.GetMedia
 local IsAddOnEnabled = ns.API.IsAddOnEnabled
 
 -- Constants
-local _, PlayerClass = UnitClass("player")
-
--- Utility Functions
---------------------------------------------
--- Create the points used for class power, stagger and runes.
-local CreatePoint = function(self, i)
-
-	local point = self:CreateBar()
-	point:SetSize(70,70)
-	point.pointWidth = 70
-	point:SetStatusBarTexture(GetMedia("diabolic-runes"))
-	point:GetStatusBarTexture():SetTexCoord((i-1)*128/1024, i*128/1024, 128/512, 256/512)
-	point:SetSparkTexture(GetMedia("blank"))
-	point:DisableSmoothing(true) -- Force disable smoothing, it's too inaccurate for this.
-	point:SetOrientation("UP")
-	point:SetMinMaxValues(0, 1)
-	point:SetValue(1)
-	point:SetScript("OnDisplayValueChanged", ClassPower_OnDisplayValueChanged)
-
-	-- Empty slot texture
-	local bg = point:CreateTexture()
-	bg:SetDrawLayer("BACKGROUND", -1)
-	bg:ClearAllPoints()
-	bg:SetPoint("BOTTOM", 0, 0)
-	bg:SetSize(70,70)
-	bg:SetTexture(GetMedia("diabolic-runes"))
-	bg:SetTexCoord((i-1)*128/1024, i*128/1024, 0/512, 128/512)
-	bg.multiplier = .25
-	point.bg = bg
-
-	-- Overlay glow, aligned to the bar texture
-	-- This needs post updates to adjust its texcoords based on bar value.
-	local fg = point:CreateTexture()
-	fg:SetDrawLayer("ARTWORK", 1)
-	fg:SetPoint("TOP", point:GetStatusBarTexture(), "TOP", 0, 0)
-	fg:SetPoint("BOTTOM", 0, 0)
-	fg:SetPoint("LEFT", 0, 0)
-	fg:SetPoint("RIGHT", 0, 0)
-	fg:SetSize(70,70) -- this is overriden by the points above
-	fg:SetBlendMode("ADD")
-	fg:SetTexture(GetMedia("diabolic-runes"))
-	fg:SetTexCoord((i-1)*128/1024, i*128/1024, 256/512, 384/512)
-	fg:SetAlpha(.85)
-	fg.texCoords = { (i-1)*128/1024, i*128/1024, 256/512, 384/512 }
-	point.fg = fg
-
-	return point
-end
+local _, playerClass = UnitClass("player")
 
 -- Element Callbacks
 --------------------------------------------
+local Health_PostUpdateColor = function(element, unit, r, g, b)
+	local preview = element.Preview
+	if (preview) then
+		preview:SetStatusBarColor(r * .7, g * .7, b * .7)
+	end
+end
+
+local HealPredict_PostUpdate = function(element, unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb, curHealth, maxHealth)
+
+	local allIncomingHeal = myIncomingHeal + otherIncomingHeal
+	local allNegativeHeals = healAbsorb
+	local showPrediction, change
+
+	if ((allIncomingHeal > 0) or (allNegativeHeals > 0)) and (maxHealth > 0) then
+		local startPoint = curHealth/maxHealth
+
+		-- Dev switch to test absorbs with normal healing
+		--allIncomingHeal, allNegativeHeals = allNegativeHeals, allIncomingHeal
+
+		-- Hide elementions if the change is very small, or if the unit is at max health.
+		change = (allIncomingHeal - allNegativeHeals)/maxHealth
+		if ((curHealth < maxHealth) and (change > (element.health.elementThreshold or .05))) then
+			local endPoint = startPoint + change
+
+			-- Crop heal elemention overflows
+			if (endPoint > 1) then
+				endPoint = 1
+				change = endPoint - startPoint
+			end
+
+			-- Crop heal absorb overflows
+			if (endPoint < 0) then
+				endPoint = 0
+				change = -startPoint
+			end
+
+			-- This shouldn't happen, but let's do it anyway.
+			if (startPoint ~= endPoint) then
+				showPrediction = true
+			end
+		end
+	end
+
+	if (showPrediction) then
+
+		local preview = element.preview
+		local min,max = preview:GetMinMaxValues()
+		local anchor = preview:GetValue() / max
+		local texture = preview:GetStatusBarTexture()
+		local width, height = preview:GetSize()
+
+		if (change > 0) then
+			element:ClearAllPoints()
+			element:SetPoint("BOTTOM", texture, "BOTTOM", 0, anchor * height)
+			element:SetSize(width, change*height)
+			element:SetTexCoord(0, 1, 1 - anchor - change, 1 - anchor)
+			element:SetVertexColor(0, .7, 0, .25)
+			element:Show()
+
+		elseif (change < 0) then
+			element:ClearAllPoints()
+			element:SetPoint("BOTTOM", texture, "BOTTOM", 0, (anchor - change) * height)
+			element:SetSize(width, -change*height)
+			element:SetTexCoord(0, 1, 1 - anchor, 1 - anchor - change)
+			element:SetVertexColor(.25, 0, 0, .75)
+			element:Show()
+
+		else
+			element:Hide()
+		end
+	else
+		element:Hide()
+	end
+
+end
+
 local Cast_CustomDelayText = function(element, duration)
 	if (element.casting) then
 		duration = element.max - duration
@@ -210,27 +231,9 @@ local Runes_PostUpdateColor = function(element, r, g, b, color, rune)
 	end
 end
 
-local Power_OnEnter = function(element)
-	local OnEnter = element.__owner:GetScript("OnEnter")
-	if (OnEnter) then
-		OnEnter(element)
-	end
-end
-
-local Power_OnLeave = function(element)
-	local OnLeave = element.__owner:GetScript("OnLeave")
-	if (OnLeave) then
-		OnLeave(element)
-	end
-end
-
-local Power_OnMouseOver = function(element)
-	element.__owner:OnMouseOver()
-end
-
--- Frame Script Handlers
+-- Script Handlers
 --------------------------------------------
-local OnEvent = function(self, event)
+local UnitFrame_OnEvent = function(self, event)
 	if (event == "PLAYER_REGEN_DISABLED") then
 		self:OnMouseOver(event)
 		local runes = self.Runes
@@ -258,14 +261,14 @@ local OnEvent = function(self, event)
 	end
 end
 
-local OnHide = function(self)
+local UnitFrame_OnHide = function(self)
 	self.inCombat = nil
 	self.isMouseOver = nil
 	self.Power.isMouseOver = nil
 	self:OnMouseOver()
 end
 
-local OnMouseOver = function(self, event)
+local UnitFrame_OnMouseOver = function(self, event)
 	if (event == "PLAYER_REGEN_DISABLED") then
 		self.inCombat = true
 	elseif (event == "PLAYER_REGEN_ENABLED") then
@@ -281,8 +284,27 @@ local OnMouseOver = function(self, event)
 	end
 end
 
+local Power_OnEnter = function(element)
+	local OnEnter = element.__owner:GetScript("OnEnter")
+	if (OnEnter) then
+		OnEnter(element)
+	end
+end
+
+local Power_OnLeave = function(element)
+	local OnLeave = element.__owner:GetScript("OnLeave")
+	if (OnLeave) then
+		OnLeave(element)
+	end
+end
+
+local Power_OnMouseOver = function(element)
+	element.__owner:OnMouseOver()
+end
+
 -- Callbacks
 --------------------------------------------
+-- Update aura positons when visible bars change.
 local PostUpdateAuraPositions = function(self, event, ...)
 
 	local ActionBars = ns:GetModule("ActionBars")
@@ -306,67 +328,172 @@ local PostUpdateAuraPositions = function(self, event, ...)
 	ns:Fire("UnitFrame_Position_Updated", self:GetName())
 end
 
+-- Utility Functions
+--------------------------------------------
+-- Create the points used for class power, stagger and runes.
+local CreatePoint = function(self, i)
+
+	local point = self:CreateBar()
+	point:SetSize(70,70)
+	point.pointWidth = 70
+	point:SetStatusBarTexture(GetMedia("diabolic-runes"))
+	point:GetStatusBarTexture():SetTexCoord((i-1)*128/1024, i*128/1024, 128/512, 256/512)
+	point:SetSparkTexture(GetMedia("blank"))
+	point:DisableSmoothing(true) -- Force disable smoothing, it's too inaccurate for this.
+	point:SetOrientation("UP")
+	point:SetMinMaxValues(0, 1)
+	point:SetValue(1)
+	point:SetScript("OnDisplayValueChanged", ClassPower_OnDisplayValueChanged)
+
+	-- Empty slot texture
+	local bg = point:CreateTexture()
+	bg:SetDrawLayer("BACKGROUND", -1)
+	bg:ClearAllPoints()
+	bg:SetPoint("BOTTOM", 0, 0)
+	bg:SetSize(70,70)
+	bg:SetTexture(GetMedia("diabolic-runes"))
+	bg:SetTexCoord((i-1)*128/1024, i*128/1024, 0/512, 128/512)
+	bg.multiplier = .25
+	point.bg = bg
+
+	-- Overlay glow, aligned to the bar texture
+	-- This needs post updates to adjust its texcoords based on bar value.
+	local fg = point:CreateTexture()
+	fg:SetDrawLayer("ARTWORK", 1)
+	fg:SetPoint("TOP", point:GetStatusBarTexture(), "TOP", 0, 0)
+	fg:SetPoint("BOTTOM", 0, 0)
+	fg:SetPoint("LEFT", 0, 0)
+	fg:SetPoint("RIGHT", 0, 0)
+	fg:SetSize(70,70) -- this is overriden by the points above
+	fg:SetBlendMode("ADD")
+	fg:SetTexture(GetMedia("diabolic-runes"))
+	fg:SetTexCoord((i-1)*128/1024, i*128/1024, 256/512, 384/512)
+	fg:SetAlpha(.85)
+	fg.texCoords = { (i-1)*128/1024, i*128/1024, 256/512, 384/512 }
+	point.fg = fg
+
+	return point
+end
+
 UnitStyles["Player"] = function(self, unit, id)
 
 	self:SetSize(200,200)
+	self:SetFrameLevel(self:GetFrameLevel() + 1)
 
 	-- Health Orb
 	--------------------------------------------
-	local health = self:CreateOrb()
+	local health = self:CreateOrb(self:GetName().."HealthOrb")
 	health:SetSize(200,200)
 	health:SetPoint("BOTTOM")
 	health:SetStatusBarTexture(GetMedia("orb2"), GetMedia("orb2"))
 	health.colorHealth = true
 
-	local a,b,c,d = health:GetStatusBarTexture()
-	b:SetTexCoord(1,0,1,0)
-
-	local overlay = CreateFrame("Frame", nil, health)
-	overlay:SetFrameLevel(health:GetFrameLevel() + 2)
-
-	local shade = overlay:CreateTexture(nil, "BACKGROUND")
-	shade:SetAllPoints(health)
-	shade:SetTexture(GetMedia("shade-circle"))
-	shade:SetVertexColor(0,0,0,1)
-
-	local glass = overlay:CreateTexture(nil, "BORDER")
-	glass:SetSize(330,330)
-	glass:SetPoint("CENTER", health)
-	glass:SetTexture(GetMedia("orb-glass"))
-	glass:SetAlpha(.6)
-
-	local backdrop = health:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetAllPoints(glass)
-	backdrop:SetTexture(GetMedia("orb-backdrop1"))
-	backdrop:SetAlpha(1)
-
-	local border = overlay:CreateTexture(nil, "ARTWORK")
-	border:SetAllPoints(glass)
-	border:SetTexture(GetMedia("orb-border"))
-
-	local art = overlay:CreateTexture(nil, "OVERLAY", nil, 1)
-	art:SetSize(glass:GetSize())
-	art:SetPoint("BOTTOMRIGHT", health, "BOTTOM", 29, -25)
-	art:SetTexture(GetMedia("orb-art1"))
+	select(2, health:GetStatusBarTexture()):SetTexCoord(1,0,1,0) -- flip 2nd texture horizontally
 
 	self.Health = health
 	self.Health.Override = ns.API.UpdateHealth
+	self.Health.PostUpdateColor = Health_PostUpdateColor
+
+	local healthBackdrop = health:CreateTexture(health:GetName().."Backdrop", "BACKGROUND", nil, -7)
+	healthBackdrop:SetSize(330,330)
+	healthBackdrop:SetPoint("CENTER", health)
+	healthBackdrop:SetTexture(GetMedia("orb-backdrop1"))
+
+	self.Health.Bacdrop = healthBackdrop
+
+	local healthOverlay = CreateFrame("Frame", nil, health)
+	healthOverlay:SetFrameLevel(health:GetFrameLevel() + 5)
+
+	self.Health.Overlay = healthShade
+
+	local healthShade = healthOverlay:CreateTexture(nil, "BACKGROUND")
+	healthShade:SetAllPoints(health)
+	healthShade:SetTexture(GetMedia("shade-circle"))
+	healthShade:SetVertexColor(0,0,0,1)
+
+	self.Health.Shade = healthShade
+
+	local healthGlass = healthOverlay:CreateTexture(health:GetName().."Glass", "BORDER")
+	healthGlass:SetAllPoints(healthBackdrop)
+	healthGlass:SetTexture(GetMedia("orb-glass"))
+	healthGlass:SetAlpha(.6)
+
+	self.Health.Glass = healthGlass
+
+	local healthBorder = healthOverlay:CreateTexture(health:GetName().."Border", "ARTWORK")
+	healthBorder:SetAllPoints(healthBackdrop)
+	healthBorder:SetTexture(GetMedia("orb-border"))
+
+	self.Health.Border = healthBorder
+
+	local healthArt = healthOverlay:CreateTexture(health:GetName().."Artwork", "OVERLAY", nil, 1)
+	healthArt:SetSize(healthBackdrop:GetSize())
+	healthArt:SetPoint("BOTTOMRIGHT", health, "BOTTOM", 29, -25)
+	healthArt:SetTexture(GetMedia("orb-art1"))
+
+	self.Health.Artwork = healthArt
+
+	-- Health Value Text
+	--------------------------------------------
+	local healthValue = health:CreateFontString(health:GetName().."ValueText", "OVERLAY", nil, 0)
+	healthValue:Hide()
+	healthValue:SetFontObject(GetFont(14,true))
+	healthValue:SetTextColor(unpack(self.colors.offwhite))
+	healthValue:SetAlpha(.85)
+	healthValue:SetPoint("BOTTOM", health, "TOP", 0, 16)
+
+	if (ns.IsWrath) then
+		self:Tag(healthValue, "["..ns.Prefix..":Health:Full]")
+	else
+		self:Tag(healthValue, "["..ns.Prefix..":Health:Full]["..ns.Prefix..":Absorb]")
+	end
+
+	self.Health.Value = healthValue
+
+	-- Health Preview
+	--------------------------------------------
+	local layer, level = health:GetStatusBarTexture():GetDrawLayer()
+	local preview = self:CreateOrb(health:GetName().."Preview")
+	preview:SetFrameLevel(health:GetFrameLevel())
+	preview:SetSize(200,200)
+	preview:SetPoint("BOTTOM")
+	preview:SetStatusBarTexture(GetMedia("minimap-mask-transparent"))
+	preview:GetStatusBarTexture():SetDrawLayer(layer, level - 1)
+	preview:SetAlpha(.5)
+	preview:DisableSmoothing(true)
+
+	self.Health.Preview = preview
+
+	-- Health Prediction
+	--------------------------------------------
+	local healPredictFrame = CreateFrame("Frame", nil, health)
+	healPredictFrame:SetFrameLevel(health:GetFrameLevel() + 2)
+	healPredictFrame:SetAllPoints()
+
+	local healPredict = healPredictFrame:CreateTexture(health:GetName().."Prediction", "OVERLAY")
+	healPredict.health = health
+	healPredict.preview = preview
+	healPredict.maxOverflow = 1
+	healPredict:SetTexture(GetMedia("minimap-mask-opaque"))
+
+	self.HealthPrediction = healPredict
+	self.HealthPrediction.PostUpdate = HealPredict_PostUpdate
 
 	-- CombatFeedback
 	--------------------------------------------
-	local feedbackText = overlay:CreateFontString(nil, "OVERLAY")
-	feedbackText:SetPoint("CENTER", health, "CENTER", 2, 2)
+	local feedbackText = healthOverlay:CreateFontString(self:GetName().."CombatFeedbackText", "OVERLAY")
 	feedbackText.maxAlpha = .8
 	feedbackText.feedbackFont = GetFont(24, true)
 	feedbackText.feedbackFontLarge = GetFont(24, true)
 	feedbackText.feedbackFontSmall = GetFont(18, true)
 	feedbackText:SetFontObject(feedbackText.feedbackFont)
+	feedbackText:SetPoint("CENTER", health, "CENTER", 2, 2)
 
 	self.CombatFeedback = feedbackText
 
 	-- Power Orb
 	--------------------------------------------
-	local power = self:CreateOrb()
+	local power = self:CreateOrb(self:GetName().."PowerOrb")
 	power:SetSize(200,200)
 	power:SetPoint("BOTTOM", 882, 0)
 	power:SetStatusBarTexture(GetMedia("orb2"), GetMedia("orb2"))
@@ -379,39 +506,61 @@ UnitStyles["Player"] = function(self, unit, id)
 	power.displayAltPower = true
 	power.colorPower = true
 
-	local a,b,c,d = power:GetStatusBarTexture()
-	b:SetTexCoord(1,0,1,0)
-
-	local overlay = CreateFrame("Frame", nil, power)
-	overlay:SetFrameLevel(power:GetFrameLevel() + 2)
-
-	local shade = overlay:CreateTexture(nil, "BACKGROUND")
-	shade:SetAllPoints(power)
-	shade:SetTexture(GetMedia("shade-circle"))
-	shade:SetVertexColor(0,0,0,1)
-
-	local glass = overlay:CreateTexture(nil, "BORDER")
-	glass:SetSize(330,330)
-	glass:SetPoint("CENTER", power)
-	glass:SetTexture(GetMedia("orb-glass"))
-	glass:SetAlpha(.6)
-
-	local backdrop = power:CreateTexture(nil, "BACKGROUND", nil, -7)
-	backdrop:SetAllPoints(glass)
-	backdrop:SetTexture(GetMedia("orb-backdrop2"))
-	backdrop:SetAlpha(1)
-
-	local border = overlay:CreateTexture(nil, "ARTWORK")
-	border:SetAllPoints(glass)
-	border:SetTexture(GetMedia("orb-border"))
-
-	local art = overlay:CreateTexture(nil, "OVERLAY", nil, 1)
-	art:SetSize(glass:GetSize())
-	art:SetPoint("BOTTOMLEFT", power, "BOTTOM", -29, -25)
-	art:SetTexture(GetMedia("orb-art2"))
+	select(2, power:GetStatusBarTexture()):SetTexCoord(1,0,1,0) -- flip 2nd texture horizontally
 
 	self.Power = power
 	self.Power.Override = ns.API.UpdatePower
+
+	local powerBackdrop = power:CreateTexture(power:GetName().."Backdrop", "BACKGROUND", nil, -7)
+	powerBackdrop:SetSize(330,330)
+	powerBackdrop:SetPoint("CENTER", power)
+	powerBackdrop:SetTexture(GetMedia("orb-backdrop2"))
+
+	self.Power.Backdrop = powerBackdrop
+
+	local powerOverlay = CreateFrame("Frame", nil, power)
+	powerOverlay:SetFrameLevel(power:GetFrameLevel() + 5)
+
+	self.Power.Overlay = powerOverlay
+
+	local powerShade = powerOverlay:CreateTexture(nil, "BACKGROUND")
+	powerShade:SetAllPoints(power)
+	powerShade:SetTexture(GetMedia("shade-circle"))
+	powerShade:SetVertexColor(0,0,0,1)
+
+	self.Power.Shade = powerShade
+
+	local powerGlass = powerOverlay:CreateTexture(power:GetName().."Glass", "BORDER")
+	powerGlass:SetAllPoints(powerBackdrop)
+	powerGlass:SetTexture(GetMedia("orb-glass"))
+	powerGlass:SetAlpha(.6)
+
+	self.Power.Glass = powerGlass
+
+	local powerBorder = powerOverlay:CreateTexture(power:GetName().."Border", "ARTWORK")
+	powerBorder:SetAllPoints(powerBackdrop)
+	powerBorder:SetTexture(GetMedia("orb-border"))
+
+	self.Power.Border = powerBorder
+
+	local powerArt = powerOverlay:CreateTexture(power:GetName().."Artwork", "OVERLAY", nil, 1)
+	powerArt:SetSize(powerBackdrop:GetSize())
+	powerArt:SetPoint("BOTTOMLEFT", power, "BOTTOM", -29, -25)
+	powerArt:SetTexture(GetMedia("orb-art2"))
+
+	self.Power.Artwork = powerArt
+
+	-- Power Value Text
+	--------------------------------------------
+	local powerValue = powerOverlay:CreateFontString(power:GetName().."ValueText", "OVERLAY", nil, 0)
+	powerValue:Hide()
+	powerValue:SetFontObject(GetFont(14,true))
+	powerValue:SetTextColor(unpack(self.colors.offwhite))
+	powerValue:SetAlpha(.85)
+	powerValue:SetPoint("BOTTOM", power, "TOP", 0, 16)
+	self:Tag(powerValue, "["..ns.Prefix..":Power:Full]")
+
+	self.Power.Value = powerValue
 
 	-- Castbar
 	--------------------------------------------
@@ -491,7 +640,7 @@ UnitStyles["Player"] = function(self, unit, id)
 		classpower.PostUpdate = ClassPower_PostUpdate
 		classpower.PostUpdateColor = ClassPower_PostUpdateColor
 
-		local maxPoints = (ns.IsRetail) and (PlayerClass == "MONK" or PlayerClass == "ROGUE") and 6 or 5
+		local maxPoints = (ns.IsRetail) and (playerClass == "MONK" or playerClass == "ROGUE") and 6 or 5
 		for i = 1,maxPoints do
 			local point = CreatePoint(self, i)
 			point:SetParent(classpower)
@@ -508,7 +657,7 @@ UnitStyles["Player"] = function(self, unit, id)
 
 	-- Stagger (Monk)
 	--------------------------------------------
-	if (PlayerClass == "MONK") and (not SCP) then
+	if (playerClass == "MONK") and (not SCP) then
 
 		local stagger = CreateFrame("Frame", nil, self)
 		stagger:SetSize(210,70)
@@ -531,7 +680,7 @@ UnitStyles["Player"] = function(self, unit, id)
 
 	-- Runes (Death Knight)
 	--------------------------------------------
-	if (PlayerClass == "DEATHKNIGHT") and ((ns.IsWrath) or (ns.IsRetail and not SCP)) then
+	if (playerClass == "DEATHKNIGHT") and ((ns.IsWrath) or (ns.IsRetail and not SCP)) then
 
 		local runes = CreateFrame("Frame", nil, self)
 		runes:SetSize(420,70)
@@ -554,33 +703,9 @@ UnitStyles["Player"] = function(self, unit, id)
 		self.Runes = runes
 	end
 
-	-- Tags
-	--------------------------------------------
-	local healthValue = health:CreateFontString(nil, "OVERLAY", nil, 0)
-	healthValue:Hide()
-	healthValue:SetFontObject(GetFont(14,true))
-	healthValue:SetTextColor(unpack(self.colors.offwhite))
-	healthValue:SetAlpha(.85)
-	healthValue:SetPoint("BOTTOM", health, "TOP", 0, 16)
-	if (ns.IsWrath) then
-		self:Tag(healthValue, "["..ns.Prefix..":Health:Full]")
-	else
-		self:Tag(healthValue, "["..ns.Prefix..":Health:Full]["..ns.Prefix..":Absorb]")
-	end
-	self.Health.Value = healthValue
-
-	local powerValue = power:CreateFontString(nil, "OVERLAY", nil, 0)
-	powerValue:Hide()
-	powerValue:SetFontObject(GetFont(14,true))
-	powerValue:SetTextColor(unpack(self.colors.offwhite))
-	powerValue:SetAlpha(.85)
-	powerValue:SetPoint("BOTTOM", power, "TOP", 0, 16)
-	self:Tag(powerValue, "["..ns.Prefix..":Power:Full]")
-	self.Power.Value = powerValue
-
 	-- Auras
 	--------------------------------------------
-	local buffs = CreateFrame("Frame", nil, self)
+	local buffs = CreateFrame("Frame", self:GetName().."BuffFrame", self)
 	buffs:SetSize(300, 110)
 	buffs.size = 40
 	buffs.spacing = 4
@@ -600,9 +725,10 @@ UnitStyles["Player"] = function(self, unit, id)
 	buffs.PostUpdateButton = ns.AuraStyles.PlayerPostUpdateButton
 	buffs.CustomFilter = ns.AuraFilters.PlayerBuffFilter
 	buffs.PreSetPosition = ns.AuraSorts.Default
+
 	self.Buffs = buffs
 
-	local debuffs = CreateFrame("Frame", nil, self)
+	local debuffs = CreateFrame("Frame", self:GetName().."DebuffFrame", self)
 	debuffs:SetSize(300, 110)
 	debuffs.size = 40
 	debuffs.spacing = 4
@@ -623,15 +749,16 @@ UnitStyles["Player"] = function(self, unit, id)
 	debuffs.PostUpdateButton = ns.AuraStyles.PlayerPostUpdateButton
 	debuffs.CustomFilter = ns.AuraFilters.PlayerDebuffFilter
 	debuffs.PreSetPosition = ns.AuraSorts.Default
+
 	self.Debuffs = debuffs
 
 	-- Scripts & Events
 	--------------------------------------------
-	self.OnEvent = OnEvent
-	self.OnEnter = OnMouseOver  -- called by script handler
-	self.OnLeave = OnMouseOver  -- called by script handler
-	self.OnHide = OnHide -- called by script handler
-	self.OnMouseOver = OnMouseOver
+	self.OnEvent = UnitFrame_OnEvent
+	self.OnEnter = UnitFrame_OnMouseOver  -- called by script handler
+	self.OnLeave = UnitFrame_OnMouseOver  -- called by script handler
+	self.OnHide = UnitFrame_OnHide -- called by script handler
+	self.OnMouseOver = UnitFrame_OnMouseOver
 
 	self:RegisterEvent("PLAYER_REGEN_ENABLED", self.OnEvent, true)
 	self:RegisterEvent("PLAYER_REGEN_DISABLED", self.OnEvent, true)
