@@ -52,6 +52,7 @@ local IsWrath = ns.IsWrath
 
 -- Callbacks
 --------------------------------------------
+-- Update the health preview color on health color updates.
 local Health_PostUpdateColor = function(element, unit, r, g, b)
 	local preview = element.Preview
 	if (preview) then
@@ -59,6 +60,8 @@ local Health_PostUpdateColor = function(element, unit, r, g, b)
 	end
 end
 
+-- Align our custom health prediction texture
+-- based on the plugins provided values.
 local HealPredict_PostUpdate = function(element, unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb, curHealth, maxHealth)
 
 	local allIncomingHeal = myIncomingHeal + otherIncomingHeal
@@ -219,6 +222,7 @@ local Cast_PostCastFail = function(element, unit, spellID)
 	element:SetValue(0)
 end
 
+-- Update artwork based on unit classification.
 local UpdateArtwork = function(self)
 	local unit = self.unit
 	if (not unit) then

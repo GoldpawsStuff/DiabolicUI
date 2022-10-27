@@ -41,6 +41,7 @@ local SetObjectScale = ns.API.SetObjectScale
 
 -- Callbacks
 --------------------------------------------
+-- Update transparency to avoid "double" units.
 local PostUpdate = function(self)
 	local unit = self.unit
 	if (not unit) then
@@ -52,6 +53,7 @@ local PostUpdate = function(self)
 	self:SetAlpha((UnitIsUnit(unit, "target") or UnitIsUnit(unit, "player")) and 0 or 1)
 end
 
+-- Update the health preview color on health color updates.
 local Health_PostUpdateColor = function(element, unit, r, g, b)
 	local preview = element.Preview
 	if (preview) then
@@ -59,6 +61,8 @@ local Health_PostUpdateColor = function(element, unit, r, g, b)
 	end
 end
 
+-- Align our custom health prediction texture
+-- based on the plugins provided values.
 local HealPredict_PostUpdate = function(element, unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb, curHealth, maxHealth)
 
 	local allIncomingHeal = myIncomingHeal + otherIncomingHeal

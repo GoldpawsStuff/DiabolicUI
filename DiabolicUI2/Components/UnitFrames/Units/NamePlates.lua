@@ -42,6 +42,119 @@ local GetMedia = ns.API.GetMedia
 
 -- Callbacks
 --------------------------------------------
+-- Align our custom health prediction texture
+-- based on the plugins provided values.
+local HealPredict_PostUpdate = function(element, unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb, curHealth, maxHealth)
+
+	local allIncomingHeal = myIncomingHeal + otherIncomingHeal
+	local allNegativeHeals = healAbsorb
+	local showPrediction, change
+
+	if ((allIncomingHeal > 0) or (allNegativeHeals > 0)) and (maxHealth > 0) then
+		local startPoint = curHealth/maxHealth
+
+		-- Dev switch to test absorbs with normal healing
+		--allIncomingHeal, allNegativeHeals = allNegativeHeals, allIncomingHeal
+
+		-- Hide elementions if the change is very small, or if the unit is at max health.
+		change = (allIncomingHeal - allNegativeHeals)/maxHealth
+		if ((curHealth < maxHealth) and (change > (element.health.elementThreshold or .05))) then
+			local endPoint = startPoint + change
+
+			-- Crop heal elemention overflows
+			if (endPoint > 1) then
+				endPoint = 1
+				change = endPoint - startPoint
+			end
+
+			-- Crop heal absorb overflows
+			if (endPoint < 0) then
+				endPoint = 0
+				change = -startPoint
+			end
+
+			-- This shouldn't happen, but let's do it anyway.
+			if (startPoint ~= endPoint) then
+				showPrediction = true
+			end
+		end
+	end
+
+	if (showPrediction) then
+
+		local preview = element.preview
+		local growth = preview:GetGrowth()
+		local min,max = preview:GetMinMaxValues()
+		local value = preview:GetValue() / max
+		local previewTexture = preview:GetStatusBarTexture()
+		local previewWidth, previewHeight = preview:GetSize()
+		local left, right, top, bottom = preview:GetTexCoord()
+
+		if (growth == "RIGHT") then
+
+			local texValue, texChange = value, change
+			local rangeH, rangeV
+
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+
+			if (change > 0) then
+				element:ClearAllPoints()
+				element:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMRIGHT", 0, 0)
+				element:SetSize(change*previewWidth, previewHeight)
+				element:SetTexCoord(texValue, texValue + texChange, top, bottom)
+				element:SetVertexColor(0, .7, 0, .25)
+				element:Show()
+
+			elseif (change < 0) then
+				element:ClearAllPoints()
+				element:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMRIGHT", 0, 0)
+				element:SetSize((-change)*previewWidth, previewHeight)
+				element:SetTexCoord(texValue + texChange, texValue, top, bottom)
+				element:SetVertexColor(.5, 0, 0, .75)
+				element:Show()
+
+			else
+				element:Hide()
+			end
+
+		elseif (growth == "LEFT") then
+			local texValue, texChange = value, change
+			local rangeH, rangeV
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+
+			if (change > 0) then
+				element:ClearAllPoints()
+				element:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMLEFT", 0, 0)
+				element:SetSize(change*previewWidth, previewHeight)
+				element:SetTexCoord(texValue + texChange, texValue, top, bottom)
+				element:SetVertexColor(0, .7, 0, .25)
+				element:Show()
+
+			elseif (change < 0) then
+				element:ClearAllPoints()
+				element:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMLEFT", 0, 0)
+				element:SetSize((-change)*previewWidth, previewHeight)
+				element:SetTexCoord(texValue, texValue + texChange, top, bottom)
+				element:SetVertexColor(.5, 0, 0, .75)
+				element:Show()
+
+			else
+				element:Hide()
+			end
+		end
+	else
+		element:Hide()
+	end
+
+end
+
+-- Update cast bar color to indicate protected casts.
 local Cast_UpdateInterruptible = function(element, unit)
 	if (element.notInterruptible) then
 		element:SetStatusBarColor(unpack(Colors.red))
@@ -50,6 +163,8 @@ local Cast_UpdateInterruptible = function(element, unit)
 	end
 end
 
+-- Update power bar visibility if a frame
+-- is the perrsonal resource display.
 local Power_PostUpdate = function(element, unit, cur, min, max)
 	local self = element.__owner
 	if (not unit) then
@@ -104,6 +219,7 @@ local Power_PostUpdate = function(element, unit, cur, min, max)
 
 end
 
+-- Highlight current target and focus units.
 local Plate_UpdateHighlight = function(self)
 	local highlight = self.Highlight
 	if (not highlight) then
