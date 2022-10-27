@@ -126,9 +126,9 @@ local HealPredict_PostUpdate = function(element, unit, myIncomingHeal, otherInco
 			elseif (change < 0) then
 				element:ClearAllPoints()
 				element:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMRIGHT", 0, 0)
-				element:SetSize((-change)*previewWidth, previewHeight)
+				element:SetSize(-change*previewWidth, previewHeight)
 				element:SetTexCoord(texValue + texChange, texValue, top, bottom)
-				element:SetVertexColor(.5, 0, 0, .75)
+				element:SetVertexColor(.25, 0, 0, .75)
 				element:Show()
 
 			else
@@ -154,7 +154,7 @@ local HealPredict_PostUpdate = function(element, unit, myIncomingHeal, otherInco
 			elseif (change < 0) then
 				element:ClearAllPoints()
 				element:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMLEFT", 0, 0)
-				element:SetSize((-change)*previewWidth, previewHeight)
+				element:SetSize(-change*previewWidth, previewHeight)
 				element:SetTexCoord(texValue, texValue + texChange, top, bottom)
 				element:SetVertexColor(.5, 0, 0, .75)
 				element:Show()
