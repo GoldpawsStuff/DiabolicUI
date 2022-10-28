@@ -77,7 +77,7 @@ local HealPredict_PostUpdate = function(element, unit, myIncomingHeal, otherInco
 
 		-- Hide elementions if the change is very small, or if the unit is at max health.
 		change = (allIncomingHeal - allNegativeHeals)/maxHealth
-		if ((curHealth < maxHealth) and (change > (element.health.elementThreshold or .05))) then
+		if ((curHealth < maxHealth) and (change > (element.health.predictThreshold or .05))) then
 			local endPoint = startPoint + change
 
 			-- Crop heal elemention overflows

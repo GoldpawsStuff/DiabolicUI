@@ -4,14 +4,16 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-26
+## [Unreleased] 2022-10-28
 ### Added
+- Added health preview and heal prediction to the player health orb.
 - Added health preview and heal prediction to nameplates.
 - Added combat feedback text to the pet- and focus unit frames.
 
 ### Changed
 - Overhauled the orb library and unit frame code for brighter and more colorful orbs.
-- Moved the target unit frame combat feedback to its left side.
+- Moved all action button edits to the front-end and reverted to a fully baseline button library.
+- Moved the target unit frame combat feedback to its left side, to leave more room between the right side of the frame and the new buff display.
 
 ## [2.0.62-RC] 2022-10-26
 ### Changed
