@@ -143,7 +143,7 @@ StatusBars.CreateBars = function(self)
 			overlay:SetVertexColor(1, 1, 1, 2/3)
 
 			local label = bar:CreateFontString(nil, "HIGHLIGHT", nil, 1)
-			label:SetPoint("CENTER")
+			label:SetPoint("CENTER", 4, 0)
 			label:SetJustifyH("CENTER")
 			label:SetJustifyV("MIDDLE")
 			label:SetFontObject(GetFont(14, "true"))
