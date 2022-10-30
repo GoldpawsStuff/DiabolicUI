@@ -29,9 +29,13 @@ local StatusBars = ActionBars:NewModule("StatusBars", "LibMoreEvents-1.0")
 local LibSmoothBar = LibStub("LibSmoothBar-1.0")
 
 -- Lua API
+local math_floor = math.floor
 local math_min = math.min
+local string_format = string.format
+local unpack = unpack
 
 -- WoW API
+local GameTooltip_SetDefaultAnchor = GameTooltip_SetDefaultAnchor
 local GetFactionInfo = GetFactionInfo
 local GetFactionParagonInfo = C_Reputation and C_Reputation.GetFactionParagonInfo
 local GetFriendshipReputation = GetFriendshipReputation
@@ -42,16 +46,66 @@ local GetWatchedFactionInfo = GetWatchedFactionInfo
 local GetXPExhaustion = GetXPExhaustion
 local IsFactionParagon = C_Reputation and C_Reputation.IsFactionParagon
 local IsResting = IsResting
+local UnitLevel = UnitLevel
+local UnitSex = UnitSex
 local UnitXP = UnitXP
 local UnitXPMax = UnitXPMax
 
 -- Addon API
+local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
 
 -- Local bar registry
 local Bars = {}
+
+local Reputation_OnEnter = function(self)
+	if (GameTooltip:IsForbidden()) then
+		return
+	end
+	local r, g, b = unpack(Colors[self.isFriend and "friendship" or "reaction"][self.standingID])
+	GameTooltip_SetDefaultAnchor(GameTooltip, self)
+	GameTooltip:AddDoubleLine(self.name, self.standingLabel, r, g, b, unpack(Colors.gray))
+	GameTooltip:Show()
+end
+
+local Reputation_OnLeave = function(self)
+	if (GameTooltip:IsForbidden()) then
+		return
+	end
+	GameTooltip:Hide()
+end
+
+local XP_OnEnter = function(self)
+	if (GameTooltip:IsForbidden()) then
+		return
+	end
+
+	local r, g, b = unpack(Colors.highlight)
+
+	local exhaustionCountdown = GetTimeToWellRested() and (GetTimeToWellRested() / 60)
+	local exhaustionStateID, exhaustionStateName, exhaustionStateMultiplier = GetRestState()
+	local tooltipText = string_format(EXHAUST_TOOLTIP1, exhaustionStateName, exhaustionStateMultiplier * 100)
+
+	if (exhaustionCountdown and GetXPExhaustion() and IsResting()) then
+		tooltipText = tooltipText..string_format(EXHAUST_TOOLTIP4, exhaustionCountdown)
+	elseif (exhaustionStateID == 4 or exhaustionStateID == 5) then
+		tooltipText = tooltipText..EXHAUST_TOOLTIP2
+	end
+
+	GameTooltip_SetDefaultAnchor(GameTooltip, self)
+	GameTooltip:AddDoubleLine(COMBAT_XP_GAIN, string_format(UNIT_LEVEL_TEMPLATE, UnitLevel("player")), r, g, b, unpack(Colors.gray))
+	GameTooltip:AddLine("\n"..tooltipText)
+	GameTooltip:Show()
+end
+
+local XP_OnLeave = function(self)
+	if (GameTooltip:IsForbidden()) then
+		return
+	end
+	GameTooltip:Hide()
+end
 
 StatusBars.CreateBars = function(self)
 	local scaffold = SetObjectScale(CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate"))
@@ -69,7 +123,7 @@ StatusBars.CreateBars = function(self)
 		if (i == 1) then
 			bar:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 68)
 			bar:SetStatusBarTexture(GetMedia("statusbars-diabolic"))
-			bar:SetStatusBarColor(unpack(ns.Colors.rested))
+			bar:SetStatusBarColor(unpack(Colors.rested))
 
 			local backdrop = bar:CreateTexture(nil, "BACKGROUND", nil, -7)
 			backdrop:SetSize(1024,14)
@@ -83,6 +137,13 @@ StatusBars.CreateBars = function(self)
 			overlay:SetPoint("CENTER", 0, 0)
 			overlay:SetTexture(GetMedia("statusbars-overlay-diabolic"))
 			overlay:SetVertexColor(1, 1, 1, 2/3)
+
+			local label = bar:CreateFontString(nil, "HIGHLIGHT", nil, 1)
+			label:SetPoint("CENTER")
+			label:SetJustifyH("CENTER")
+			label:SetJustifyV("MIDDLE")
+			label:SetFontObject(GetFont(14, "true"))
+			bar.Label = label
 
 			local AdjustOverlayTexCoords = function(self)
 				local displayValue = self:GetDisplayValue()
@@ -104,11 +165,14 @@ StatusBars.CreateBars = function(self)
 			AdjustOverlayTexCoords(bar)
 			bar:SetScript("OnUpdate", AdjustOverlayTexCoords)
 
+			bar:SetMouseClickEnabled(false)
+			bar:SetMouseMotionEnabled(true)
+
 		elseif (i == 2) then
 			bar:SetPoint("BOTTOM", Bars[1], "BOTTOM", 0, 0)
 			bar:SetStatusBarTexture(GetMedia("statusbars-dimmed-diabolic"))
 			bar:GetStatusBarTexture():SetDrawLayer("BACKGROUND", -6)
-			bar:SetStatusBarColor(unpack(ns.Colors.restedBonus))
+			bar:SetStatusBarColor(unpack(Colors.restedBonus))
 			Bars[1].BonusBar = bar
 		end
 
@@ -127,38 +191,47 @@ StatusBars.UpdateBars = function(self)
 	local name, reaction, min, max, current, factionID = GetWatchedFactionInfo()
 	if (name) then
 		local forced = bar.currentType ~= "reputation"
+		local gender = UnitSex("player")
 
-		if (factionID and IsFactionParagon(factionID)) then
-			local currentValue, threshold, _, hasRewardPending = GetFactionParagonInfo(factionID)
-			if (currentValue and threshold) then
-				min, max = 0, threshold
-				current = currentValue % threshold
-				if (hasRewardPending) then
-					current = current + threshold
+		-- Check for retail paragon factions
+		if (ns.IsRetail) then
+			if (factionID and IsFactionParagon(factionID)) then
+				local currentValue, threshold, _, hasRewardPending = GetFactionParagonInfo(factionID)
+				if (currentValue and threshold) then
+					min, max = 0, threshold
+					current = currentValue % threshold
+					if (hasRewardPending) then
+						current = current + threshold
+					end
 				end
 			end
 		end
 
-		local standingID, standingLabel, isFriend, friendText
+		-- Figure out the standingID of the watched faction
+		local standingID, standingLabel, standingDescription, isFriend, friendText
 		for i = 1, GetNumFactions() do
 			local factionName, description, standingId, barMin, barMax, barValue, atWarWith, canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild, factionID, hasBonusRepGain, canBeLFGBonus = GetFactionInfo(i)
-
 			if (factionName == name) then
-				local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
 
-				if (friendID) then
-					isFriend = true
-					if (nextFriendThreshold) then
-						min = friendThreshold
-						max = nextFriendThreshold
-					else
-						min = 0
-						max = friendMaxRep
-						current = friendRep
+				-- Check if the watched faction is a retail friendship
+				if (ns.IsRetail) then
+					local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
+
+					if (friendID) then
+						isFriend = true
+						if (nextFriendThreshold) then
+							min = friendThreshold
+							max = nextFriendThreshold
+						else
+							min = 0
+							max = friendMaxRep
+							current = friendRep
+						end
+						standingLabel = friendTextLevel
 					end
-					standingLabel = friendTextLevel
 				end
 
+				standingDescription = description
 				standingID = standingId
 				break
 			end
@@ -174,15 +247,25 @@ StatusBars.UpdateBars = function(self)
 				bar:SetMinMaxValues(0, max-min)
 				bar:SetValue(current-min)
 			end
-			bar:SetStatusBarColor(unpack(ns.Colors[isFriend and "friendship" or "reaction"][standingID]))
+			bar:SetStatusBarColor(unpack(Colors[isFriend and "friendship" or "reaction"][standingID]))
 			bar.currentType = "reputation"
 
 			if (not isFriend) then
-				standingLabel = _G["FACTION_STANDING_LABEL"..standingID]
+				standingLabel = GetText("FACTION_STANDING_LABEL"..standingID, gender)
 			end
-		else
 
+			bar.name = name
+			bar.isFriend = isFriend
+			bar.standingID, bar.standingLabel = standingID, standingLabel
+
+			bar.Label:SetFormattedText("%s "..Colors.gray.colorCode.."/|r %s ", barValue, barMax)
+			bar:SetScript("OnEnter", Reputation_OnEnter)
+			bar:SetScript("OnLeave", Reputation_OnLeave)
+
+		else
 			-- this can happen?
+			bar:SetScript("OnEnter", nil)
+			bar:SetScript("OnLeave", nil)
 		end
 
 		if (bonusShown) then
@@ -200,7 +283,7 @@ StatusBars.UpdateBars = function(self)
 
 		bar:SetMinMaxValues(0, max, forced)
 		bar:SetValue(min, forced)
-		bar:SetStatusBarColor(unpack(ns.Colors[restedLeft and "rested" or "xp"]))
+		bar:SetStatusBarColor(unpack(Colors[restedLeft and "rested" or "xp"]))
 		bar.currentType = "xp"
 
 		if (restedLeft) then
@@ -214,6 +297,10 @@ StatusBars.UpdateBars = function(self)
 			bonus:SetValue(0, true)
 			bonus:SetMinMaxValues(0, 1, true)
 		end
+
+		bar.Label:SetFormattedText("%s "..Colors.gray.colorCode.."/|r %s ", min, max)
+		bar:SetScript("OnEnter", XP_OnEnter)
+		bar:SetScript("OnLeave", XP_OnLeave)
 	end
 
 end
@@ -242,5 +329,6 @@ StatusBars.OnEnable = function(self)
 	self:RegisterEvent("DISABLE_XP_GAIN", "UpdateBars")
 	self:RegisterEvent("ENABLE_XP_GAIN", "UpdateBars")
 	self:RegisterEvent("PLAYER_UPDATE_RESTING", "UpdateBars")
+	self:RegisterEvent("UPDATE_EXHAUSTION", "UpdateBars")
 	self:RegisterEvent("UPDATE_FACTION", "UpdateBars")
 end
