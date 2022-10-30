@@ -270,25 +270,11 @@ end
 
 local UpdateWrathWatchFrameLine = function(line)
 	if (not Handled[line]) then
-		--local name = line:GetName()
-		--local icon = _G[name.."Icon"]
-		--local border = _G[name.."Border"]
 		line.text:SetFontObject(GetFont(12,true)) -- default size is 12
 		line.text:SetWordWrap(false)
-
-		hooksecurefunc(line.dash, "SetAlpha", function(self, alpha, override)
-			if (override) then
-				return
-			end
-			self:SetAlpha(0, true)
-		end)
-
+		line.dash:SetParent(UIHider)
 		Handled[line] = true
 	end
-
-	-- Always assure this is cleared
-	-- *don't clear the text, it's indent is needed!
-	line.dash:SetAlpha(0)
 end
 
 local UpdateWrathTrackerLines = function()
@@ -441,22 +427,6 @@ Tracker.InitializeWrathTracker = function(self)
 	if (not ns.IsWrath) then
 		return
 	end
-
-	-- Does this taint? Is this the source?
-	--local locked
-	--hooksecurefunc(WatchFrame, "SetWidth", function()
-	--	if (not locked) then
-	--		locked = true
-	--		-- Don't alter the width if the tracker is collapsed
-	--		if (WatchFrame:IsShown() and not WatchFrame.collapsed) then
-	--			WATCHFRAME_EXPANDEDWIDTH = 266/1.125-- 266
-	--			WATCHFRAME_MAXLINEWIDTH = WATCHFRAME_EXPANDEDWIDTH - 12
-	--			WatchFrame:SetWidth(WATCHFRAME_EXPANDEDWIDTH)
-	--			WatchFrame_Update()
-	--		end
-	--		locked = nil
-	--	end
-	--end)
 
 	self.holder = SetObjectScale(CreateFrame("Frame", ns.Prefix.."WatchFrameAnchor", WatchFrame))
 	self.holder:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -410)
