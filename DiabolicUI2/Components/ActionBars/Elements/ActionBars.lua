@@ -293,7 +293,6 @@ Bars.SpawnBars = function(self)
 		local button = bar:CreateButton(i)
 		button:SetPoint("BOTTOMLEFT", (i-1)*(53+1), 0)
 		if (i == 12) then
-			-- these don't get texture updates. why?
 			button:SetState(11, "custom", exitButton)
 			button:SetState(12, "custom", exitButton)
 		end
@@ -410,7 +409,6 @@ Bars.SpawnBars = function(self)
 
 		self.Bars[name] = bar
 	end
-
 
 	-- ToggleButtons
 	-------------------------------------------------------
