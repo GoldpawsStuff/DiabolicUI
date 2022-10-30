@@ -178,9 +178,6 @@ StatusBars.CreateBars = function(self)
 			AdjustOverlayTexCoords(bar)
 			bar:SetScript("OnUpdate", AdjustOverlayTexCoords)
 
-			bar:SetMouseClickEnabled(false)
-			bar:SetMouseMotionEnabled(true)
-
 		elseif (i == 2) then
 			bar:SetPoint("BOTTOM", Bars[1], "BOTTOM", 0, 0)
 			bar:SetStatusBarTexture(GetMedia("statusbars-dimmed-diabolic"))
@@ -276,12 +273,14 @@ StatusBars.UpdateBars = function(self, event, ...)
 
 			bar:SetScript("OnEnter", Reputation_OnEnter)
 			bar:SetScript("OnLeave", Reputation_OnLeave)
+			bar:SetMouseClickEnabled(false)
 			bar:Show()
 
 		else
 			-- this can happen?
 			bar:SetScript("OnEnter", nil)
 			bar:SetScript("OnLeave", nil)
+			bar:SetMouseClickEnabled(false)
 			bar:Hide()
 		end
 
@@ -296,6 +295,7 @@ StatusBars.UpdateBars = function(self, event, ...)
 			bar:Hide()
 			bar:SetScript("OnEnter", nil)
 			bar:SetScript("OnLeave", nil)
+			bar:SetMouseClickEnabled(false)
 			bar.Label:SetText("")
 			bar.ExtraLabel:SetText("")
 		else
@@ -332,6 +332,7 @@ StatusBars.UpdateBars = function(self, event, ...)
 
 			bar:SetScript("OnEnter", XP_OnEnter)
 			bar:SetScript("OnLeave", XP_OnLeave)
+			bar:SetMouseClickEnabled(false)
 			bar:Show()
 		end
 	end

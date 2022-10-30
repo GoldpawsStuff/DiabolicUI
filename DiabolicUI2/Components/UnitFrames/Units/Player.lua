@@ -504,6 +504,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	power:EnableMouse(true)
 	power:SetScript("OnEnter", Power_OnEnter)
 	power:SetScript("OnLeave", Power_OnLeave)
+	power:SetMouseClickEnabled(false)
 	power.OnEnter = Power_OnMouseOver
 	power.OnLeave = Power_OnMouseOver
 	power.frequentUpdates = true
