@@ -361,7 +361,6 @@ UnitFrames.GetDockManager = function(self)
 					end
 				end
 
-				--local hasPet;
 				local col, row = 1, 1;
 
 				for _,ref in ipairs(Frames) do
@@ -370,51 +369,38 @@ UnitFrames.GetDockManager = function(self)
 					-- This will happen prior to unitwatch doing the showing/hiding.
 					local unit = frame:GetAttribute("unit");
 
-					-- Might be caught between unit swaps,
-					-- so let's just check those using the same frame.
+					-- Might be caught between unit swaps.
 					local exists = UnitExists(unit);
-					if (not exists) then
-						if (unit == "pet") then
-							exists = UnitExists("vehicle");
-						elseif (unit == "vehicle") then
-							exists = UnitExists("pet");
-						end
+					if (not exists) and (unit == "pet" or unit == "player" or unit == "vehicle") then
+						exists = UnitExists("pet") or UnitHasVehicleUI("player");
 					end
+
 					if (exists) then
 
-						--local skip;
-						--if (unit == "pet") or (unit == "vehicle") then
-						--	skip = hasPet;
-						--	hasPet = true;
-						--end
+						-- Place the current frame in our grid.
+						local offsetX = initialX + ((col-1) * paddingX);
+						local offsetY = initialY + ((row-1) * paddingY);
 
-						--if (not skip) then
-							-- Place the current frame in our grid.
-							local offsetX = initialX + ((col-1) * paddingX);
-							local offsetY = initialY + ((row-1) * paddingY);
+						-- Anchorpoint is required when inside the restricted environment.
+						frame:ClearAllPoints();
+						frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", offsetX, offsetY);
 
-							-- Anchorpoint is required when inside the restricted environment.
-							frame:ClearAllPoints();
-							frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", offsetX, offsetY);
-
-							-- Decide growth by the group status.
-							-- *Note that only the maximum for
-							-- the growth direction will be obeyed.
-							if (growthDirection == "vertical") then
-								row = row + 1;
-								if (row > maxRows) then
-									col = col + 1;
-									row = 0;
-								end
-							else
+						-- Decide growth by the group status.
+						if (growthDirection == "vertical") then
+							row = row + 1;
+							if (row > maxRows) then
 								col = col + 1;
-								if (col > maxCols) then
-									row = row + 1;
-									col = 0;
-								end
+								row = 0;
 							end
-						--end
+						else
+							col = col + 1;
+							if (col > maxCols) then
+								row = row + 1;
+								col = 0;
+							end
+						end
 					end
+
 				end
 			end
 		]=])
@@ -431,10 +417,12 @@ UnitFrames.SpawnUnitFrames = function(self)
 	oUF:Factory(function(oUF)
 		oUF:SetActiveStyle(ns.Prefix)
 
-		-- Spawn general frames
+		-- Spawn primary frames.
 		Spawn("player", "Player"):SetPoint("BOTTOM", -440, 6)
 		Spawn("target", "Target"):SetPoint("TOP", 0, -40)
-		Spawn("targettarget", "TargetOfTarget"):SetPoint("CENTER", ns.UnitFramesByName["Target"], "CENTER", 0, -26)
+		Spawn("targettarget", "ToT"):SetPoint("CENTER", ns.UnitFramesByName["Target"], "CENTER", 0, -26)
+
+		-- The dock manager will position these.
 		Spawn("pet", "Pet")
 		Spawn("focus", "Focus")
 
@@ -462,8 +450,8 @@ UnitFrames.SpawnUnitFrames = function(self)
 		]=])
 
 		-- Register macro conditionals to inform the dock manager about changes requiring updates.
-		RegisterAttributeDriver(dockManager, "state-dock-pet", "[@vehicle,exists][@pet,exists]show;hide")
-		RegisterAttributeDriver(dockManager, "state-dock-focus", "[@focus,exists]show;hide")
+		RegisterAttributeDriver(dockManager, "state-dock-pet", "[vehicleui][@pet,exists]pet;nopet")
+		RegisterAttributeDriver(dockManager, "state-dock-focus", "[@focus,exists]focus;nofocus")
 
 		-- Inform the environment that frames have been created and initialized.
 		-- We're intentionally starting with the dock manager to allow changes to it prior to the dockable frames.
