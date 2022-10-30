@@ -45,7 +45,9 @@ local GetTimeToWellRested = GetTimeToWellRested
 local GetWatchedFactionInfo = GetWatchedFactionInfo
 local GetXPExhaustion = GetXPExhaustion
 local IsFactionParagon = C_Reputation and C_Reputation.IsFactionParagon
+local IsPlayerAtEffectiveMaxLevel = IsPlayerAtEffectiveMaxLevel
 local IsResting = IsResting
+local IsXPUserDisabled = IsXPUserDisabled
 local UnitLevel = UnitLevel
 local UnitSex = UnitSex
 local UnitXP = UnitXP
@@ -56,6 +58,8 @@ local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
+
+local playerLevel = UnitLevel("player")
 
 -- Local bar registry
 local Bars = {}
@@ -143,7 +147,16 @@ StatusBars.CreateBars = function(self)
 			label:SetJustifyH("CENTER")
 			label:SetJustifyV("MIDDLE")
 			label:SetFontObject(GetFont(14, "true"))
+			label:SetTextColor(unpack(Colors.offwhite))
 			bar.Label = label
+
+			local label2 = bar:CreateFontString(nil, "HIGHLIGHT", nil, 1)
+			label2:SetPoint("LEFT", label, "RIGHT", 6, 0)
+			label2:SetJustifyH("CENTER")
+			label2:SetJustifyV("MIDDLE")
+			label2:SetFontObject(GetFont(14, "true"))
+			label2:SetTextColor(unpack(Colors.gray))
+			bar.Label2 = label2
 
 			local AdjustOverlayTexCoords = function(self)
 				local displayValue = self:GetDisplayValue()
@@ -181,7 +194,7 @@ StatusBars.CreateBars = function(self)
 	ns:Fire("StatusTrackingBar_Created", Bars[1]:GetName())
 end
 
-StatusBars.UpdateBars = function(self)
+StatusBars.UpdateBars = function(self, event, ...)
 	if (not Bars) then
 		return
 	end
@@ -258,14 +271,18 @@ StatusBars.UpdateBars = function(self)
 			bar.isFriend = isFriend
 			bar.standingID, bar.standingLabel = standingID, standingLabel
 
-			bar.Label:SetFormattedText("%s "..Colors.gray.colorCode.."/|r %s ", barValue, barMax)
+			bar.Label:SetFormattedText("%s "..Colors.gray.colorCode.."/|r %s", barValue, barMax)
+			bar.Label2:SetText("("..standingLabel..")")
+
 			bar:SetScript("OnEnter", Reputation_OnEnter)
 			bar:SetScript("OnLeave", Reputation_OnLeave)
+			bar:Show()
 
 		else
 			-- this can happen?
 			bar:SetScript("OnEnter", nil)
 			bar:SetScript("OnLeave", nil)
+			bar:Hide()
 		end
 
 		if (bonusShown) then
@@ -274,33 +291,49 @@ StatusBars.UpdateBars = function(self)
 			bonus:SetMinMaxValues(0, 1, true)
 		end
 	else
-		local forced = bar.currentType ~= "xp"
-		local resting = IsResting()
-		local restState, restedName, mult = GetRestState()
-		local restedLeft, restedTimeLeft = GetXPExhaustion(), GetTimeToWellRested()
-		local min = UnitXP("player") or 0
-		local max = UnitXPMax("player") or 0
-
-		bar:SetMinMaxValues(0, max, forced)
-		bar:SetValue(min, forced)
-		bar:SetStatusBarColor(unpack(Colors[restedLeft and "rested" or "xp"]))
-		bar.currentType = "xp"
-
-		if (restedLeft) then
-			bonus:SetMinMaxValues(0, max, not bonusShown)
-			bonus:SetValue(math_min(max, min + (restedLeft or 0)), not bonusShown)
-			if (not bonusShown) then
-				bonus:Show()
+		if (IsPlayerAtEffectiveMaxLevel() or IsXPUserDisabled()) then
+			bar.currentType = nil
+			bar:Hide()
+			bar:SetScript("OnEnter", nil)
+			bar:SetScript("OnLeave", nil)
+			bar.Label:SetText("")
+			bar.Label2:SetText("")
+		else
+			if (event == "PLAYER_LEVEL_UP") then
+				playerLevel = ...
 			end
-		elseif (bonusShown) then
-			bonus:Hide()
-			bonus:SetValue(0, true)
-			bonus:SetMinMaxValues(0, 1, true)
-		end
 
-		bar.Label:SetFormattedText("%s "..Colors.gray.colorCode.."/|r %s ", min, max)
-		bar:SetScript("OnEnter", XP_OnEnter)
-		bar:SetScript("OnLeave", XP_OnLeave)
+			local forced = bar.currentType ~= "xp"
+			local resting = IsResting()
+			local restState, restedName, mult = GetRestState()
+			local restedLeft, restedTimeLeft = GetXPExhaustion(), GetTimeToWellRested()
+			local min = UnitXP("player") or 0
+			local max = UnitXPMax("player") or 0
+
+			bar:SetMinMaxValues(0, max, forced)
+			bar:SetValue(min, forced)
+			bar:SetStatusBarColor(unpack(Colors[restedLeft and "rested" or "xp"]))
+			bar.currentType = "xp"
+
+			if (restedLeft) then
+				bonus:SetMinMaxValues(0, max, not bonusShown)
+				bonus:SetValue(math_min(max, min + (restedLeft or 0)), not bonusShown)
+				if (not bonusShown) then
+					bonus:Show()
+				end
+			elseif (bonusShown) then
+				bonus:Hide()
+				bonus:SetValue(0, true)
+				bonus:SetMinMaxValues(0, 1, true)
+			end
+
+			bar.Label:SetFormattedText("%s "..Colors.gray.colorCode.."/|r %s ", min, max)
+			bar.Label2:SetFormattedText("("..UNIT_LEVEL_TEMPLATE..")", playerLevel or UnitLevel("player"))
+
+			bar:SetScript("OnEnter", XP_OnEnter)
+			bar:SetScript("OnLeave", XP_OnLeave)
+			bar:Show()
+		end
 	end
 
 end
