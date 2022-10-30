@@ -150,13 +150,13 @@ StatusBars.CreateBars = function(self)
 			label:SetTextColor(unpack(Colors.offwhite))
 			bar.Label = label
 
-			local label2 = bar:CreateFontString(nil, "HIGHLIGHT", nil, 1)
-			label2:SetPoint("LEFT", label, "RIGHT", 6, 0)
-			label2:SetJustifyH("CENTER")
-			label2:SetJustifyV("MIDDLE")
-			label2:SetFontObject(GetFont(14, "true"))
-			label2:SetTextColor(unpack(Colors.gray))
-			bar.Label2 = label2
+			local extraLabel = bar:CreateFontString(nil, "HIGHLIGHT", nil, 1)
+			extraLabel:SetPoint("LEFT", label, "RIGHT", 6, 0)
+			extraLabel:SetJustifyH("CENTER")
+			extraLabel:SetJustifyV("MIDDLE")
+			extraLabel:SetFontObject(GetFont(14, "true"))
+			extraLabel:SetTextColor(unpack(Colors.gray))
+			bar.ExtraLabel = extraLabel
 
 			local AdjustOverlayTexCoords = function(self)
 				local displayValue = self:GetDisplayValue()
@@ -272,7 +272,7 @@ StatusBars.UpdateBars = function(self, event, ...)
 			bar.standingID, bar.standingLabel = standingID, standingLabel
 
 			bar.Label:SetFormattedText("%s "..Colors.gray.colorCode.."/|r %s", barValue, barMax)
-			bar.Label2:SetText("("..standingLabel..")")
+			bar.ExtraLabel:SetText("("..standingLabel..")")
 
 			bar:SetScript("OnEnter", Reputation_OnEnter)
 			bar:SetScript("OnLeave", Reputation_OnLeave)
@@ -297,7 +297,7 @@ StatusBars.UpdateBars = function(self, event, ...)
 			bar:SetScript("OnEnter", nil)
 			bar:SetScript("OnLeave", nil)
 			bar.Label:SetText("")
-			bar.Label2:SetText("")
+			bar.ExtraLabel:SetText("")
 		else
 			if (event == "PLAYER_LEVEL_UP") then
 				playerLevel = ...
@@ -328,7 +328,7 @@ StatusBars.UpdateBars = function(self, event, ...)
 			end
 
 			bar.Label:SetFormattedText("%s "..Colors.gray.colorCode.."/|r %s ", min, max)
-			bar.Label2:SetFormattedText("("..UNIT_LEVEL_TEMPLATE..")", playerLevel or UnitLevel("player"))
+			bar.ExtraLabel:SetFormattedText("("..UNIT_LEVEL_TEMPLATE..")", playerLevel or UnitLevel("player"))
 
 			bar:SetScript("OnEnter", XP_OnEnter)
 			bar:SetScript("OnLeave", XP_OnLeave)
