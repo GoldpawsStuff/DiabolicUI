@@ -73,6 +73,8 @@ ns.ActionButtons = {}
 ActionButton.Create = function(self, id, name, header, config)
 
 	local button = LAB:CreateButton(id, name, header, buttonConfig)
+
+	-- Add our own property values.
 	button.icon = button.icon
 	button.autoCastable = button.AutoCastable
 	button.autoCastShine = button.AutoCastShine
@@ -108,13 +110,18 @@ ActionButton.Create = function(self, id, name, header, config)
 		button.slotBackground = button.SlotBackground
 	end
 
+	-- Disable masque for our buttons,
+	-- they are not compatible.
 	button.AddToMasque = noop
 	button.AddToButtonFacade = noop
 	button.LBFSkinned = nil
 	button.MasqueSkinned = nil
 
+	-- Add the button to our registry
 	ns.ActionButtons[button] = true
 
+	-- Force update button config,
+	-- as grid setting sometimes fails(?)
 	button:UpdateConfig(buttonConfig)
 
 	return button
