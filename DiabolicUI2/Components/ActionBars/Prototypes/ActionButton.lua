@@ -72,7 +72,7 @@ ns.ActionButtons = {}
 -- Constructor
 ActionButton.Create = function(self, id, name, header, config)
 
-	local button = LAB:CreateButton(id, name, header, config or buttonConfig)
+	local button = LAB:CreateButton(id, name, header, buttonConfig)
 	button.icon = button.icon
 	button.autoCastable = button.AutoCastable
 	button.autoCastShine = button.AutoCastShine
@@ -114,6 +114,8 @@ ActionButton.Create = function(self, id, name, header, config)
 	button.MasqueSkinned = nil
 
 	ns.ActionButtons[button] = true
+
+	button:UpdateConfig(buttonConfig)
 
 	return button
 end
