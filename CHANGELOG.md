@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Overhauled the orb library and unit frame code for brighter and more colorful orbs.
+- The power orb is now clickthrough, allowing more interaction with the world while still reacting to mouseover scripts to toggle the out of combat value display.
 - Moved all action button edits to the front-end and reverted to a fully baseline button library.
 - Moved the target unit frame combat feedback to its left side, to leave more room between the right side of the frame and the new buff display.
 
