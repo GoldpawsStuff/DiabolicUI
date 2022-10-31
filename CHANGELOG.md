@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-10-31
+## [2.0.63-RC] 2022-10-31
 ### Added
 - Added health preview and heal prediction to the player health orb.
 - Added health preview and heal prediction to nameplates.
