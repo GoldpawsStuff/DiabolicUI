@@ -136,7 +136,7 @@ local style = function(button)
 		button.QuickKeybindHighlightTexture:SetParent(UIHider)
 	end
 
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		button.checkedTexture:SetParent(UIHider)
 		button.highlightTexture:SetParent(UIHider)
 		button.bottomDivider:SetParent(UIHider)

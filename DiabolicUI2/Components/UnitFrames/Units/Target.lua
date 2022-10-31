@@ -48,7 +48,6 @@ local AbbreviateTime = ns.API.AbbreviateTimeShort
 local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
-local IsWrath = ns.IsWrath
 
 -- Callbacks
 --------------------------------------------
@@ -229,7 +228,7 @@ local UpdateArtwork = function(self)
 		return
 	end
 	local l = UnitLevel(unit)
-	if (not IsWrath) then
+	if (not ns.IsWrath) then
 		if (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then
 			l = UnitBattlePetLevel(unit)
 		end

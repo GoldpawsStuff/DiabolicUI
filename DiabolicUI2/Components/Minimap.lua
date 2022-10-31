@@ -92,25 +92,19 @@ end
 
 local Minimap_OnMouseUp = function(self, button)
 	if (button == "RightButton") then
-		if (ns.IsRetail) then
-			if (not ns.WoW10) then
-				MiniMapTracking_OnMouseDown(MiniMapTracking)
-			else
-				MinimapCluster.Tracking.Button:OnMouseDown()
-			end
-		else
+		if (ns.IsWrath) then
 			ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, "MiniMapTracking", 8, 5)
 			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
+		else
+			MinimapCluster.Tracking.Button:OnMouseDown()
 		end
-	elseif (button == "MiddleButton") then
-		if (ns.IsRetail) then
-			local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
-			if (GLP and GLP:IsShown()) and (not InCombatLockdown()) then
-				if (GLP.ToggleLandingPage) then
-					GLP:ToggleLandingPage()
-				else
-					GarrisonLandingPage_Toggle()
-				end
+	elseif (button == "MiddleButton" and ns.IsRetail) then
+		local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
+		if (GLP and GLP:IsShown()) and (not InCombatLockdown()) then
+			if (GLP.ToggleLandingPage) then
+				GLP:ToggleLandingPage()
+			else
+				GarrisonLandingPage_Toggle()
 			end
 		end
 	else
@@ -354,14 +348,13 @@ Bigmap.UpdatePosition = function(self)
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
 
-	if (not true) then
-		if (not ns.WoW10) then
+	if (not true) then -- ...?
+		if (ns.IsWrath) then
 			--MinimapCluster:SetMovable(true)
 			--MinimapCluster:SetUserPlaced(true)
 			MinimapCluster.IsUserPlaced = function() return true end
-		end
 
-		if (ns.WoW10) then
+		else
 
 			-- Opt out of the movement system
 			MinimapCluster.layoutParent = nil
@@ -397,7 +390,7 @@ Bigmap.InitializeMinimap = function(self)
 			_G[object]:UnregisterAllEvents()
 		end
 	end
-	if (not ns.WoW10) then
+	if (not ns.IsRetail) then
 		for _,object in pairs({
 			"GameTimeFrame",
 			--"MinimapCluster",
@@ -445,7 +438,7 @@ Bigmap.InitializeMinimap = function(self)
 	-- Setup Main Frames
 	--------------------------------------------------------
 
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		local dummy = CreateFrame("Frame", nil, MinimapCluster)
 		dummy:SetPoint(Minimap:GetPoint())
 
@@ -617,7 +610,7 @@ Bigmap.InitializeMinimap = function(self)
 		end
 	end
 
-	if (not ns.IsWrath) then
+	if (not ns.IsRetail) then
 		local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
 		if (GLP) then
 			self:SecureHook(GLP.MinimapLoopPulseAnim, "Play", self.StartHighlight)
@@ -648,7 +641,7 @@ Bigmap.InitializeMinimap = function(self)
 	-- Blizzard Widgets
 	--------------------------------------------------------
 	-- Order Hall / Garrison / Covenant Sanctum
-	if (not ns.IsWrath) then
+	if (ns.IsRetail) then
 
 		local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
 		if (GLP) then
@@ -670,7 +663,7 @@ Bigmap.InitializeMinimap = function(self)
 			end
 		end
 
-		if (not ns.WoW10) then
+		if (not ns.IsRetail) then
 
 			-- Blob Textures
 			-- These alpha values range from 0 to 255, for some obscure reason,
@@ -746,7 +739,7 @@ Bigmap.InitializeMinimap = function(self)
 
 	else
 
-		if (not ns.WoW10) then
+		if (not ns.IsRetail) then
 
 			local eyeTexture = QueueStatusMinimapButton.Eye:CreateTexture()
 			eyeTexture:SetDrawLayer("ARTWORK", 1)
@@ -888,7 +881,7 @@ Bigmap.OnInitialize = function(self)
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
 	self:RegisterChatCommand("setclock", "SetClock")
 
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		self:RegisterEvent("SETTINGS_LOADED", "OnEvent")
 	end
 

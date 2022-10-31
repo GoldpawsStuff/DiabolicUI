@@ -24,7 +24,7 @@
 
 --]]
 local Addon, ns = ...
-if (not ns.WoW10) then
+if (not ns.IsRetail) then
 	return
 end
 ns.AuraFilters = ns.AuraFilters or {}

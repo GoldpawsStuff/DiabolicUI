@@ -74,7 +74,7 @@ local GetUnitColor = function(unit)
 end
 
 -- Unit difficulty coloring.
-local GetDifficultyColor = (ns.IsClassic or ns.IsTBC or ns.IsWrath) and function(level, isScaling)
+local GetDifficultyColor = (ns.IsWrath) and function(level, isScaling)
 	local colors = Colors.quest
 	local levelDiff = level - UnitLevel("player")
 	if (isScaling) then

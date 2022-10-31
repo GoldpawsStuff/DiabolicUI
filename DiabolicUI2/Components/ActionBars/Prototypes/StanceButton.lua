@@ -76,7 +76,7 @@ Button.Create = function(self, id, name, parent)
 	button.spellHighlightAnim = button.SpellHighlightAnim
 	button.spellHighlightTexture = button.SpellHighlightTexture
 
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		button.checkedTexture = button.CheckedTexture
 		button.highlightTexture = button.HighlightTexture
 		button.pushedTexture = button.PushedTexture
@@ -86,7 +86,7 @@ Button.Create = function(self, id, name, parent)
 		button.pushedTexture = button:GetPushedTexture()
 	end
 
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		button.bottomDivider = button.BottomDivider
 		button.rightDivider = button.RightDivider
 		button.slotArt = button.SlotArt

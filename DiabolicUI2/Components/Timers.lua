@@ -169,14 +169,13 @@ end
 
 Timers.UpdateAll = function(self)
 	self:UpdateMirrorTimers("ForceUpdate")
-
 	if (ns.IsRetail) then
 		self:UpdateTimerTrackers("ForceUpdate")
 	end
 end
 
 Timers.OnInitialize = function(self)
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		return self:Disable()
 	end
 

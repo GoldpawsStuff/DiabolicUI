@@ -125,7 +125,7 @@ local style = function(button)
 	icon:ClearAllPoints()
 	icon:SetPoint("TOPLEFT", 3, -3)
 	icon:SetPoint("BOTTOMRIGHT", -3, 3)
-	if (ns.WoW10) then icon:RemoveMaskTexture(button.IconMask) end
+	if (ns.IsRetail) then icon:RemoveMaskTexture(button.IconMask) end
 	icon:SetMask(m)
 
 	-- Custom icon darkener
@@ -235,7 +235,7 @@ local style = function(button)
 	hooksecurefunc(cooldown, "SetDrawEdge", function(c,h) if h then c:SetDrawEdge(false) end end)
 	hooksecurefunc(cooldown, "SetHideCountdownNumbers", function(c,h) if not h then c:SetHideCountdownNumbers(true) end end)
 
-	if (not ns.WoW10) then
+	if (not ns.IsRetail) then
 		hooksecurefunc(button, "SetNormalTexture", function(b,...) if(...)then b:SetNormalTexture(nil) end end)
 		hooksecurefunc(button, "SetHighlightTexture", function(b,...) if(...)then b:SetHighlightTexture(nil) end end)
 		hooksecurefunc(button, "SetCheckedTexture", function(b,...) if(...)then b:SetCheckedTexture(nil) end end)
@@ -271,9 +271,8 @@ Bars.SpawnBars = function(self)
 			end
 		end,
 		tooltip = _G.LEAVE_VEHICLE,
-		texture = (ns.IsClassic or ns.IsTBC) and [[Interface\Icons\Spell_Shadow_SacrificialShield]]
-			   or (ns.IsWrath) and [[Interface\Icons\achievement_bg_kill_carrier_opposing_flagroom]]
-			   or [[Interface\Icons\INV_Pet_ExitBattle]]
+		texture = --[[(ns.IsWrath) and ]][[Interface\Icons\achievement_bg_kill_carrier_opposing_flagroom]]
+			   --or [[Interface\Icons\INV_Pet_ExitBattle]]
 	}
 
 	for i = 1,12 do
@@ -749,7 +748,7 @@ Bars.OnEnable = function(self)
 	ns.RegisterCallback(self, "ActionBars_SecondaryBar_Updated", "UpdateArtwork")
 	ns.RegisterCallback(self, "Saved_Settings_Updated", "UpdateSettings")
 
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		LAB.RegisterCallback(self, "OnButtonUpdate", "OnEvent")
 	end
 end

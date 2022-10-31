@@ -622,11 +622,13 @@ Tooltips.SetHooks = function(self)
 	self:SecureHook("GameTooltip_SetDefaultAnchor", "SetDefaultAnchor")
 
 	self:SecureHookScript(GameTooltip, "OnTooltipCleared", "OnTooltipCleared")
-	if (not ns.WoW10) then
+
+	if (not ns.IsRetail) then
 		self:SecureHookScript(GameTooltip, "OnTooltipSetSpell", "OnTooltipSetSpell")
 		self:SecureHookScript(GameTooltip, "OnTooltipSetItem", "OnTooltipSetItem")
 		self:SecureHookScript(GameTooltip, "OnTooltipSetUnit", "OnTooltipSetUnit")
 	end
+
 	self:SecureHookScript(GameTooltip.StatusBar, "OnValueChanged", "OnValueChanged")
 
 end

@@ -24,7 +24,7 @@
 
 --]]
 local Addon, ns = ...
-if (ns.WoW10) then
+if (ns.IsRetail) then
 	return
 end
 ns.AuraStyles = ns.AuraStyles or {}

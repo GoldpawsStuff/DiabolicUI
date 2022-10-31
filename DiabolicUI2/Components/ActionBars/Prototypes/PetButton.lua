@@ -90,7 +90,7 @@ PetButton.Create = function(self, id, name, parent)
 	button.spellHighlightAnim = button.SpellHighlightAnim
 	button.spellHighlightTexture = button.SpellHighlightTexture
 
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		button.checkedTexture = button.CheckedTexture
 		button.highlightTexture = button.HighlightTexture
 		button.pushedTexture = button.PushedTexture
@@ -100,7 +100,7 @@ PetButton.Create = function(self, id, name, parent)
 		button.pushedTexture = button:GetPushedTexture()
 	end
 
-	if (ns.WoW10) then
+	if (ns.IsRetail) then
 		button.bottomDivider = button.BottomDivider
 		button.rightDivider = button.RightDivider
 		button.slotArt = button.SlotArt
@@ -108,10 +108,8 @@ PetButton.Create = function(self, id, name, parent)
 	end
 
 	-- Classic overwrites the default texture
-	if (not ns.WoW10) then
-		if (ns.IsWrath) then
-			button.autoCastable = _G[name.."AutoCastable"]
-		end
+	if (not ns.IsRetail) then
+		button.autoCastable = _G[name.."AutoCastable"]
 		button.autoCastShine = _G[name.."Shine"]
 	end
 
@@ -130,7 +128,7 @@ PetButton.Create = function(self, id, name, parent)
 	button:SetAttribute("buttonLock", true)
 
 	button:RegisterForDrag("LeftButton", "RightButton")
-	button:RegisterForClicks("AnyUp", ns.WoW10 and "AnyDown")
+	button:RegisterForClicks("AnyUp", ns.IsRetail and "AnyDown")
 
 	button:UnregisterAllEvents()
 	button:SetScript("OnEvent", nil)
