@@ -25,7 +25,7 @@
 --]]
 local Addon, ns = ...
 local ActionBars = ns:GetModule("ActionBars")
-local ActioButtonMod = ActionBars:NewModule("Buttons")
+local ButtonMod = ActionBars:NewModule("Buttons")
 local LAB = LibStub("LibActionButton-1.0")
 local LAB_Version = LibStub.minors["LibActionButton-1.0"]
 
@@ -59,8 +59,11 @@ local buttonConfig = {
 		macro = true,
 		hotkey = false,
 		equipped = true,
+		border = true,
+		borderIfEmpty = true
 	},
 	keyBoundTarget = false,
+	keyBoundClickButton = "LeftButton",
 	clickOnDown = true,
 	flyoutDirection = "UP"
 }
@@ -72,57 +75,9 @@ ns.ActionButtons = {}
 -- Constructor
 ActionButton.Create = function(self, id, name, header, config)
 
-	local button = LAB:CreateButton(id, name, header, buttonConfig)
+	local button = LAB:CreateButton(id, name, header, config or buttonConfig)
 
-	-- Add our own property values.
-	button.icon = button.icon
-	button.autoCastable = button.AutoCastable
-	button.autoCastShine = button.AutoCastShine
-	button.border = button.Border
-	button.cooldown = button.cooldown
-	button.count = button.Count
-	button.flash = button.Flash
-	button.flyoutArrowContainer = button.FlyoutArrowContainer -- WoW10
-	button.flyoutBorder = button.FlyoutBorder
-	button.flyoutBorderShadow = button.FlyoutBorderShadow
-	button.hotkey = button.HotKey
-	button.levelLinkLockIcon = button.LevelLinkLockIcon -- Retail
-	button.macro = button.Name
-	button.newActionTexture = button.NewActionTexture
-	button.normalTexture = button.NormalTexture
-	button.spellHighlightAnim = button.SpellHighlightAnim
-	button.spellHighlightTexture = button.SpellHighlightTexture
-
-	if (ns.WoW10) then
-		button.checkedTexture = button.CheckedTexture
-		button.highlightTexture = button.HighlightTexture
-		button.pushedTexture = button.PushedTexture
-	else
-		button.checkedTexture = button:GetCheckedTexture()
-		button.highlightTexture = button:GetHighlightTexture()
-		button.pushedTexture = button:GetPushedTexture()
-	end
-
-	if (ns.WoW10) then
-		button.bottomDivider = button.BottomDivider
-		button.rightDivider = button.RightDivider
-		button.slotArt = button.SlotArt
-		button.slotBackground = button.SlotBackground
-	end
-
-	-- Disable masque for our buttons,
-	-- they are not compatible.
-	button.AddToMasque = noop
-	button.AddToButtonFacade = noop
-	button.LBFSkinned = nil
-	button.MasqueSkinned = nil
-
-	-- Add the button to our registry
 	ns.ActionButtons[button] = true
-
-	-- Force update button config,
-	-- as grid setting sometimes fails(?)
-	button:UpdateConfig(buttonConfig)
 
 	return button
 end
@@ -160,7 +115,7 @@ local UpdateMaxDps = function(self)
 			HideMaxDps(self)
 		else
 			local spellId = self:GetSpellId()
-			if spellId and IsSpellOverlayed(spellId) then
+			if (spellId and IsSpellOverlayed(spellId)) then
 				ShowMaxDps(self)
 			else
 				HideMaxDps(self)
@@ -208,7 +163,7 @@ local UpdateUsable = function(self)
 
 end
 
-ActioButtonMod.HandleMaxDps = function(self)
+ButtonMod.HandleMaxDps = function(self)
 
 	MaxDps:RegisterLibActionButton(LAB_Version)
 
@@ -257,7 +212,7 @@ ActioButtonMod.HandleMaxDps = function(self)
 	self.MaxDps = true
 end
 
-ActioButtonMod.OnEvent = function(self, event, ...)
+ButtonMod.OnEvent = function(self, event, ...)
 	if (event == "ADDON_LOADED") then
 		local addon = ...
 		if (addon == "MaxDps") then
@@ -281,14 +236,14 @@ ActioButtonMod.OnEvent = function(self, event, ...)
 		UpdateUsable((...))
 
 	elseif (event == "OnButtonUpdate") then
-		local button = ...
-		if (not button:GetTexture()) then
-			button.maxDpsGlowColor = nil
-			button.maxDpsGlowShown = nil
-		end
-		UpdateUsable(button)
+		UpdateUsable((...))
 
 		if (self.MaxDps) then
+			local button = ...
+			if (not button:GetTexture()) then
+				button.maxDpsGlowColor = nil
+				button.maxDpsGlowShown = nil
+			end
 			UpdateMaxDps(button)
 		end
 
@@ -299,7 +254,7 @@ ActioButtonMod.OnEvent = function(self, event, ...)
 	end
 end
 
-ActioButtonMod.OnInitialize = function(self)
+ButtonMod.OnInitialize = function(self)
 
 	if (MaxDps) then
 		self:HandleMaxDps()

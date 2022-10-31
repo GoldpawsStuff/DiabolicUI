@@ -26,9 +26,11 @@
 local Addon, ns = ...
 local ActionBars = ns:GetModule("ActionBars")
 local Bars = ActionBars:NewModule("Bars", "LibMoreEvents-1.0", "AceConsole-3.0")
+local LAB = LibStub("LibActionButton-1.0")
 
 -- Lua API
 local math_floor = math.floor
+local next = next
 local pairs = pairs
 local select = select
 local string_format = string.format
@@ -75,39 +77,6 @@ local buttonOnLeave = function(self)
 	end
 end
 
-local iconPostSetShown = function(self, isShown)
-	self.desaturator:SetShown(isShown)
-end
-
-local iconPostShow = function(self)
-	self.desaturator:Show()
-end
-
-local iconPostHide = function(self)
-	self.desaturator:Hide()
-end
-
-local iconPostSetAlpha = function(self, alpha)
-	self.desaturator:SetAlpha(self.desaturator.alpha or .2)
-end
-
-local iconPostSetVertexColor = function(self, r, g, b, a)
-	self.desaturator:SetVertexColor(r, g, b)
-end
-
-local iconPostSetTexture = function(self, ...)
-	self.desaturator:SetTexture(...)
-	self.desaturator:SetDesaturated(true)
-	local r, g, b = self:GetVertexColor() -- can return nil in WoW10
-	if (r and g and b) then
-		if (not r or not g or not b) then
-			r, g, b = 1, 1, 1
-		end
-		self.desaturator:SetVertexColor(r, g, b)
-	end
-	self.desaturator:SetAlpha(self.desaturator.alpha or .2)
-end
-
 local toggleOnEnter = function(self)
 	self.mouseOver = true
 	self:UpdateAlpha()
@@ -128,138 +97,156 @@ end
 
 local style = function(button)
 
-	button.autoCastShine:SetParent(UIHider)
-	button.border:SetParent(UIHider)
-	button.macro:SetParent(UIHider)
-	button.newActionTexture:SetParent(UIHider)
-	button.normalTexture:SetParent(UIHider)
-	button.spellHighlightAnim:Stop()
-	button.spellHighlightTexture:SetParent(UIHider)
-
-	if (button.QuickKeybindHighlightTexture) then
-		button.QuickKeybindHighlightTexture:SetParent(UIHider)
+	-- Clean up the button template
+	for _,i in next,{ "AutoCastShine", "Border", "Name", "NewActionTexture", "NormalTexture", "SpellHighlightAnim", "SpellHighlightTexture",
+		--[[ WoW10 ]] "CheckedTexture", "HighlightTexture", "BottomDivider", "RightDivider", "SlotArt", "SlotBackground" } do
+		if (button[i] and button[i].Stop) then button[i]:Stop() elseif button[i] then button[i]:SetParent(UIHider) end
 	end
 
-	if (ns.WoW10) then
-		button.checkedTexture:SetParent(UIHider)
-		button.highlightTexture:SetParent(UIHider)
-		button.bottomDivider:SetParent(UIHider)
-		button.rightDivider:SetParent(UIHider)
-		button.slotArt:SetParent(UIHider)
-		button.slotBackground:SetParent(UIHider)
-	end
+	local m = GetMedia("actionbutton-mask-square-rounded")
+	local b = GetMedia("blank")
 
 	button:SetAttribute("buttonLock", true)
 	button:SetSize(53,53)
+	button:SetNormalTexture(nil)
+	button:SetHighlightTexture(nil)
+	button:SetCheckedTexture(nil)
 
-	button.backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
-	button.backdrop:SetSize(64,64)
-	button.backdrop:SetPoint("CENTER")
-	button.backdrop:SetTexture(GetMedia("button-big"))
+	-- Custom slot texture
+	local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
+	backdrop:SetSize(64,64)
+	backdrop:SetPoint("CENTER")
+	backdrop:SetTexture(GetMedia("button-big"))
+	button.backdrop = backdrop
 
-	button.overlay = CreateFrame("Frame", nil, button)
-	button.overlay:SetFrameLevel(button:GetFrameLevel() + 2)
-	button.overlay:SetAllPoints()
+	-- Icon
+	local icon = button.icon
+	icon:SetDrawLayer("BACKGROUND", 1)
+	icon:ClearAllPoints()
+	icon:SetPoint("TOPLEFT", 3, -3)
+	icon:SetPoint("BOTTOMRIGHT", -3, 3)
+	if (ns.WoW10) then icon:RemoveMaskTexture(button.IconMask) end
+	icon:SetMask(m)
 
-	button.icon:SetDrawLayer("BACKGROUND", 1)
-	button.icon:ClearAllPoints()
-	button.icon:SetPoint("TOPLEFT", 3, -3)
-	button.icon:SetPoint("BOTTOMRIGHT", -3, 3)
-	button.icon:SetMask(GetMedia("actionbutton-mask-square-rounded"))
+	-- Custom icon darkener
+	local darken = button:CreateTexture(nil, "BACKGROUND", nil, 2)
+	darken:SetAllPoints(button.icon)
+	darken:SetTexture(m)
+	darken:SetVertexColor(0, 0, 0, .1)
+	button.icon.darken = darken
 
-	button.icon.desaturator = button:CreateTexture(nil, "BACKGROUND", nil, 2)
-	button.icon.desaturator:SetShown(button.icon:IsShown())
-	button.icon.desaturator:SetAllPoints(button.icon)
-	button.icon.desaturator:SetMask(GetMedia("actionbutton-mask-square-rounded"))
-	button.icon.desaturator:SetTexture(button.icon:GetTexture())
-	button.icon.desaturator:SetDesaturated(true)
-	button.icon.desaturator:SetVertexColor(button.icon:GetVertexColor())
-	button.icon.desaturator:SetAlpha(.2)
-	button.icon.desaturator.alpha = .2
-
-	button.icon.darken = button:CreateTexture(nil, "BACKGROUND", nil, 3)
-	button.icon.darken:SetAllPoints(button.icon)
-	button.icon.darken:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
-	button.icon.darken:SetVertexColor(0, 0, 0, .1)
-
-	button.pushedTexture = button:CreateTexture(nil, "ARTWORK", nil, 1)
-	button.pushedTexture:SetVertexColor(1, 1, 1, .05)
-	button.pushedTexture:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
-	button.pushedTexture:SetAllPoints(button.icon)
-
-	button.spellHighlight = button.overlay:CreateTexture(nil, "ARTWORK", nil, -7)
-	button.spellHighlight:SetTexture(GetMedia("actionbutton-spellhighlight-square-rounded"))
-	button.spellHighlight:SetSize(92,92)
-	button.spellHighlight:SetPoint("CENTER", 0, 0)
-	button.spellHighlight:Hide()
-
-	button.cooldown:ClearAllPoints()
-	button.cooldown:SetAllPoints(button.icon)
-	button.cooldown:SetReverse(false)
-	button.cooldown:SetSwipeTexture(GetMedia("actionbutton-mask-square-rounded"))
-	button.cooldown:SetDrawSwipe(true)
-	button.cooldown:SetBlingTexture(GetMedia("blank"), 0, 0, 0, 0)
-	button.cooldown:SetDrawBling(false)
-	button.cooldown:SetEdgeTexture(GetMedia("blank"))
-	button.cooldown:SetDrawEdge(false)
-	button.cooldown:SetHideCountdownNumbers(true)
-
-	button.cooldownCount = button.overlay:CreateFontString()
-	button.cooldownCount:SetDrawLayer("ARTWORK", 1)
-	button.cooldownCount:SetPoint("CENTER", 1, 0)
-	button.cooldownCount:SetFontObject(GetFont(16,true))
-	button.cooldownCount:SetJustifyH("CENTER")
-	button.cooldownCount:SetJustifyV("MIDDLE")
-	button.cooldownCount:SetShadowOffset(0, 0)
-	button.cooldownCount:SetShadowColor(0, 0, 0, 0)
-	button.cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
-
-	button.count:SetParent(button.overlay)
-	button.count:ClearAllPoints()
-	button.count:SetPoint("BOTTOMRIGHT", 0, 2)
-	button.count:SetFontObject(GetFont(14,true))
-
-	button.hotkey:SetParent(button.overlay)
-	button.hotkey:ClearAllPoints()
-	button.hotkey:SetPoint("TOPRIGHT", 0, -3)
-	button.hotkey:SetFontObject(GetFont(12,true))
-	button.hotkey:SetTextColor(.75, .75, .75)
-
-	--button.macro:SetParent(button.overlay)
-	--button.macro:ClearAllPoints()
-	--button.macro:SetPoint("BOTTOMLEFT", 0, 2)
-	--button.macro:SetFontObject(GetFont(12,true))
-	--button.macro:SetTextColor(.75, .75, .75)
-
-	button.flash:SetDrawLayer("ARTWORK", 2)
-	button.flash:SetAllPoints(button.icon)
-	button.flash:SetVertexColor(1, 0, 0, .25)
-	button.flash:SetTexture(GetMedia("actionbutton-mask-square-rounded"))
-	button.flash:Hide()
-
-	button:SetNormalTexture("")
-	button:SetHighlightTexture("")
-	button:SetCheckedTexture("")
-	button:SetPushedTexture(button.pushedTexture)
-	button:GetPushedTexture():SetBlendMode("ADD")
-	button:GetPushedTexture():SetDrawLayer("ARTWORK", 1)
 	button:SetScript("OnEnter", buttonOnEnter)
 	button:SetScript("OnLeave", buttonOnLeave)
 
-	hooksecurefunc(button.icon, "SetShown",iconPostSetShown)
-	hooksecurefunc(button.icon, "Show", iconPostShow)
-	hooksecurefunc(button.icon, "Hide", iconPostHide)
-	hooksecurefunc(button.icon, "SetAlpha", iconPostSetAlpha)
-	hooksecurefunc(button.icon, "SetVertexColor", iconPostSetVertexColor)
-	hooksecurefunc(button.icon, "SetTexture", iconPostSetTexture)
+	-- Button is pushed
+	-- Responds to mouse and keybinds
+	-- if we allow blizzard to handle it.
+	local pushedTexture = button:CreateTexture(nil, "ARTWORK", nil, 1)
+	pushedTexture:SetVertexColor(1, 1, 1, .05)
+	pushedTexture:SetTexture(m)
+	pushedTexture:SetAllPoints(button.icon)
+	button.PushedTexture = pushedTexture
+
+	button:SetPushedTexture(button.PushedTexture)
+	button:GetPushedTexture():SetBlendMode("ADD")
+	button:GetPushedTexture():SetDrawLayer("ARTWORK", 1)
+
+	-- Autoattack flash
+	local flash = button.Flash
+	flash:SetDrawLayer("ARTWORK", 2)
+	flash:SetAllPoints(icon)
+	flash:SetVertexColor(1, 0, 0, .25)
+	flash:SetTexture(m)
+	flash:Hide()
+
+	-- Button cooldown frame
+	local cooldown = button.cooldown
+	cooldown:SetFrameLevel(button:GetFrameLevel() + 1)
+	cooldown:ClearAllPoints()
+	cooldown:SetAllPoints(button.icon)
+	cooldown:SetReverse(false)
+	cooldown:SetSwipeTexture(m)
+	cooldown:SetDrawSwipe(true)
+	cooldown:SetBlingTexture(b, 0, 0, 0, 0)
+	cooldown:SetDrawBling(false)
+	cooldown:SetEdgeTexture(b)
+	cooldown:SetDrawEdge(false)
+	cooldown:SetHideCountdownNumbers(true)
+
+	-- Custom overlay frame
+	local overlay = CreateFrame("Frame", nil, button)
+	overlay:SetFrameLevel(button:GetFrameLevel() + 3)
+	overlay:SetAllPoints()
+	button.overlay = overlay
+
+	-- Custom spell highlight
+	local spellHighlight = overlay:CreateTexture(nil, "ARTWORK", nil, -7)
+	spellHighlight:SetTexture(GetMedia("actionbutton-spellhighlight-square-rounded"))
+	spellHighlight:SetSize(92,92)
+	spellHighlight:SetPoint("CENTER", 0, 0)
+	spellHighlight:Hide()
+	button.spellHighlight = spellHighlight
+
+	-- Custom cooldown count
+	local cooldownCount = overlay:CreateFontString(nil, "ARTWORK", nil, 1)
+	cooldownCount:SetPoint("CENTER", 1, 0)
+	cooldownCount:SetFontObject(GetFont(16,true))
+	cooldownCount:SetJustifyH("CENTER")
+	cooldownCount:SetJustifyV("MIDDLE")
+	cooldownCount:SetShadowOffset(0, 0)
+	cooldownCount:SetShadowColor(0, 0, 0, 0)
+	cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
+	button.cooldownCount = cooldownCount
+
+	-- Macro name
+	local name = button.Name
+	name:SetParent(overlay)
+	name:SetDrawLayer("OVERLAY", -1)
+	name:ClearAllPoints()
+	name:SetPoint("BOTTOMLEFT", 0, 2)
+	name:SetFontObject(GetFont(12,true))
+	name:SetTextColor(.75, .75, .75)
+
+	-- Button charge/stack count
+	local count = button.Count
+	count:SetParent(overlay)
+	count:SetDrawLayer("OVERLAY", 1)
+	count:ClearAllPoints()
+	count:SetPoint("BOTTOMRIGHT", 0, 2)
+	count:SetFontObject(GetFont(14,true))
+
+	-- Button keybind
+	local hotkey = button.HotKey
+	hotkey:SetParent(overlay)
+	hotkey:SetDrawLayer("OVERLAY", 1)
+	hotkey:ClearAllPoints()
+	hotkey:SetPoint("TOPRIGHT", 0, -3)
+	hotkey:SetFontObject(GetFont(12,true))
+	hotkey:SetTextColor(.75, .75, .75)
 
 	RegisterCooldown(button.cooldown, button.cooldownCount)
 
-	button.AddToButtonFacade = noop
+	hooksecurefunc(cooldown, "SetSwipeTexture", function(c,t) if t ~= m then c:SetSwipeTexture(m) end end)
+	hooksecurefunc(cooldown, "SetBlingTexture", function(c,t) if t ~= b then c:SetBlingTexture(b,0,0,0,0) end end)
+	hooksecurefunc(cooldown, "SetEdgeTexture", function(c,t) if t ~= b then c:SetEdgeTexture(b) end end)
+	hooksecurefunc(cooldown, "SetSwipeColor", function(c,r,g,b,a) if not a or a>.8 then c:SetSwipeColor(r,g,b,.75) end end)
+	hooksecurefunc(cooldown, "SetDrawSwipe", function(c,h) if not h then c:SetDrawSwipe(true) end end)
+	hooksecurefunc(cooldown, "SetDrawBling", function(c,h) if h then c:SetDrawBling(false) end end)
+	hooksecurefunc(cooldown, "SetDrawEdge", function(c,h) if h then c:SetDrawEdge(false) end end)
+	hooksecurefunc(cooldown, "SetHideCountdownNumbers", function(c,h) if not h then c:SetHideCountdownNumbers(true) end end)
+
+	if (not ns.WoW10) then
+		hooksecurefunc(button, "SetNormalTexture", function(b,...) if(...)then b:SetNormalTexture(nil) end end)
+		hooksecurefunc(button, "SetHighlightTexture", function(b,...) if(...)then b:SetHighlightTexture(nil) end end)
+		hooksecurefunc(button, "SetCheckedTexture", function(b,...) if(...)then b:SetCheckedTexture(nil) end end)
+	end
+
+	-- Disable masque for our buttons,
+	-- they are not compatible.
 	button.AddToMasque = noop
-	button.SetNormalTexture = noop
-	button.SetHighlightTexture = noop
-	button.SetCheckedTexture = noop
+	button.AddToButtonFacade = noop
+	button.LBFSkinned = nil
+	button.MasqueSkinned = nil
 
 	return button
 end
@@ -734,6 +721,12 @@ Bars.OnEvent = function(self, event, ...)
 		if (isInitialLogin or isReloadingUi) then
 			self:UpdateSettings()
 		end
+	elseif (event == "OnButtonUpdate") then
+		local button = ...
+		button.cooldown:ClearAllPoints()
+		button.cooldown:SetAllPoints(button.icon)
+		button.icon:RemoveMaskTexture(button.IconMask)
+		button.icon:SetMask(GetMedia("actionbutton-mask-square-rounded"))
 	end
 end
 
@@ -749,8 +742,14 @@ end
 Bars.OnEnable = function(self)
 	self:UpdateArtwork()
 	self:UpdateBindings()
+
 	self:RegisterEvent("UPDATE_BINDINGS", "UpdateBindings")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+
 	ns.RegisterCallback(self, "ActionBars_SecondaryBar_Updated", "UpdateArtwork")
 	ns.RegisterCallback(self, "Saved_Settings_Updated", "UpdateSettings")
+
+	if (ns.WoW10) then
+		LAB.RegisterCallback(self, "OnButtonUpdate", "OnEvent")
+	end
 end
