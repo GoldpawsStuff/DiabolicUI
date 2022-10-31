@@ -116,7 +116,7 @@ end
 
 Button.UpdateHotkeys = function(self)
 	local key = self:GetHotkey() or ""
-	local hotkey = self.hotkey
+	local hotkey = self.HotKey
 
 	if key == "" or self.hidehotkey then
 		hotkey:Hide()
