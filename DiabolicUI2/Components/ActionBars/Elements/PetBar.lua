@@ -156,8 +156,8 @@ local style = function(button)
 
 	-- Wrath overwrites the default texture
 	if (not ns.IsRetail) then
-		button.AutoCastable = _G[name.."AutoCastable"]
-		button.AutoCastShine = _G[name.."Shine"]
+		button.AutoCastable = _G[button:GetName().."AutoCastable"]
+		button.AutoCastShine = _G[button:GetName().."Shine"]
 	end
 
 	local autoCastable = button.AutoCastable
@@ -239,8 +239,8 @@ local style = function(button)
 	button.highlightTexture = button:GetHighlightTexture()
 
 	button.textureCache = {}
-	button.textureCache.pushed = button.pushedTexture:GetTexture()
-	button.textureCache.highlight = button.highlightTexture:GetTexture()
+	button.textureCache.pushed = button.textureCache.pushed and button.pushedTexture:GetTexture()
+	button.textureCache.highlight = button.highlightTexture and button.highlightTexture:GetTexture()
 
 	RegisterCooldown(button.cooldown, button.cooldownCount)
 
