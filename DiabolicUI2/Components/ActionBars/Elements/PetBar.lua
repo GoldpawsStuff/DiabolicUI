@@ -103,9 +103,9 @@ local style = function(button)
 
 	button:SetAttribute("buttonLock", true)
 	button:SetSize(53,53)
-	button:SetNormalTexture(nil)
-	button:SetHighlightTexture(nil)
-	button:SetCheckedTexture(nil)
+	button:SetNormalTexture("")
+	button:SetHighlightTexture("")
+	button:SetCheckedTexture("")
 
 	-- Custom slot texture
 	local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)

@@ -91,16 +91,19 @@ local style = function(button)
 		if (button[i] and button[i].Stop) then button[i]:Stop() elseif button[i] then button[i]:SetParent(UIHider) end
 	end
 
-	_G[button:GetName().."NormalTexture2"]:SetParent(UIHider)
+	local normalTexture2 = _G[button:GetName().."NormalTexture2"]
+	if (normalTexture2) then
+		normalTexture2:SetParent(UIHider)
+	end
 
 	local m = GetMedia("actionbutton-mask-square-rounded")
 	local b = GetMedia("blank")
 
 	button:SetAttribute("buttonLock", true)
 	button:SetSize(53,53)
-	button:SetNormalTexture(nil)
-	button:SetHighlightTexture(nil)
-	button:SetCheckedTexture(nil)
+	button:SetNormalTexture("")
+	button:SetHighlightTexture("")
+	button:SetCheckedTexture("")
 
 	-- Custom slot texture
 	local backdrop = button:CreateTexture(nil, "BACKGROUND", nil, -7)
