@@ -54,9 +54,3 @@ ActionBars.GetSecondaryBarOffset = function(self)
 	local Bars = self:GetModule("Bars", true)
 	return Bars and Bars:GetSecondaryBarOffset()
 end
-
-ActionBars.OnInitialize = function(self)
-end
-
-ActionBars.OnEnable = function(self)
-end

@@ -359,36 +359,16 @@ MicroMenu.InitializeMicroMenu = function(self)
 
 end
 
-MicroMenu.HandleBartender = function(self)
-	local MicroMenuMod = Bartender4:GetModule("MicroMenu")
-	if (not MicroMenuMod) then
-		return
-	end
-	MicroMenuMod:Disable()
-	MicroMenuMod:UnhookAll()
-end
-
 MicroMenu.OnEvent = function(self, event, ...)
-	if (event == "ADDON_LOADED") then
-		local addon = ...
-		if (addon == "Bartender4") then
-			self:HandleBartender()
-			self:InitializeMicroMenu()
-		end
-	elseif (event == "PET_BATTLE_CLOSE") then
+	if (event == "PET_BATTLE_CLOSE") then
 		UpdateMicroButtonsParent(self.bar)
 		self:MicroMenuBarShow()
 	end
 end
 
 MicroMenu.OnInitialize = function(self)
-	if (IsAddOnEnabled("Bartender4")) then
-		if (IsAddOnLoaded("Bartender4")) then
-			self:HandleBartender()
-			self:InitializeMicroMenu()
-		else
-			self:RegisterEvent("ADDON_LOADED", "OnEvent")
-		end
+	if (IsAddOnEnabled("Bartender4") and not ns.BartenderHandled) then
+		ns.RegisterCallback(self, "Bartender_Handled", "InitializeMicroMenu")
 	else
 		self:InitializeMicroMenu()
 	end

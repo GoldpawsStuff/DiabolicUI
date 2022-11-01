@@ -17,4 +17,6 @@
 	<Script file="Elements\MicroMenu.lua"/>
 	<Script file="Elements\MultiCast.lua"/>
 
+	<Script file="Compatibility\Bartender.lua"/>
+
 </Ui>
