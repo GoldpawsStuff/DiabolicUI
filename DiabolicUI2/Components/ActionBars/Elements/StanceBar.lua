@@ -290,7 +290,8 @@ StanceBar.SpawnBar = function(self)
 			else
 				stance:SetAttribute("showStanceBar", true);
 				if (pet) then
-					local showPet = SecureCmdOptionParse(pet:GetAttribute("visibility-driver")) == "show";
+					local petDriver = pet:GetAttribute("visibility-driver");
+					local showPet = petDriver and SecureCmdOptionParse(petDriver) == "show";
 					local enablePet = pet:GetAttribute("showPetBar");
 					if (enablePet and showPet) then
 						pet:SetAttribute("forceHide", true);
@@ -331,7 +332,8 @@ StanceBar.SpawnBar = function(self)
 				local offsetX = -40;
 				local pet = bar:GetFrameRef("PetBar");
 				if (pet) then
-					local showPet = SecureCmdOptionParse(pet:GetAttribute("visibility-driver")) == "show";
+					local petDriver = pet:GetAttribute("visibility-driver");
+					local showPet = petDriver and SecureCmdOptionParse(petDriver) == "show";
 					local enablePet = pet:GetAttribute("showPetBar");
 					local forceHide = pet:GetAttribute("forceHide");
 					if (enablePet and showPet and not forceHide) then
