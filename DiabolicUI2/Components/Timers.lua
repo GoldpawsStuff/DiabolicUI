@@ -49,7 +49,6 @@ local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local SetObjectScale = ns.API.SetObjectScale
-local IsAddOnEnabled = ns.API.IsAddOnEnabled
 
 -- Global hider frame
 local UIHider = ns.Hider
