@@ -36,19 +36,18 @@ local GetMedia = ns.API.GetMedia
 
 ns.AuraStyles.PlayerPostUpdateButton = function(element, unit, button, index, position, duration, expiration, debuffType, isStealable)
 
-	-- Border Coloring
 	local color
-	if (button.isDebuff and element.showDebuffType) or (not button.isDebuff and element.showBuffType) or (element.showType) then
-		color = Colors.debuff[debuffType] or Colors.debuff.none
+	if (button.isDebuff) then
+		color = debuffType and Colors.debuff[debuffType] or Colors.debuff.none
 	else
-		color = Colors.xp
+		color = button.isDebuff and Colors.debuff.none or Colors.xp
 	end
+
 	if (color) then
 		button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 		button.Bar:SetStatusBarColor(color[1], color[2], color[3])
 	end
 
-	-- Icon Coloring
 	if (button.isPlayer or button.isDebuff) then
 		button.Icon:SetDesaturated(false)
 		button.Icon:SetVertexColor(1, 1, 1)
@@ -61,11 +60,9 @@ end
 
 ns.AuraStyles.TargetPostUpdateButton = function(element, unit, button, index, position, duration, expiration, debuffType, isStealable)
 
-	-- Stealable buffs
 	if(not button.isDebuff and isStealable and element.showStealableBuffs and not UnitIsUnit("player", unit)) then
 	end
 
-	-- Border Coloring
 	local color
 	if (button.isDebuff and element.showDebuffType) or (not button.isDebuff and element.showBuffType) or (element.showType) then
 		color = Colors.debuff[debuffType] or Colors.debuff.none
@@ -76,7 +73,6 @@ ns.AuraStyles.TargetPostUpdateButton = function(element, unit, button, index, po
 		button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 	end
 
-	-- Icon Coloring
 	if (button.isPlayer) then
 		button.Icon:SetDesaturated(false)
 		button.Icon:SetVertexColor(1, 1, 1)
@@ -89,17 +85,16 @@ end
 
 ns.AuraStyles.NameplatePostUpdateButton = function(element, unit, button, index, position, duration, expiration, debuffType, isStealable)
 
-	-- Stealable buffs
 	if(not button.isDebuff and isStealable and element.showStealableBuffs and not UnitIsUnit("player", unit)) then
 	end
 
-	-- Coloring
 	local color
 	if (button.isDebuff and element.showDebuffType) or (not button.isDebuff and element.showBuffType) or (element.showType) then
 		color = Colors.debuff[debuffType] or Colors.debuff.none
 	else
 		color = Colors.verydarkgray
 	end
+
 	if (color) then
 		button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 	end
