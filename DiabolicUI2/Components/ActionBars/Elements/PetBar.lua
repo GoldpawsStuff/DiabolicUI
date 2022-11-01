@@ -73,21 +73,9 @@ local handleOnClick = function(self)
 end
 
 local handleOnEnter = function(self)
-	self:SetAlpha(1)
 end
 
 local handleOnLeave = function(self)
-	if (self.bar:IsShown()) then
-		self:SetAlpha(0)
-	end
-end
-
-local handleUpdateAlpha = function(self)
-	if (self:IsMouseOver(20, 0, -20, 20)) then
-		self:OnEnter()
-	else
-		self:OnLeave()
-	end
 end
 
 local style = function(button)
@@ -278,7 +266,6 @@ PetBar.SpawnBar = function(self)
 		bar:SetHeight(54)
 		bar.scale = scale
 
-		-- Create pet buttons
 		local button
 		for id = 1,10 do
 			button = bar:CreateButton(id, bar:GetName().."Button"..id)
@@ -287,17 +274,11 @@ PetBar.SpawnBar = function(self)
 			style(button)
 		end
 
-		-- Lua callback to update saved settings
+		bar:SetAttribute("showPetBar", ns.db.char.actionbars.showPetBar)
 		bar.UpdateSettings = function(self)
-			ns.db.char.actionbars.enablePetBar = self:GetAttribute("enablePetBar")
-			ns.db.char.actionbars.preferPetOrStanceBar = self:GetAttribute("preferPetOrStanceBar")
+			ns.db.char.actionbars.showPetBar = self:GetAttribute("showPetBar")
 		end
 
-		-- Store saved settings as bar attributes
-		bar:SetAttribute("enablePetBar", ns.db.char.actionbars.enablePetBar)
-		bar:SetAttribute("preferPetOrStanceBar", ns.db.char.actionbars.preferPetOrStanceBar)
-
-		-- Environment callback to signal pet bar visibility changes.
 		local onVisibility = function(self) ns:Fire("ActionBars_PetBar_Updated", self:IsShown() and true or false) end
 		bar:HookScript("OnHide", onVisibility)
 		bar:HookScript("OnShow", onVisibility)
@@ -313,7 +294,6 @@ PetBar.SpawnBar = function(self)
 		handle:SetScript("OnLeave", handleOnLeave)
 		handle.OnEnter = handleOnEnter
 		handle.OnLeave = handleOnLeave
-		handle.UpdateAlpha = handleUpdateAlpha
 		handle.bar = bar
 
 		local texture = handle:CreateTexture()
@@ -324,77 +304,23 @@ PetBar.SpawnBar = function(self)
 		-- Handle onclick handler triggering visibility changes
 		-- for both the pet bar and the stance bar, if it exists.
 		handle:SetAttribute("_onclick", [[
-
-			-- Retrieve and update the visibility setting
-			local bar = self:GetFrameRef("Bar");
-			local enablePetBar = not bar:GetAttribute("enablePetBar")
-
-			-- Handle stance bar visibility, if it exists
-			local stance = self:GetFrameRef("StanceBar");
-			if (stance) then
-
-				-- If pet bar should be shown,
-				-- we need to handle the stance bar.
-				if (enablePetBar) then
-
-					-- Check if the stance bar is currently shown
-					if (stance:GetAttribute("enableStanceBar")) then
-
-						-- Create a temporary setting to restore
-						-- the stancebar if we close the pet bar.
-						-- This is saved through sessions.
-						bar:SetAttribute("restorePetOrStanceBar", "stance");
-						stance:SetAttribute("restorePetOrStanceBar", "stance");
-
-						-- Disable the saved setting to show the stance bar
-						stance:SetAttribute("enableStanceBar", false);
-
-						-- Save stance bar settings in lua
-						stance:CallMethod("UpdateSettings");
-
-						-- Update stance bar visibility driver
-						stance:RunAttribute("UpdateVisibility");
-
-					else
-
-						-- Pet bar was not enabled when closed, so we clear this setting.
-						bar:SetAttribute("restorePetOrStanceBar", false);
-						stance:SetAttribute("restorePetOrStanceBar", false);
-
-						-- Save stance bar settings in lua
-						stance:CallMethod("UpdateSettings");
-					end
-
-				else
-
-					-- Check if the stance bar was previously shown
-					if (bar:GetAttribute("restorePetOrStanceBar") == "stance") then
-
-						-- Restore the stance bar's saved visibility setting
-						stance:SetAttribute("enableStanceBar", true);
-
-						-- Save stance bar settings in lua
-						stance:CallMethod("UpdateSettings");
-
-						-- Update the stance bar's visibility driver
-						stance:RunAttribute("UpdateVisibility");
-					end
-
-					-- Whether or not the stance bar was previously shown,
-					-- this setting is no longer needed.
-					bar:SetAttribute("restorePetOrStanceBar", false);
-					stance:SetAttribute("restorePetOrStanceBar", false);
-				end
+			local pet = self:GetFrameRef("Bar");
+			local stance = pet:GetFrameRef("StanceBar");
+			if (pet:IsShown()) then
+				pet:SetAttribute("showPetBar", false);
+			else
+				pet:SetAttribute("showPetBar", true);
 			end
-
-			-- Update the pet bar's saved visibility setting
-			bar:SetAttribute("enablePetBar", enablePetBar);
-
-			-- Save pet bar settings in lua
-			bar:CallMethod("UpdateSettings");
-
-			-- Update the pet bar's visibility driver
-			bar:RunAttribute("UpdateVisibility");
+			-- Any click should clear this,
+			-- only manually showing the stance bar
+			-- while the pet bar is currently visible
+			-- should ever trigger this setting.
+			pet:SetAttribute("forceHide", false);
+			if (stance) then
+				stance:RunAttribute("UpdateVisibility");
+			end
+			pet:CallMethod("UpdateSettings");
+			pet:RunAttribute("UpdateVisibility");
 		]])
 
 		-- Handle position updater
@@ -411,7 +337,12 @@ PetBar.SpawnBar = function(self)
 			if not driver then return end
 			UnregisterStateDriver(self, "visibility");
 			RegisterStateDriver(self, "visibility", driver);
-			self:CallMethod("UpdateAlpha");
+		]])
+
+		-- The handle's state handler reacting to visibility driver suggestions.
+		handle:SetAttribute("_onstate-vis", [[
+			if not newstate then return end
+			self:RunAttribute("UpdatePosition");
 		]])
 
 		-- Custom visibility updater
@@ -419,15 +350,21 @@ PetBar.SpawnBar = function(self)
 		bar:SetAttribute("UpdateVisibility", [[
 			local driver = self:GetAttribute("visibility-driver");
 			if not driver then return end
-			local newstate = SecureCmdOptionParse(driver);
-			local enabled = self:GetAttribute("enablePetBar");
-			if (enabled and newstate == "show") then
+			local show = SecureCmdOptionParse(driver) == "show";
+			local enabled = self:GetAttribute("showPetBar");
+			local forceHide = self:GetAttribute("forceHide");
+			if (enabled and show and not forceHide) then
 				self:Show();
 			else
 				self:Hide();
 			end
 			local handle = self:GetFrameRef("Handle");
 			handle:RunAttribute("UpdatePosition");
+			-- Neverending loop?
+			local stance = self:GetFrameRef("StanceBar");
+			if (stance) then
+				stance:GetFrameRef("Handle"):RunAttribute("UpdatePosition");
+			end
 		]])
 
 		-- State handler reacting to visibility driver updates.

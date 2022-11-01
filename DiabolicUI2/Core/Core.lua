@@ -33,14 +33,14 @@ _G[Addon] = ns
 
 -- Default settings
 -- *don't modify these as they only
---  affect clean installs or new characters.
+--  affect clean installs or new characters,
+--  and the modules expect these defaults.
 local defaults = {
 	char = {
 		actionbars = {
 			enableSecondary = false,
-			enablePetBar = true,
-			enableStanceBar = false,
-			restorePetOrStanceBar = false
+			showPetBar = true,
+			showStanceBar = true
 		},
 		auras = {
 			alwaysHideAuras = false,
@@ -86,6 +86,10 @@ local SanitizeSettings = function(db)
 	if (not db) then
 		return
 	end
+	db.char.actionbars.enablePetBar = nil
+	db.char.actionbars.enableStanceBar = nil
+	db.char.actionbars.preferPetOrStanceBar = nil
+	db.char.actionbars.restorePetOrStanceBar = nil
 	local numBars = db.char.actionbars.numBars
 	if (numBars) then
 		db.char.actionbars.numBars = nil

@@ -119,7 +119,7 @@ StanceBar.UpdateVisibilityDriver = function(self)
 
 	local visdriver
 	if (self.enabled) then
-		visdriver = self.customVisibilityDriver or "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show"
+		visdriver = self.customVisibilityDriver or "[petbattle][possessbar][overridebar][vehicleui][@vehicle,exists]hide;show"
 	end
 	self:SetAttribute("visibility-driver", visdriver)
 

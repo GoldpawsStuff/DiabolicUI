@@ -551,7 +551,7 @@ Bars.SpawnBars = function(self)
 		toggle:RegisterEvent("MODIFIER_STATE_CHANGED")
 		toggle:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-		RegisterStateDriver(toggle, "state-vis", "[petbattle][possessbar][overridebar][vehicleui][target=vehicle,exists]hide;show")
+		RegisterStateDriver(toggle, "state-vis", "[petbattle][possessbar][overridebar][vehicleui][@vehicle,exists]hide;show")
 
 	end
 
