@@ -55,6 +55,8 @@ local HasNewMail = HasNewMail
 local InCombatLockdown = InCombatLockdown
 local IsAddOnLoaded = IsAddOnLoaded
 local IsResting = IsResting
+local PlaySound = PlaySound
+local ToggleDropDownMenu = ToggleDropDownMenu
 
 -- Addon API
 local Colors = ns.Colors
@@ -128,18 +130,18 @@ local Mail_OnEnter = function(self)
 
 	local sender1, sender2, sender3 = GetLatestThreeSenders()
 	if (sender1 or sender2 or sender3) then
-		GameTooltip:AddLine(L_HAVE_MAIL_FROM, 240/255, 240/255, 240/255)
+		GameTooltip:AddLine(L_HAVE_MAIL_FROM, unpack(Colors.highlight))
 		if (sender1) then
-			GameTooltip:AddLine(sender1, 25/255, 178/255, 25/255)
+			GameTooltip:AddLine(sender1, unpack(Colors.green))
 		end
 		if (sender2) then
-			GameTooltip:AddLine(sender2, 25/255, 178/255, 25/255)
+			GameTooltip:AddLine(sender2, unpack(Colors.green))
 		end
 		if (sender3) then
-			GameTooltip:AddLine(sender3, 25/255, 178/255, 25/255)
+			GameTooltip:AddLine(sender3, unpack(Colors.green))
 		end
 	else
-		GameTooltip:AddLine(L_HAVE_MAIL, 240/255, 240/255, 240/255)
+		GameTooltip:AddLine(L_HAVE_MAIL, unpack(Colors.highlight))
 	end
 	GameTooltip:Show()
 end
