@@ -4,13 +4,17 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-11-01
+## [Unreleased] 2022-11-05
 ### Added
 - Added a compatibility module that handles the conflict with Bartender's blizzard vehicle setting and keybinds in vehicles.
 - Working versions of the pet- and stance bars has been added to the development mode. Their functionality is now as intended. Will be made public once the artwork is done.
 
 ### Changed
 - Moved all Bartender compatibility handling into the new module dedicated to this.
+
+### Fixed
+- Fixed the retail reputation tracking bar and how it interacts with friendship reputations.
+- Fixed an issue with extra action button textures in WoW 10.0.2.
 
 ## [2.0.63-RC] 2022-10-31
 ### Added
