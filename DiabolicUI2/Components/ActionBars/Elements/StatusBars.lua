@@ -35,7 +35,6 @@ local string_format = string.format
 local unpack = unpack
 
 -- WoW API
-local GameTooltip_SetDefaultAnchor = GameTooltip_SetDefaultAnchor
 local GetFactionInfo = GetFactionInfo
 local GetFactionParagonInfo = C_Reputation and C_Reputation.GetFactionParagonInfo
 local C_GossipInfo_GetFriendshipReputation = C_GossipInfo and C_GossipInfo.GetFriendshipReputation
