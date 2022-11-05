@@ -38,7 +38,7 @@ local unpack = unpack
 local GameTooltip_SetDefaultAnchor = GameTooltip_SetDefaultAnchor
 local GetFactionInfo = GetFactionInfo
 local GetFactionParagonInfo = C_Reputation and C_Reputation.GetFactionParagonInfo
-local GetFriendshipReputation = GetFriendshipReputation
+local C_GossipInfo_GetFriendshipReputation = C_GossipInfo and C_GossipInfo.GetFriendshipReputation
 local GetNumFactions = GetNumFactions
 local GetRestState = GetRestState
 local GetTimeToWellRested = GetTimeToWellRested
@@ -225,19 +225,22 @@ StatusBars.UpdateBars = function(self, event, ...)
 
 				-- Check if the watched faction is a retail friendship
 				if (ns.IsRetail) then
-					local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
-
-					if (friendID) then
-						isFriend = true
-						if (nextFriendThreshold) then
-							min = friendThreshold
-							max = nextFriendThreshold
-						else
-							min = 0
-							max = friendMaxRep
-							current = friendRep
+					local repInfo = C_GossipInfo_GetFriendshipReputation(factionID)
+					if (repInfo and repInfo.friendshipFactionID > 0) then
+						if (repInfo.friendshipFactionID) then
+							isFriend = true
+							if (repInfo.nextThreshold) then
+								min = repInfo.reactionThreshold
+								max = repInfo.nextThreshold
+								current = repInfo.standing
+							else
+								-- Make maxed friendships appear as a full bar.
+								min = 0
+								max = 1
+								current = 1
+							end
+							standingLabel = repInfo.reaction
 						end
-						standingLabel = friendTextLevel
 					end
 				end
 
