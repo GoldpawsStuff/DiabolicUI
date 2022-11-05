@@ -53,7 +53,10 @@ ExtraButtons.UpdateButton = function(self, button)
 	end
 
 	button:SetSize(80,80)
-	button:GetNormalTexture():SetTexture(nil)
+
+	if (button:GetNormalTexture()) then
+		button:GetNormalTexture():SetTexture(nil)
+	end
 
 	if (button.icon or button.Icon) then (button.icon or button.Icon):SetAlpha(0) end
 	if (button.NormalTexture) then button.NormalTexture:SetAlpha(0) end -- Zone
@@ -109,7 +112,9 @@ ExtraButtons.UpdateButton = function(self, button)
 
 	if (button:GetObjectType() == "CheckButton") then
 		if (not button.__GP_Checked) then
-			button:GetCheckedTexture():SetTexture(nil)
+			if (button:GetCheckedTexture()) then
+				button:GetCheckedTexture():SetTexture(nil)
+			end
 
 			local checkedTexture = button:CreateTexture()
 			checkedTexture:SetDrawLayer("BACKGROUND", 2)
@@ -149,7 +154,10 @@ ExtraButtons.UpdateButton = function(self, button)
 		highlightTexture:SetVertexColor(1, 1, 1, .1)
 		button.__GP_Highlight = highlightTexture
 
-		button:GetHighlightTexture():SetTexture(nil)
+		if (button:GetHighlightTexture()) then
+			button:GetHighlightTexture():SetTexture(nil)
+		end
+
 		button:SetHighlightTexture(button.__GP_Highlight)
 	end
 
