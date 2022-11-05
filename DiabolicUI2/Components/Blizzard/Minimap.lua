@@ -383,63 +383,32 @@ Bigmap.InitializeMinimap = function(self)
 
 	-- Clear Clutter
 	--------------------------------------------------------
-	for _,object in pairs({
-		"MinimapCluster",
-		"MiniMapInstanceDifficulty",
-		"GameTimeFrame"
-	}) do
-		if (_G[object]) then
-			_G[object]:UnregisterAllEvents()
-		end
-	end
-	if (not ns.IsRetail) then
-		for _,object in pairs({
-			"GameTimeFrame",
-			--"MinimapCluster",
-				"MinimapBorderTop",
-				"MinimapZoneTextButton",
-				"MiniMapInstanceDifficulty",
-				"GuildInstanceDifficulty",
-				"MiniMapChallengeMode",
-				--"Minimap",
-					"MiniMapMailFrame",
-						--"MiniMapMailBorder",
-					"MinimapBackdrop",
-						--"MinimapBorder",
-						--"MinimapNorthTag",
-						--"MinimapCompassTexture",
-						--"MiniMapWorldMapButton",
-						--"MiniMapTracking",
-							--"MiniMapTrackingFrame",
-							--"MiniMapTrackingButton",
-						--"MinimapZoomIn",
-						--"MinimapZoomOut",
-						--"GarrisonLandingPageMinimapButton",
-		}) do
-			if (_G[object]) then
-				_G[object]:SetParent(UIHider)
-			end
-		end
+	MinimapCluster:UnregisterAllEvents()
+	MinimapBackdrop:SetParent(UIHider)
+	GameTimeFrame:SetParent(UIHider)
+	GameTimeFrame:UnregisterAllEvents()
 
-		Minimap.ZoomIn = MinimapZoomIn
-		Minimap.ZoomOut = MinimapZoomOut
-
-	else
-		GameTimeFrame:SetParent(UIHider)
+	if (ns.IsRetail) then
 		MinimapCluster.BorderTop:SetParent(UIHider)
-		MinimapCluster.ZoneTextButton:SetParent(UIHider)
-		MinimapCluster.Tracking:SetParent(UIHider)
+		MinimapCluster.InstanceDifficulty:SetParent(UIHider)
 		MinimapCluster.MailFrame:SetParent(UIHider)
-		MinimapCluster.BorderTop:SetParent(UIHider)
+		MinimapCluster.Tracking:SetParent(UIHider)
+		MinimapCluster.ZoneTextButton:SetParent(UIHider)
 		Minimap.ZoomIn:SetParent(UIHider)
 		Minimap.ZoomOut:SetParent(UIHider)
-		MinimapBackdrop:SetParent(UIHider)
+	else
+		MinimapBorderTop:SetParent(UIHider)
+		MiniMapInstanceDifficulty:SetParent(UIHider)
+		MiniMapInstanceDifficulty:UnregisterAllEvents()
+		MiniMapMailFrame:SetParent(UIHider)
+		MiniMapTracking:SetParent(UIHider)
+		MinimapZoneTextButton:SetParent(UIHider)
+		MinimapZoomIn:SetParent(UIHider)
+		MinimapZoomOut:SetParent(UIHider)
 	end
-
 
 	-- Setup Main Frames
 	--------------------------------------------------------
-
 	if (ns.IsRetail) then
 		local dummy = CreateFrame("Frame", nil, MinimapCluster)
 		dummy:SetPoint(Minimap:GetPoint())
@@ -454,22 +423,12 @@ Bigmap.InitializeMinimap = function(self)
 		MinimapCluster.Minimap = dummy
 	end
 
-	-- The cluster is the parent to everything.
-	-- This prevents the default zone text from being updated,
-	-- as well as disables its tooltip.
-	--MinimapCluster:UnregisterAllEvents()
-	--MinimapCluster:SetScript("OnEvent", noop)
-	--MinimapCluster:EnableMouse(false)
-	--MinimapCluster:SetSize(320,380) -- default size 192,192
-	--MinimapCluster.defaultHeight = 340
-
 	local minimapHolder = CreateFrame("Frame", ns.Prefix.."MinimapAnchor", Minimap)
 	minimapHolder:SetSize(280,280) -- keep it minimap sized
 	minimapHolder:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -60)
 
 	Minimap:SetFrameStrata("MEDIUM")
 	Minimap:ClearAllPoints()
-	--Minimap:SetPoint("CENTER", MinimapCluster, "TOP", 20, -160) -- can we detach it?
 	Minimap:SetPoint("TOPRIGHT", minimapHolder, "TOPRIGHT", 0, 0)
 	Minimap:SetSize(280,280) -- default is 140,140
 	Minimap:SetMaskTexture(GetMedia("minimap-mask-transparent"))
@@ -479,21 +438,6 @@ Bigmap.InitializeMinimap = function(self)
 
 	-- Custom Widgets
 	--------------------------------------------------------
-	-- Hoverframe to gather some stuff.
-	local hoverFrame = CreateFrame("Frame", nil, Minimap)
-	hoverFrame:SetMouseClickEnabled(false)
-	hoverFrame:SetMouseMotionEnabled(true)
-	hoverFrame:SetPoint("TOPLEFT", Minimap, "BOTTOMLEFT", 0, 0)
-	hoverFrame:SetPoint("BOTTOMRIGHT", 0, 40)
-	hoverFrame:SetAlpha(0)
-	local overMap, overInfo
-	local updateHover = function() hoverFrame:SetAlpha((overMap or overInfo) and 1 or 0) end
-	hoverFrame:SetScript("OnEnter", function() overInfo = true; updateHover() end)
-	hoverFrame:SetScript("OnLeave", function() overInfo = false; updateHover() end)
-	Minimap:SetScript("OnEnter", function(self) overMap = true; updateHover() end)
-	Minimap:SetScript("OnLeave", function(self) overMap = false; updateHover() end)
-	self.HoverFrame = hoverFrame
-
 	-- Zone
 	local zoneName = Minimap:CreateFontString()
 	zoneName:SetDrawLayer("OVERLAY", 1)
@@ -643,75 +587,30 @@ Bigmap.InitializeMinimap = function(self)
 	-- Blizzard Widgets
 	--------------------------------------------------------
 	-- Order Hall / Garrison / Covenant Sanctum
-	if (ns.IsRetail) then
+	local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
+	if (GLP) then
+		GLP:ClearAllPoints()
+		GLP:SetPoint("TOP", UIParent, "TOP", 0, 200) -- off-screen
 
-		local GLP = GarrisonLandingPageMinimapButton or ExpansionLandingPageMinimapButton
-		if (GLP) then
-			GLP:ClearAllPoints()
-			GLP:SetPoint("TOP", UIParent, "TOP", 0, 200) -- off-screen
-
-			---- They change the position of the button through a local function named "ApplyGarrisonTypeAnchor".
-			---- Only way we can override it without messing with method nooping, is to hook into the global function calling it.
-			if (GarrisonLandingPageMinimapButton_UpdateIcon) then
-				hooksecurefunc("GarrisonLandingPageMinimapButton_UpdateIcon", function()
-					GLP:ClearAllPoints()
-					GLP:SetPoint("TOP", UIParent, "TOP", 0, 200)
-				end)
-			elseif (ExpansionLandingPageMinimapButton and ExpansionLandingPageMinimapButton.UpdateIcon) then
-				hooksecurefunc(ExpansionLandingPageMinimapButton, "UpdateIcon", function()
-					GLP:ClearAllPoints()
-					GLP:SetPoint("TOP", UIParent, "TOP", 0, 200)
-				end)
-			end
+		---- They change the position of the button through a local function named "ApplyGarrisonTypeAnchor".
+		---- Only way we can override it without messing with method nooping, is to hook into the global function calling it.
+		if (GarrisonLandingPageMinimapButton_UpdateIcon) then
+			hooksecurefunc("GarrisonLandingPageMinimapButton_UpdateIcon", function()
+				GLP:ClearAllPoints()
+				GLP:SetPoint("TOP", UIParent, "TOP", 0, 200)
+			end)
+		elseif (ExpansionLandingPageMinimapButton and ExpansionLandingPageMinimapButton.UpdateIcon) then
+			hooksecurefunc(ExpansionLandingPageMinimapButton, "UpdateIcon", function()
+				GLP:ClearAllPoints()
+				GLP:SetPoint("TOP", UIParent, "TOP", 0, 200)
+			end)
 		end
-
-		if (not ns.IsRetail) then
-
-			-- Blob Textures
-			-- These alpha values range from 0 to 255, for some obscure reason,
-			-- so a value of 127 would be 127/255 ≃ 0.5ish in the normal API.
-			local blobInside, blobOutside, ringOutside, ringInside = 0,96,0,0
-			Minimap:SetQuestBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
-			Minimap:SetQuestBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
-			Minimap:SetQuestBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
-			Minimap:SetQuestBlobRingScalar(ringInside) -- ring texture inside quest areas?
-			Minimap:SetArchBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
-			Minimap:SetArchBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
-			Minimap:SetArchBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
-			Minimap:SetArchBlobRingScalar(ringInside) -- ring texture inside quest areas?
-			Minimap:SetTaskBlobInsideAlpha(blobInside) -- "blue" areas with quest mobs/items in them
-			Minimap:SetTaskBlobOutsideAlpha(blobOutside) -- borders around the "blue" areas
-			Minimap:SetTaskBlobRingAlpha(ringOutside) -- the big fugly edge ring texture!
-			Minimap:SetTaskBlobRingScalar(ringInside) -- ring texture inside quest areas?
-
-			-- Warning: Setting to blank fully kills it!
-			-- Also note that these methods only accepts Blizzard textures,
-			-- not any custom ones found in addon folders.
-			local blank = [[Interface\MINIMAP\UI-QuestBlobMinimap-Inside]]
-			Minimap:SetArchBlobRingTexture(blank)
-			Minimap:SetQuestBlobInsideTexture(blank)
-			Minimap:SetQuestBlobOutsideSelectedTexture([[Interface\MINIMAP\UI-QuestBlobMinimap-Outside]])
-			Minimap:SetQuestBlobRingTexture(blank)
-			Minimap:SetTaskBlobInsideTexture(blank)
-			Minimap:SetTaskBlobOutsideSelectedTexture([[Interface\MINIMAP\UI-BonusObjectiveBlob-Outside]])
-			Minimap:SetTaskBlobRingTexture(blank)
-			Minimap:SetStaticPOIArrowTexture(blank)
-			Minimap:SetPOIArrowTexture(blank)
-		end
-	end
-
-	-- Blip Textures
-	-- *This is a fucking pain to update. Not going to bother for a while.
-	if (GetBuildInfo() == "9.0.5") then
-		Minimap:SetBlipTexture(GetMedia("Blip-Nandini-Extended-905"))
 	end
 
 	-- Dungeon Eye
-	local deg2rad = math_pi / 180
-
 	local eyeFrame = CreateFrame("Frame", nil, Minimap)
 	eyeFrame:SetFrameLevel(Minimap:GetFrameLevel() + 10)
-	eyeFrame:SetPoint("CENTER", math_cos(225*deg2rad) * (280/2 + 10), math_sin(225*deg2rad) * (280/2 + 10))
+	eyeFrame:SetPoint("CENTER", math_cos(225*(math_pi/180)) * (280/2 + 10), math_sin(225*(math_pi/180)) * (280/2 + 10))
 	eyeFrame:SetSize(64,64)
 	self.eyeFrame = eyeFrame
 
