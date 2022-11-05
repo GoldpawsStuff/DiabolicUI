@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-11-05
+## [2.0.64-RC] 2022-11-05
 ### Added
 - Added a compatibility module that handles the conflict with Bartender's blizzard vehicle setting and keybinds in vehicles.
 - Working versions of the pet- and stance bars has been added to the development mode. Their functionality is now as intended. Will be made public once the artwork is done.
