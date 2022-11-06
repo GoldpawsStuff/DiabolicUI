@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-11-06
+### Changed
+- The orb artwork should no longer temporarily disappear when entering a vehicle, and will always remain visible even when the "player" unit does not exist.
+
 ## [2.0.64-RC] 2022-11-05
 ### Added
 - Added a compatibility module that handles the conflict with Bartender's blizzard vehicle setting and keybinds in vehicles.
