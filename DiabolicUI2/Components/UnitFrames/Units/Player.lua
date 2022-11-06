@@ -41,6 +41,7 @@ local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetMedia = ns.API.GetMedia
 local IsAddOnEnabled = ns.API.IsAddOnEnabled
+local SetObjectScale = ns.API.SetObjectScale
 
 -- Constants
 local _, playerClass = UnitClass("player")
@@ -384,6 +385,22 @@ UnitStyles["Player"] = function(self, unit, id)
 	self:SetSize(200,200)
 	self:SetFrameLevel(self:GetFrameLevel() + 1)
 
+	-- Holders for always visible elements
+	--------------------------------------------
+	local artworkHolder = SetObjectScale(CreateFrame("Frame", nil, UIParent))
+	artworkHolder:SetAllPoints(self)
+	artworkHolder:SetFrameStrata(self:GetFrameStrata())
+	artworkHolder:SetFrameLevel(self:GetFrameLevel())
+
+	self.Artwork = artworkHolder
+
+	local artworkOverlay = CreateFrame("Frame", nil, artworkHolder)
+	artworkOverlay:SetAllPoints()
+	artworkOverlay:SetFrameStrata(self:GetFrameStrata())
+	artworkOverlay:SetFrameLevel(self:GetFrameLevel() + 5)
+
+	self.Artwork.Overlay = artworkOverlay
+
 	-- Health Orb
 	--------------------------------------------
 	local health = self:CreateOrb(self:GetName().."HealthOrb")
@@ -398,7 +415,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	self.Health.Override = ns.API.UpdateHealth
 	self.Health.PostUpdateColor = Health_PostUpdateColor
 
-	local healthBackdrop = health:CreateTexture(health:GetName().."Backdrop", "BACKGROUND", nil, -7)
+	local healthBackdrop = artworkHolder:CreateTexture(health:GetName().."Backdrop", "BACKGROUND", nil, -7)
 	healthBackdrop:SetSize(330,330)
 	healthBackdrop:SetPoint("CENTER", health)
 	healthBackdrop:SetTexture(GetMedia("orb-backdrop1"))
@@ -408,29 +425,29 @@ UnitStyles["Player"] = function(self, unit, id)
 	local healthOverlay = CreateFrame("Frame", nil, health)
 	healthOverlay:SetFrameLevel(health:GetFrameLevel() + 5)
 
-	self.Health.Overlay = healthShade
+	self.Health.Overlay = healthOverlay
 
-	local healthShade = healthOverlay:CreateTexture(nil, "BACKGROUND")
+	local healthShade = artworkOverlay:CreateTexture(nil, "BACKGROUND")
 	healthShade:SetAllPoints(health)
 	healthShade:SetTexture(GetMedia("shade-circle"))
 	healthShade:SetVertexColor(0,0,0,1)
 
 	self.Health.Shade = healthShade
 
-	local healthGlass = healthOverlay:CreateTexture(health:GetName().."Glass", "BORDER")
+	local healthGlass = artworkOverlay:CreateTexture(health:GetName().."Glass", "BORDER")
 	healthGlass:SetAllPoints(healthBackdrop)
 	healthGlass:SetTexture(GetMedia("orb-glass"))
 	healthGlass:SetAlpha(.6)
 
 	self.Health.Glass = healthGlass
 
-	local healthBorder = healthOverlay:CreateTexture(health:GetName().."Border", "ARTWORK")
+	local healthBorder = artworkOverlay:CreateTexture(health:GetName().."Border", "ARTWORK")
 	healthBorder:SetAllPoints(healthBackdrop)
 	healthBorder:SetTexture(GetMedia("orb-border"))
 
 	self.Health.Border = healthBorder
 
-	local healthArt = healthOverlay:CreateTexture(health:GetName().."Artwork", "OVERLAY", nil, 1)
+	local healthArt = artworkOverlay:CreateTexture(health:GetName().."Artwork", "OVERLAY", nil, 1)
 	healthArt:SetSize(healthBackdrop:GetSize())
 	healthArt:SetPoint("BOTTOMRIGHT", health, "BOTTOM", 29, -25)
 	healthArt:SetTexture(GetMedia("orb-art1"))
@@ -516,7 +533,7 @@ UnitStyles["Player"] = function(self, unit, id)
 	self.Power = power
 	self.Power.Override = ns.API.UpdatePower
 
-	local powerBackdrop = power:CreateTexture(power:GetName().."Backdrop", "BACKGROUND", nil, -7)
+	local powerBackdrop = artworkHolder:CreateTexture(power:GetName().."Backdrop", "BACKGROUND", nil, -7)
 	powerBackdrop:SetSize(330,330)
 	powerBackdrop:SetPoint("CENTER", power)
 	powerBackdrop:SetTexture(GetMedia("orb-backdrop2"))
@@ -528,27 +545,27 @@ UnitStyles["Player"] = function(self, unit, id)
 
 	self.Power.Overlay = powerOverlay
 
-	local powerShade = powerOverlay:CreateTexture(nil, "BACKGROUND")
+	local powerShade = artworkOverlay:CreateTexture(nil, "BACKGROUND")
 	powerShade:SetAllPoints(power)
 	powerShade:SetTexture(GetMedia("shade-circle"))
 	powerShade:SetVertexColor(0,0,0,1)
 
 	self.Power.Shade = powerShade
 
-	local powerGlass = powerOverlay:CreateTexture(power:GetName().."Glass", "BORDER")
+	local powerGlass = artworkOverlay:CreateTexture(power:GetName().."Glass", "BORDER")
 	powerGlass:SetAllPoints(powerBackdrop)
 	powerGlass:SetTexture(GetMedia("orb-glass"))
 	powerGlass:SetAlpha(.6)
 
 	self.Power.Glass = powerGlass
 
-	local powerBorder = powerOverlay:CreateTexture(power:GetName().."Border", "ARTWORK")
+	local powerBorder = artworkOverlay:CreateTexture(power:GetName().."Border", "ARTWORK")
 	powerBorder:SetAllPoints(powerBackdrop)
 	powerBorder:SetTexture(GetMedia("orb-border"))
 
 	self.Power.Border = powerBorder
 
-	local powerArt = powerOverlay:CreateTexture(power:GetName().."Artwork", "OVERLAY", nil, 1)
+	local powerArt = artworkOverlay:CreateTexture(power:GetName().."Artwork", "OVERLAY", nil, 1)
 	powerArt:SetSize(powerBackdrop:GetSize())
 	powerArt:SetPoint("BOTTOMLEFT", power, "BOTTOM", -29, -25)
 	powerArt:SetTexture(GetMedia("orb-art2"))
