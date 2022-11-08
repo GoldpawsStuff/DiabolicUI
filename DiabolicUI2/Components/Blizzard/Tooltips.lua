@@ -59,7 +59,7 @@ local UnitIsDeadOrGhost = UnitIsDeadOrGhost
 local UnitIsDND = UnitIsDND
 local UnitIsPVP = UnitIsPVP
 local UnitIsPVPFreeForAll = UnitIsPVPFreeForAll
-local UnitLevel = UnitLevel
+local UnitLevel = UnitEffectiveLevel or UnitLevel
 local UnitName = UnitName
 local UnitPVPName = UnitPVPName
 local UnitRace = UnitRace
@@ -623,7 +623,9 @@ Tooltips.SetHooks = function(self)
 
 	self:SecureHookScript(GameTooltip, "OnTooltipCleared", "OnTooltipCleared")
 
-	if (not ns.IsRetail) then
+	if (ns.IsRetail) then
+
+	else
 		self:SecureHookScript(GameTooltip, "OnTooltipSetSpell", "OnTooltipSetSpell")
 		self:SecureHookScript(GameTooltip, "OnTooltipSetItem", "OnTooltipSetItem")
 		self:SecureHookScript(GameTooltip, "OnTooltipSetUnit", "OnTooltipSetUnit")

@@ -41,7 +41,7 @@ local UnitClass = UnitClass
 local UnitClassification = UnitClassification
 local UnitIsBattlePetCompanion = UnitIsBattlePetCompanion
 local UnitIsWildBattlePet = UnitIsWildBattlePet
-local UnitLevel = UnitLevel
+local UnitLevel = UnitEffectiveLevel or UnitLevel
 
 -- Addon API
 local AbbreviateTime = ns.API.AbbreviateTimeShort

@@ -592,11 +592,10 @@ UnitStyles["Player"] = function(self, unit, id)
 		cast:SetFrameStrata("MEDIUM")
 		cast:SetSize(220,2)
 		cast:SetPoint("CENTER", UIParent, "CENTER", 0, -150)
-		--cast:SetStatusBarTexture(.3, .5, .9)
 		cast:SetStatusBarTexture(GetMedia("plain"))
 		cast:SetStatusBarColor(unpack(self.colors.cast))
 		cast:DisableSmoothing(true)
-		cast.timeToHold = 0.5
+		cast.timeToHold = .5
 
 		local castBackdrop = cast:CreateTexture(nil, "BORDER", nil, -1)
 		castBackdrop:SetPoint("TOPLEFT", 0, 0)
