@@ -174,14 +174,14 @@ local ClassPower_PostUpdate = function(element, cur, max, hasMaxChanged, powerTy
 		element:SetWidth(max * element.pointWidth)
 	end
 	for i = 1, #element do
-		local rune = element[i]
-		if (rune:IsShown()) then
-			local value = rune:GetValue()
-			local min, max = rune:GetMinMaxValues()
+		local point = element[i]
+		if (point:IsShown()) then
+			local value = point:GetValue()
+			local min, max = point:GetMinMaxValues()
 			if (element.inCombat) then
-				rune:SetAlpha(allReady and 1 or (value < max) and .5 or 1)
+				point:SetAlpha((cur == max) and 1 or (value < max) and .5 or 1)
 			else
-				rune:SetAlpha(allReady and 0 or (value < max) and .5 or 1)
+				point:SetAlpha((cur == max) and 0 or (value < max) and .5 or 1)
 			end
 		end
 	end
