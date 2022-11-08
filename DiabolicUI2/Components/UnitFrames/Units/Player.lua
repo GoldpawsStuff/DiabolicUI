@@ -246,6 +246,11 @@ local UnitFrame_OnEvent = function(self, event)
 			runes.inCombat = true
 			runes:ForceUpdate()
 		end
+		local stagger = self.Stagger
+		if (stagger and not stagger.inCombat) then
+			stagger.inCombat = true
+			stagger:ForceUpdate()
+		end
 		local classpower = self.ClassPower
 		if (classpower) and (not classpower.inCombat) then
 			classpower.inCombat = true
@@ -257,6 +262,11 @@ local UnitFrame_OnEvent = function(self, event)
 		if (runes) and (runes.inCombat) then
 			runes.inCombat = false
 			runes:ForceUpdate()
+		end
+		local stagger = self.Stagger
+		if (stagger and stagger.inCombat) then
+			stagger.inCombat = false
+			stagger:ForceUpdate()
 		end
 		local classpower = self.ClassPower
 		if (classpower) and (classpower.inCombat) then
