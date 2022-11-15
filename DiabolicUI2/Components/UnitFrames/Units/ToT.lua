@@ -53,6 +53,15 @@ local PostUpdate = function(self)
 	self:SetAlpha((UnitIsUnit(unit, "target") or UnitIsUnit(unit, "player")) and 0 or 1)
 end
 
+-- Forceupdate health prediction on health updates,
+-- to assure our smoothed elements are properly aligned.
+local Health_PostUpdate = function(element, unit, cur, max)
+	local predict = element.__owner.HealthPrediction
+	if (predict) then
+		predict:ForceUpdate()
+	end
+end
+
 -- Update the health preview color on health color updates.
 local Health_PostUpdateColor = function(element, unit, r, g, b)
 	local preview = element.Preview
@@ -203,6 +212,8 @@ UnitStyles["ToT"] = function(self, unit, id)
 
 	self.Health = health
 	self.Health.Override = ns.API.UpdateHealth
+	self.Health.PostUpdate = Health_PostUpdate
+	self.Health.PostUpdateColor = Health_PostUpdateColor
 
 	-- Health Preview
 	--------------------------------------------
