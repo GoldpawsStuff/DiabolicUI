@@ -432,7 +432,8 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	auras.CustomFilter = ns.AuraFilters.NameplateAuraFilter
 	auras.CreateButton = ns.AuraStyles.CreateButton
 	auras.PostUpdateButton = ns.AuraStyles.NameplatePostUpdateButton
-	auras.PreSetPosition = ns.AuraSorts.Default
+	auras.PreSetPosition = ns.AuraSorts.Default -- only in classic
+	auras.SortAuras = ns.AuraSorts.DefaultFunction -- only in retail
 
 	self.Auras = auras
 end

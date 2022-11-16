@@ -765,7 +765,8 @@ UnitStyles["Player"] = function(self, unit, id)
 	buffs.CreateButton = ns.AuraStyles.CreateButtonWithBar
 	buffs.PostUpdateButton = ns.AuraStyles.PlayerPostUpdateButton
 	buffs.CustomFilter = ns.AuraFilters.PlayerBuffFilter
-	buffs.PreSetPosition = ns.AuraSorts.Default
+	buffs.PreSetPosition = ns.AuraSorts.Default -- only in classic
+	buffs.SortAuras = ns.AuraSorts.DefaultFunction -- only in retail
 
 	self.Buffs = buffs
 
@@ -789,7 +790,8 @@ UnitStyles["Player"] = function(self, unit, id)
 	debuffs.CreateButton = ns.AuraStyles.CreateButtonWithBar
 	debuffs.PostUpdateButton = ns.AuraStyles.PlayerPostUpdateButton
 	debuffs.CustomFilter = ns.AuraFilters.PlayerDebuffFilter
-	debuffs.PreSetPosition = ns.AuraSorts.Default
+	debuffs.PreSetPosition = ns.AuraSorts.Default -- only in classic
+	debuffs.SortAuras = ns.AuraSorts.DefaultFunction -- only in retail
 
 	self.Debuffs = debuffs
 
