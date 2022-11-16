@@ -255,6 +255,12 @@ end
 
 local UnitFrame_PostUpdate = function(self)
 	Plate_UpdateHighlight(self)
+	if (self.isPRD) then
+		self:DisableElement("RaidTargetIndicator")
+	else
+		self:EnableElement("RaidTargetIndicator")
+		self.RaidTargetIndicator:ForceUpdate()
+	end
 end
 
 UnitStyles["NamePlate"] = function(self, unit, id)
