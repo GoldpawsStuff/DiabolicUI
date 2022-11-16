@@ -4,9 +4,18 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-11-06
+## [2.0.65-RC] 2022-11-16
+- Bump to retail client patch 10.0.2.
+
+### Added
+- Added raid target icons to the nameplates.
+
 ### Changed
 - The orb artwork should no longer temporarily disappear when entering a vehicle, and will always remain visible even when the "player" unit does not exist.
+
+### Fixed
+- Fixed the sometimes faulty opacity of runes.
+- Fixed some inconsistencies on prediction textures on the health orbs.
 
 ## [2.0.64-RC] 2022-11-05
 ### Added
