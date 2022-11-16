@@ -253,6 +253,10 @@ local Plate_UpdateHighlight = function(self)
 	end
 end
 
+local UnitFrame_PostUpdate = function(self)
+	Plate_UpdateHighlight(self)
+end
+
 UnitStyles["NamePlate"] = function(self, unit, id)
 
 	self:SetSize(75,45) -- 90,45
@@ -357,8 +361,6 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", Plate_UpdateHighlight, true)
 	self:RegisterEvent("PLAYER_FOCUS_CHANGED", Plate_UpdateHighlight, true)
-	self:RegisterEvent("NAME_PLATE_UNIT_ADDED", Plate_UpdateHighlight, true)
-	self:RegisterEvent("NAME_PLATE_UNIT_REMOVED", Plate_UpdateHighlight, true)
 
 	-- Castbar
 	--------------------------------------------
@@ -408,12 +410,19 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 
 	self.Castbar = cast
 
+	-- Raid Target Indicator
+	--------------------------------------------
+	local raidTarget = self:CreateTexture(nil, "OVERLAY", nil, 1)
+	raidTarget:SetSize(64, 64)
+	raidTarget:SetPoint("BOTTOM", 0, 54)
+	raidTarget:SetTexture(GetMedia("raid_target_icons"))
+
+	self.RaidTargetIndicator = raidTarget
 
 	-- Auras
 	--------------------------------------------
 	local auras = CreateFrame("Frame", nil, self)
 	auras:SetSize(30*3-4, 26)
-	--auras:SetPoint("BOTTOM", self, "TOP", 0, 10) -- with name
 	auras:SetPoint("BOTTOM", self.Health, "TOP", 0, 6)
 	auras.size = 26
 	auras.spacing = 4
@@ -436,4 +445,7 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	auras.SortAuras = ns.AuraSorts.DefaultFunction -- only in retail
 
 	self.Auras = auras
+
+	self.PostUpdate = UnitFrame_PostUpdate
+
 end
