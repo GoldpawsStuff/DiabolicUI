@@ -43,8 +43,6 @@ local Colors = ns.Colors
 local GetFont = ns.API.GetFont
 local GetPosition = ns.API.GetPosition
 local GetScale = ns.API.GetScale
-local SetObjectScale = ns.API.SetObjectScale
-local UIHider = ns.Hider
 
 -- Private event frame
 local Frame = CreateFrame("Frame")
@@ -58,7 +56,7 @@ end)
 local Anchors = {}
 
 -- Anchor Template
-local Anchor = CreateFrame("Frame")
+local Anchor = CreateFrame("Button")
 local Anchor_MT = { __index = Anchor }
 
 -- Anchor API
@@ -66,9 +64,11 @@ local Anchor_MT = { __index = Anchor }
 -- Constructor
 Anchor.Create = function(self, frame, savedPosition)
 
-	local anchor = setmetatable(CreateFrame("Frame", nil, frame), Anchor_MT)
+	local anchor = setmetatable(CreateFrame("Button", nil, frame), Anchor_MT)
+	anchor:SetFrameStrata("DIALOG")
 	anchor:Hide()
 	anchor:SetIgnoreParentAlpha(true)
+	anchor:SetMovable(true)
 	anchor.frame = frame
 	anchor.savedPosition = savedPosition or {}
 	anchor.defaultPosition = { GetPosition(frame) }
@@ -86,7 +86,7 @@ Anchor.Create = function(self, frame, savedPosition)
 	positionText:SetPoint("CENTER")
 	anchor.Text = positionText
 
-	anchor:RegisterForClicks("RightButton")
+	anchor:RegisterForClicks("AnyUp")
 	anchor:RegisterForDrag("LeftButton")
 	anchor:SetScript("OnDragStart", Anchor.OnDragStart)
 	anchor:SetScript("OnDragStop", Anchor.OnDragStop)
@@ -96,9 +96,15 @@ Anchor.Create = function(self, frame, savedPosition)
 	anchor:SetScript("OnEnter", Anchor.OnEnter)
 	anchor:SetScript("OnLeave", Anchor.OnLeave)
 
-	Anchors[#Anchors + 1] = anchor
+	if (savedPosition and next(savedPosition)) then
+		anchor:ResetToSaved()
+	end
 
-	Frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+	if (not next(Anchors)) then
+		Frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+	end
+
+	Anchors[#Anchors + 1] = anchor
 
 	return anchor
 end
@@ -136,6 +142,26 @@ Anchor.ResetLastChange = function(self)
 	self.frame:ClearAllPoints()
 	self.frame:SetPoint(point, UIParent, point, x, y)
 
+	local width, height = self.frame:GetSize()
+
+	self:ClearAllPoints()
+	self:SetPoint(point, UIParent, point, x, y)
+	self:SetSize(width, height)
+	self:UpdateText()
+end
+
+-- Reset to saved position.
+Anchor.ResetToSaved = function(self)
+	local point, x, y = unpack(self.savedPosition)
+
+	self.currentPosition = { point, x, y }
+	self.lastPosition = { point, x, y }
+
+	self.frame:ClearAllPoints()
+	self.frame:SetPoint(point, UIParent, point, x, y)
+
+	local width, height = self.frame:GetSize()
+
 	self:ClearAllPoints()
 	self:SetPoint(point, UIParent, point, x, y)
 	self:SetSize(width, height)
@@ -157,6 +183,8 @@ Anchor.ResetToDefault = function(self)
 	self.frame:ClearAllPoints()
 	self.frame:SetPoint(point, UIParent, point, x, y)
 
+	local width, height = self.frame:GetSize()
+
 	self:ClearAllPoints()
 	self:SetPoint(point, UIParent, point, x, y)
 	self:SetSize(width, height)
@@ -174,7 +202,7 @@ Anchor.UpdateText = function(self)
 			msg = msg .. Colors.green.colorCode.."\n<Shift-Click to reset to default>|r"
 		end
 	end
-	self.Text:Text(msg)
+	self.Text:SetText(msg)
 	if (self:IsDragging()) then
 		self.Text:SetTextColor(unpack(Colors.normal))
 	else
@@ -185,9 +213,9 @@ end
 -- Anchor Script Handlers
 --------------------------------------
 Anchor.OnClick = function(self, button)
-	if (IsShiftKeyDown() and not self:IsInDefaultPosition()) then
+	if (button == "LeftButton" and IsShiftKeyDown() and not self:IsInDefaultPosition()) then
 		self:ResetToDefault()
-	elseif (self:HasMoved()) then
+	elseif (button == "RightButton" and self:HasMoved()) then
 		self:ResetLastChange()
 	end
 end
@@ -221,11 +249,12 @@ Anchor.OnLeave = function(self)
 end
 
 Anchor.OnShow = function(self)
-	local width, height = self.frame:GetSize()
 	local point, x, y = GetPosition(self.frame)
 
 	self.lastPosition = { point, x, y }
 	self.currentPosition = { point, x, y }
+
+	local width, height = self.frame:GetSize()
 
 	self:ClearAllPoints()
 	self:SetPoint(point, UIParent, point, x, y)
@@ -259,6 +288,7 @@ end
 -- Public API
 --------------------------------------
 Widgets.RegisterFrameForMovement = function(frame, db)
+	if (InCombatLockdown()) then return end
 	return Anchor:Create(frame, db).savedPosition
 end
 
