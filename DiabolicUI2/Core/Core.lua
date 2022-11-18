@@ -205,10 +205,17 @@ ns.OnInitialize = function(self)
 		SetRelativeScale(self.db.global.core.relativeScale)
 	end
 
-	-- Add a command to clear the main chat frame
+	-- Add a command to clear all chat frames.
 	-- I mainly use this to remove clutter before taking screenshots.
 	-- You could theoretically put this in a macro and clear chat then screenshot.
-	self:RegisterChatCommand("clear", function() ChatFrame1:Clear() end)
+	self:RegisterChatCommand("clear", function()
+		for _,frameName in pairs(_G.CHAT_FRAMES) do
+			local frame = _G[frameName]
+			if (frame and frame:IsShown()) then
+				frame:Clear()
+			end
+		end
+	end)
 
 	-- Our UI switcher. Because I have many. And use them all.
 	self:RegisterChatCommand("go", "SwitchUI")
