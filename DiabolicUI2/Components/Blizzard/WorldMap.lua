@@ -31,26 +31,12 @@ WorldMap.SetUpWorldMap = function(self)
 		self:RegisterEvent("ADDON_LOADED", "OnEvent")
 		return
 	end
-	
+
 	-- This script would taint the Quest Objective Tracker Button
 	if (QuestMapFrame) then
 		QuestMapFrame.VerticalSeparator:Hide()
-		QuestMapFrame:SetScript("OnHide", nil) 
+		QuestMapFrame:SetScript("OnHide", nil)
 	end
-
-	--local visible
-	--WorldMapFrame:HookScript("OnShow", function() 
-	--	if (Minimap:IsShown()) then
-	--		visible = true
-	--	end
-	--	Minimap:Hide()
-	--end)
-	--WorldMapFrame:HookScript("OnHide", function() 
-	--	if (visible) then
-	--		Minimap:Show()
-	--		visible = nil
-	--	end
-	--end)
 end
 
 WorldMap.OnEvent = function(self, event, ...)
