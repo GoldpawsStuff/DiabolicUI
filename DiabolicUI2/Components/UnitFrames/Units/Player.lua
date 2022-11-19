@@ -44,7 +44,7 @@ local IsAddOnEnabled = ns.API.IsAddOnEnabled
 local SetObjectScale = ns.API.SetObjectScale
 
 -- Constants
-local _, playerClass = UnitClass("player")
+local playerClass = ns.PlayerClass
 
 -- Element Callbacks
 --------------------------------------------
