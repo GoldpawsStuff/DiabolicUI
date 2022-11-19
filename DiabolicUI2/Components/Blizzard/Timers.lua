@@ -58,9 +58,9 @@ local Handled = {}
 
 Timers.UpdateMirrorTimers = function(self)
 	for i = 1, MIRRORTIMER_NUMTIMERS do
-		local timer  = _G["MirrorTimer"..i] -- 206,26
+		local timer  = _G["MirrorTimer"..i]
 		if (timer) then
-			local bar = _G[timer:GetName().."StatusBar"] -- 195,13 "TOP"
+			local bar = _G[timer:GetName().."StatusBar"]
 			if (not Handled[bar]) then
 
 				SetObjectScale(timer)
@@ -70,8 +70,8 @@ Timers.UpdateMirrorTimers = function(self)
 					timer:SetPoint("TOP", 0, -300)
 				end
 
-				local oldborder = _G[timer:GetName().."Border"] -- 256,64 "TOP",0,25
-				local label = _G[timer:GetName().."Text"] -- "TOP"
+				local oldborder = _G[timer:GetName().."Border"]
+				local label = _G[timer:GetName().."Text"]
 
 				for i = 1, bar:GetNumRegions() do
 					local region = select(i, bar:GetRegions())
@@ -82,7 +82,7 @@ Timers.UpdateMirrorTimers = function(self)
 				oldborder:SetTexture(nil)
 				timer:DisableDrawLayer("BACKGROUND")
 
-				bar:SetStatusBarTexture(GetMedia("plain")) -- GetMedia("bar-progress")
+				bar:SetStatusBarTexture(GetMedia("plain"))
 				bar:GetStatusBarTexture():SetDrawLayer("BORDER", 0)
 				--bar:SetHeight(18)
 				bar:SetSize(220,2)
@@ -94,10 +94,6 @@ Timers.UpdateMirrorTimers = function(self)
 				label:SetAlpha(.85)
 				label:ClearAllPoints()
 				label:SetPoint("BOTTOM", bar, "TOP", 0, 6)
-
-				--label:ClearAllPoints()
-				--label:SetPoint("CENTER", bar, 0,0)
-				--label:SetFontObject(GetFont(12,true))
 
 				local border = bar:CreateTexture(nil, "BORDER", nil, -2)
 				border:SetDrawLayer("BORDER", -2)
@@ -140,13 +136,12 @@ Timers.UpdateTimerTrackers = function(self, event, ...)
 					end
 				end
 
-				--bar:SetStatusBarTexture(GetMedia("bar-progress"))
 				bar:SetStatusBarTexture(GetMedia("plain"))
 				bar:GetStatusBarTexture():SetDrawLayer("BORDER", 0)
 				bar:DisableDrawLayer("BACKGROUND")
-				bar:SetSize(220,2) -- 18
+				bar:SetSize(220,2)
 				bar:ClearAllPoints()
-				bar:SetPoint("TOP", 0, -15) -- 3
+				bar:SetPoint("TOP", 0, -15)
 
 				local border = bar:CreateTexture(nil, "BORDER", nil, -2)
 				border:SetDrawLayer("BORDER", -2)
