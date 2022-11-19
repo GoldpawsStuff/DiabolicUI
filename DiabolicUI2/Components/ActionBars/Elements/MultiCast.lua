@@ -38,30 +38,34 @@ local CreateFrame = CreateFrame
 local SetObjectScale = ns.API.SetObjectScale
 
 MultiCast.UpdateMultiCastBar = function(self)
-	local multicast = MultiCastActionBarFrame
-	if (not multicast) then
-		return
+	if (InCombatLockdown()) then
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
+	MultiCastActionBarFrame:ClearAllPoints()
+	MultiCastActionBarFrame:SetPoint("CENTER", self:GetParent(), "CENTER", 0, 0)
+end
 
-	if (not self.Bar) then
-		local bar = SetObjectScale(CreateFrame("Frame", ns.Prefix.."MultiCastFrame", UIParent), 1.25)
-		bar.content = multicast
-		bar:SetSize(230,38)
-		bar:SetPoint("CENTER", 0, -200)
-		self.Bar = bar
+MultiCast.OnEvent = function(self, event, ...)
+	if (event == "PLAYER_REGEN_ENABLED") then
+		if (InCombatLockdown()) then return end
+		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+		self:UpdateMultiCastBar()
 	end
-
-	multicast.ignoreFramePositionManager = true
-	multicast:SetScript("OnShow", nil)
-	multicast:SetScript("OnHide", nil)
-	multicast:SetScript("OnUpdate", nil)
-	multicast:SetParent(self.Bar)
-	multicast:SetFrameLevel(self.Bar:GetFrameLevel() + 1)
-	multicast:ClearAllPoints()
-	multicast:SetPoint("CENTER", 0, 0)
-
 end
 
 MultiCast.OnInitialize = function(self)
+	local bar = SetObjectScale(CreateFrame("Frame", ns.Prefix.."MultiCastFrame", UIParent), 1.25)
+	bar:SetSize(230,38)
+	bar:SetPoint("CENTER", 0, -200)
+
+	MultiCastActionBarFrame:SetScript("OnShow", nil)
+	MultiCastActionBarFrame:SetScript("OnHide", nil)
+	MultiCastActionBarFrame:SetScript("OnUpdate", nil)
+	MultiCastActionBarFrame:SetParent(bar)
+
 	self:SecureHook("ShowMultiCastActionBar", "UpdateMultiCastBar")
+end
+
+MultiCast.OnEnable = function(self)
+	self:UpdateMultiCastBar()
 end
