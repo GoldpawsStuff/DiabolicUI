@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.67-RC] 2022-11-21
+### Fixed
+- Fixed vehicle page switching for retail.
+- Fixed bartender integration for retail.
+
 ## [2.0.66-RC] 2022-11-18
 ### Fixed
 - Fixed aura filters for retail.
