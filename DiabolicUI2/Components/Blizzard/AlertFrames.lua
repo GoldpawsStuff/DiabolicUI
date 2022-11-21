@@ -30,7 +30,6 @@ local AlertFrames = ns:NewModule("AlertFrames", "LibMoreEvents-1.0")
 local SetObjectScale = ns.API.SetObjectScale
 
 local GroupLootContainer_PostUpdate = function(self)
-	local db = ns.Config.AlertFrames
 	local lastIdx = nil
 	local layout = Module.layout
 	for i = 1, self.maxIndex do
@@ -55,7 +54,6 @@ local GroupLootContainer_PostUpdate = function(self)
 end
 
 local AlertSubSystem_AdjustAnchors = function(self, relativeAlert)
-	local db = ns.Config.AlertFrames
 	local alertFrame = self.alertFrame
 	if (alertFrame and alertFrame:IsShown()) then
 		alertFrame:ClearAllPoints()
@@ -66,7 +64,6 @@ local AlertSubSystem_AdjustAnchors = function(self, relativeAlert)
 end
 
 local AlertSubSystem_AdjustAnchorsNonAlert = function(self, relativeAlert)
-	local db = ns.Config.AlertFrames
 	local anchorFrame = self.anchorFrame
 	if (anchorFrame and anchorFrame:IsShown()) then
 		anchorFrame:ClearAllPoints()
@@ -77,7 +74,6 @@ local AlertSubSystem_AdjustAnchorsNonAlert = function(self, relativeAlert)
 end
 
 local AlertSubSystem_AdjustQueuedAnchors = function(self, relativeAlert)
-	local db = ns.Config.AlertFrames
 	for alertFrame in self.alertFramePool:EnumerateActive() do
 		local layout = Module.layout
 		alertFrame:ClearAllPoints()
@@ -98,7 +94,6 @@ local AlertSubSystem_AdjustPosition = function(alertFrame, subSystem)
 end
 
 local AlertFrame_PostUpdateAnchors = function()
-	local db = ns.Config.AlertFrames
 	local AlertFrameHolder = _G[ns.Prefix.."AlertFrameHolder"]
 
 	AlertFrameHolder:ClearAllPoints()
@@ -120,8 +115,6 @@ local AlertFrame_PostUpdateAnchors = function()
 end
 
 AlertFrames.OnInitialize = function(self)
-
-	local db = ns.Config.AlertFrames
 
 	local AlertFrameHolder = SetObjectScale(CreateFrame("Frame", ns.Prefix.."AlertFrameHolder", UIParent))
 	AlertFrameHolder:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 330)
