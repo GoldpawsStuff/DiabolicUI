@@ -28,6 +28,8 @@ if (not ns.IsRetail) then
 	return
 end
 
+do return end
+
 local noop = ns.Noop
 
 for i,frame in pairs(EditModeManagerFrame.registeredSystemFrames) do
