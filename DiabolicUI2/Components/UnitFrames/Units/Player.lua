@@ -186,11 +186,11 @@ local ClassPower_PostUpdate = function(element, cur, max, hasMaxChanged, powerTy
 		local point = element[i]
 		if (point:IsShown()) then
 			local value = point:GetValue()
-			local min, max = point:GetMinMaxValues()
+			local pmin, pmax = point:GetMinMaxValues()
 			if (element.inCombat) then
-				point:SetAlpha((cur == max) and 1 or (value < max) and .5 or 1)
+				point:SetAlpha((cur == max) and 1 or (value < pmax) and .5 or 1)
 			else
-				point:SetAlpha((cur == max) and 0 or (value < max) and .5 or 1)
+				point:SetAlpha((cur == max) and 0 or (value < pmax) and .5 or 1)
 			end
 		end
 	end
@@ -241,6 +241,35 @@ local Runes_PostUpdateColor = function(element, r, g, b, color, rune)
 			end
 			rune:SetStatusBarColor(r, g, b)
 			rune.fg:SetVertexColor(r, g, b)
+		end
+	end
+end
+
+local Stagger_SetStatusBarColor = function(element, r, g, b)
+	for i,point in next,element do
+		point:SetStatusBarColor(r, g, b)
+	end
+end
+
+local Stagger_PostUpdate = function(element, cur, max)
+
+	element[1].min = 0
+	element[1].max = max * .3
+	element[2].min = element[1].max
+	element[2].max = max * .6
+	element[3].min = element[2].max
+	element[3].max = max
+
+	for i,point in next,element do
+		local value = (cur > point.max) and point.max or (cur < point.min) and point.min or cur
+
+		point:SetMinMaxValues(point.min, point.max)
+		point:SetValue(value)
+
+		if (element.inCombat) then
+			point:SetAlpha((cur == max) and 1 or (value < point.max) and .5 or 1)
+		else
+			point:SetAlpha((cur == 0) and 0 or (value < point.max) and .5 or 1)
 		end
 	end
 end
@@ -703,7 +732,9 @@ UnitStyles["Player"] = function(self, unit, id)
 		local stagger = CreateFrame("Frame", nil, self)
 		stagger:SetSize(210,70)
 		stagger:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 300)
-		stagger.PostUpdate = ClassPower_PostUpdate
+		stagger.SetValue = noop
+		stagger.SetMinMaxValues = noop
+		stagger.SetStatusBarColor = Stagger_SetStatusBarColor
 
 		for i = 1,3 do
 			local point = CreatePoint(self, i)
@@ -717,6 +748,7 @@ UnitStyles["Player"] = function(self, unit, id)
 		end
 
 		self.Stagger = stagger
+		self.Stagger.PostUpdate = Stagger_PostUpdate
 	end
 
 	-- Runes (Death Knight)
