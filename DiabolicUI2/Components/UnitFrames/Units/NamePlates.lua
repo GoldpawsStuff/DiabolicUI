@@ -444,6 +444,7 @@ UnitStyles["NamePlate"] = function(self, unit, id)
 	auras["growth-y"] = "UP"
 	auras.sortMethod = "TIME_REMAINING"
 	auras.sortDirection = "DESCENDING"
+	auras.reanchorIfVisibleChanged = true
 	auras.CustomFilter = ns.AuraFilters.NameplateAuraFilter
 	auras.CreateButton = ns.AuraStyles.CreateButton
 	auras.PostUpdateButton = ns.AuraStyles.NameplatePostUpdateButton
