@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.70-RC] 2022-11-24
+- Fuck you edit mode.
+
 ## [2.0.69-RC] 2022-11-24
 ### Fixed
 - Fixed incorrect usage of the monk stagger element.
