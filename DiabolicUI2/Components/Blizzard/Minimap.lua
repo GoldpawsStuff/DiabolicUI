@@ -84,6 +84,14 @@ local IN_TORGHAST = (not IsResting()) and (GetRealZoneText() == GetRealZoneText(
 local UIHider = ns.Hider
 local noop = ns.Noop
 
+local getTimeStrings = function(h, m, suffix, useHalfClock, abbreviateSuffix)
+	if (useHalfClock) then
+		return "%.0f:%02.0f |cff888888%s|r", h, m, abbreviateSuffix and string_match(suffix, "^.") or suffix
+	else
+		return "%02.0f:%02.0f", h, m
+	end
+end
+
 local Minimap_OnMouseWheel = function(self, delta)
 	if (delta > 0) then
 		Minimap.ZoomIn:Click()
@@ -111,14 +119,6 @@ local Minimap_OnMouseUp = function(self, button)
 		end
 	else
 		Minimap_OnClick(self)
-	end
-end
-
-local getTimeStrings = function(h, m, suffix, useHalfClock, abbreviateSuffix)
-	if (useHalfClock) then
-		return "%.0f:%02.0f |cff888888%s|r", h, m, abbreviateSuffix and string_match(suffix, "^.") or suffix
-	else
-		return "%02.0f:%02.0f", h, m
 	end
 end
 
@@ -345,37 +345,6 @@ Bigmap.UpdateZone = function(self)
 	zoneName:SetText(minimapZoneName)
 end
 
-Bigmap.UpdatePosition = function(self)
-	if (InCombatLockdown()) then
-		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
-	end
-
-	if (not true) then -- ...?
-		if (ns.IsWrath) then
-			--MinimapCluster:SetMovable(true)
-			--MinimapCluster:SetUserPlaced(true)
-			MinimapCluster.IsUserPlaced = function() return true end
-
-		else
-
-			-- Opt out of the movement system
-			MinimapCluster.layoutParent = nil
-			MinimapCluster.isRightManagedFrame = nil
-			MinimapCluster.ignoreFramePositionManager = true
-			UIParentRightManagedFrameContainer:RemoveManagedFrame(MinimapCluster)
-
-			-- 256, 256
-			MinimapCluster:SetParent(UIParent)
-			MinimapCluster.IsInDefaultPosition = function() end
-
-		end
-
-		MinimapCluster:ClearAllPoints()
-		MinimapCluster:SetPoint("TOPRIGHT", -60, -40)
-	end
-
-end
-
 Bigmap.InitializeMinimap = function(self)
 
 	local MinimapCluster = SetObjectScale(_G.MinimapCluster)
@@ -436,6 +405,19 @@ Bigmap.InitializeMinimap = function(self)
 	Minimap:SetScript("OnMouseWheel", Minimap_OnMouseWheel)
 	Minimap:SetScript("OnMouseUp", Minimap_OnMouseUp)
 
+	-- Minimap Backdrop
+	local backdrop = Minimap:CreateTexture(nil, "BACKGROUND")
+	backdrop:SetPoint("TOPLEFT", -2, 2)
+	backdrop:SetPoint("BOTTOMRIGHT", 2, -2)
+	backdrop:SetTexture(GetMedia("minimap-mask-opaque"))
+	backdrop:SetVertexColor(0, 0, 0, .75)
+
+	-- Minimap Border
+	local border = Minimap:CreateTexture(nil, "OVERLAY", nil, 0)
+	border:SetPoint("CENTER")
+	border:SetSize(340,340)
+	border:SetTexture(GetMedia("minimap-border"))
+
 	-- Custom Widgets
 	--------------------------------------------------------
 	-- Zone
@@ -472,7 +454,6 @@ Bigmap.InitializeMinimap = function(self)
 	timeFrame:SetAllPoints(time)
 	self.time = time
 
-
 	local timeSuffix = timeFrame:CreateFontString()
 	timeSuffix:SetDrawLayer("OVERLAY", 1)
 	timeSuffix:SetJustifyH("CENTER")
@@ -483,7 +464,6 @@ Bigmap.InitializeMinimap = function(self)
 	timeSuffix:SetPoint("TOPLEFT", time, "TOPRIGHT", 0, -2)
 	time.suffix = timeSuffix
 
-
 	-- Coordinates
 	local coordinates = Minimap:CreateFontString()
 	coordinates:SetDrawLayer("OVERLAY", 1)
@@ -491,7 +471,6 @@ Bigmap.InitializeMinimap = function(self)
 	coordinates:SetJustifyV("BOTTOM")
 	coordinates:SetFontObject(GetFont(12,true))
 	self.coordinates = coordinates
-
 
 	-- Mail
 	local mailFrame = CreateFrame("Button", nil, Minimap)
@@ -511,20 +490,6 @@ Bigmap.InitializeMinimap = function(self)
 	mail:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 30)
 	mailFrame:SetAllPoints(mail)
 	self.mail = mail
-
-
-	-- Minimap Backdrop
-	local backdrop = Minimap:CreateTexture(nil, "BACKGROUND")
-	backdrop:SetPoint("TOPLEFT", -2, 2)
-	backdrop:SetPoint("BOTTOMRIGHT", 2, -2)
-	backdrop:SetTexture(GetMedia("minimap-mask-opaque"))
-	backdrop:SetVertexColor(0, 0, 0, .75)
-
-	-- Minimap Border
-	local border = Minimap:CreateTexture(nil, "OVERLAY", nil, 0)
-	border:SetPoint("CENTER")
-	border:SetSize(340,340)
-	border:SetTexture(GetMedia("minimap-border"))
 
 	-- Minimap Highlight
 	local highlight = Minimap:CreateTexture(nil, "OVERLAY", nil, -1)
@@ -674,8 +639,6 @@ Bigmap.InitializeMinimap = function(self)
 		end
 
 	end
-
-	self:UpdatePosition()
 end
 
 Bigmap.InitializeMBB = function(self)
@@ -746,17 +709,14 @@ Bigmap.OnEvent = function(self, event)
 		self:UpdateZone()
 		self:UpdateMail()
 		self:UpdateTimers()
-		self:UpdatePosition()
 
 	elseif (event == "VARIABLES_LOADED") or (event == "SETTINGS_LOADED") then
 		self:UpdateTimers()
-		self:UpdatePosition()
 
 	elseif (event == "PLAYER_REGEN_ENABLED") then
 		if (not InCombatLockdown()) then
 			self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 			self:UpdateTimers()
-			self:UpdatePosition()
 		end
 
 	elseif (event == "CVAR_UPDATE") then
