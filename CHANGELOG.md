@@ -4,8 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.70-RC] 2022-11-24
-- Fuck you edit mode.
+## [Unreleased] 2022-11-25
+### Fixed
+- Fixed wrong upvalues causing bugs in the Retail alertframe (achievement popups, loot popups etc) handling.
+- Removed the last remnants of a failed Wrath watchframe experiment causing bugs.
 
 ## [2.0.69-RC] 2022-11-24
 ### Fixed
