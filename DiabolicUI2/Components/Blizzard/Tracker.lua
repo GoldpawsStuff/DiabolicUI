@@ -315,7 +315,7 @@ local AutoHider_OnShow = function()
 end
 
 Tracker.InitializeAutoHider = function(self)
-	if (not ns.IsRetai) then return end
+	if (not ns.IsRetail) then return end
 
 	local tracker = ObjectiveTrackerFrame or WatchFrame
 
@@ -442,23 +442,14 @@ Tracker.UpdatePosition = function(self)
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
 
-	if (not ns.IsRetail) then
-		--ObjectiveTrackerFrame:SetMovable(true)
-		--ObjectiveTrackerFrame:SetUserPlaced(true)
-		ObjectiveTrackerFrame.IsUserPlaced = function() return true end
+	-- Opt out of the movement system
+	ObjectiveTrackerFrame.layoutParent = nil
+	ObjectiveTrackerFrame.isRightManagedFrame = nil
+	ObjectiveTrackerFrame.ignoreFramePositionManager = true
+	UIParentRightManagedFrameContainer:RemoveManagedFrame(ObjectiveTrackerFrame)
 
-	else
-
-		-- Opt out of the movement system
-		ObjectiveTrackerFrame.layoutParent = nil
-		ObjectiveTrackerFrame.isRightManagedFrame = nil
-		ObjectiveTrackerFrame.ignoreFramePositionManager = true
-		UIParentRightManagedFrameContainer:RemoveManagedFrame(ObjectiveTrackerFrame)
-
-		--ObjectiveTrackerFrame:SetParent(UIParent)
-		ObjectiveTrackerFrame.IsInDefaultPosition = function() end
-
-	end
+	--ObjectiveTrackerFrame:SetParent(UIParent)
+	ObjectiveTrackerFrame.IsInDefaultPosition = function() end
 
 	ObjectiveTrackerFrame:SetFrameStrata("LOW")
 	ObjectiveTrackerFrame:SetFrameLevel(50)
