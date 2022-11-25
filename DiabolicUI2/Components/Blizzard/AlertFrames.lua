@@ -31,7 +31,6 @@ local SetObjectScale = ns.API.SetObjectScale
 
 local GroupLootContainer_PostUpdate = function(self)
 	local lastIdx = nil
-	local layout = Module.layout
 	for i = 1, self.maxIndex do
 		local frame = self.rollFrames[i]
 		local prevFrame = self.rollFrames[i-1]
@@ -75,7 +74,6 @@ end
 
 local AlertSubSystem_AdjustQueuedAnchors = function(self, relativeAlert)
 	for alertFrame in self.alertFramePool:EnumerateActive() do
-		local layout = Module.layout
 		alertFrame:ClearAllPoints()
 		alertFrame:SetPoint("BOTTOM", relativeAlert, "TOP", 0, 10)
 		relativeAlert = alertFrame
