@@ -62,7 +62,7 @@ local Anchor_MT = { __index = Anchor }
 -- Anchor API
 --------------------------------------
 -- Constructor
-Anchor.Create = function(self, frame, savedPosition)
+Anchor.Create = function(self, frame, savedPosition, ...)
 
 	local anchor = setmetatable(CreateFrame("Button", nil, UIParent), Anchor_MT)
 	anchor:Hide()
@@ -72,6 +72,16 @@ Anchor.Create = function(self, frame, savedPosition)
 	anchor:SetMovable(true)
 	anchor.frame = frame
 	anchor.savedPosition = savedPosition or {}
+
+	-- Apply custom/static sizing to the anchor frame
+	local anchorWidth, anchorHeight = ...
+	if (anchorWidth and anchorHeight) then
+		anchor.anchorWidth = anchorWidth
+		anchor.anchorHeight = anchorHeight
+		anchor:SetSize(anchor.anchorWidth, anchor.anchorHeight)
+	end
+
+	-- Store the parsed default position.
 	anchor.defaultPosition = { GetPosition(frame) }
 
 	local overlay = anchor:CreateTexture(nil, "ARTWORK", nil, 1)
@@ -148,8 +158,12 @@ Anchor.ResetLastChange = function(self)
 
 	self:ClearAllPoints()
 	self:SetPoint(point, UIParent, point, x, y)
-	self:SetSize(width, height)
+	self:SetSize(self.anchorWidth or width, self.anchorHeight or height)
 	self:UpdateText()
+
+	if (self.frame.PostUpdateAnchoring) then
+		self.frame:PostUpdateAnchoring(self.anchorWidth or width, self.anchorHeight or height, point, UIParent, point, x, y)
+	end
 end
 
 -- Reset to saved position.
@@ -166,8 +180,12 @@ Anchor.ResetToSaved = function(self)
 
 	self:ClearAllPoints()
 	self:SetPoint(point, UIParent, point, x, y)
-	self:SetSize(width, height)
+	self:SetSize(self.anchorWidth or width, self.anchorHeight or height)
 	self:UpdateText()
+
+	if (self.frame.PostUpdateAnchoring) then
+		self.frame:PostUpdateAnchoring(self.anchorWidth or width, self.anchorHeight or height, point, UIParent, point, x, y)
+	end
 end
 
 -- Reset to default position.
@@ -189,8 +207,12 @@ Anchor.ResetToDefault = function(self)
 
 	self:ClearAllPoints()
 	self:SetPoint(point, UIParent, point, x, y)
-	self:SetSize(width, height)
+	self:SetSize(self.anchorWidth or width, self.anchorHeight or height)
 	self:UpdateText()
+
+	if (self.frame.PostUpdateAnchoring) then
+		self.frame:PostUpdateAnchoring(self.anchorWidth or width, self.anchorHeight or height, point, UIParent, point, x, y)
+	end
 end
 
 -- Update display text on the anchor.
@@ -251,6 +273,10 @@ Anchor.OnDragStop = function(self)
 
 	self.frame:ClearAllPoints()
 	self.frame:SetPoint(point, UIParent, point, x, y)
+
+	if (self.frame.PostUpdateAnchoring) then
+		self.frame:PostUpdateAnchoring(self.anchorWidth or width, self.anchorHeight or height, point, UIParent, point, x, y)
+	end
 end
 
 Anchor.OnEnter = function(self)
@@ -269,16 +295,20 @@ Anchor.OnShow = function(self)
 	self.lastPosition = { point, x, y }
 	self.currentPosition = { point, x, y }
 
-	local width, height = self.frame:GetSize()
 	local effectiveScale = self.frame:GetEffectiveScale()
+	local width, height = self.frame:GetSize()
 
 	self:SetFrameLevel(50)
 	self:SetAlpha(.75)
 	self:SetScale(effectiveScale)
 	self:ClearAllPoints()
 	self:SetPoint(point, UIParent, point, x, y)
-	self:SetSize(width, height)
+	self:SetSize(self.anchorWidth or width, self.anchorHeight or height)
 	self:UpdateText()
+
+	if (self.frame.PostUpdateAnchoring) then
+		self.frame:PostUpdateAnchoring(self.anchorWidth or width, self.anchorHeight or height, point, UIParent, point, x, y)
+	end
 end
 
 Anchor.OnHide = function(self)
@@ -306,9 +336,9 @@ end
 
 -- Public API
 --------------------------------------
-Widgets.RegisterFrameForMovement = function(frame, db)
+Widgets.RegisterFrameForMovement = function(frame, db, ...)
 	if (InCombatLockdown()) then return end
-	return Anchor:Create(frame, db).savedPosition
+	return Anchor:Create(frame, db, ...).savedPosition
 end
 
 Widgets.ShowMovableFrameAnchors = function()
