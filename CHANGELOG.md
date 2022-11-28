@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.71-RC] 2022-11-28
+### Fixed
+- Fixed a bug that would render primary action bar keybinds useless after leaving a vehicle or petbattle.
+
 ## [2.0.70-RC] 2022-11-25
 - Fuck you editmode.
 

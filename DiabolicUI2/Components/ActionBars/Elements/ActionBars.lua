@@ -325,6 +325,17 @@ Bars.SpawnBars = function(self)
 
 	self.Bars.PrimaryActionBar.Controller = controller
 
+	self.Bars.PrimaryActionBar.Disable = function(self)
+		ns.ActionBar.Disable(self)
+		ClearOverrideBindings(self)
+		UnregisterStateDriver(controller, "petbattle")
+	end
+
+	self.Bars.PrimaryActionBar.Enable = function(self)
+		ns.ActionBar.Enable(self)
+		self:UpdateBindings()
+		RegisterStateDriver(controller, "petbattle", "[petbattle]petbattle;nopetbattle")
+	end
 
 	-- Secondary ActionBar (Bottom Left MultiBar)
 	-------------------------------------------------------
