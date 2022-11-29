@@ -520,11 +520,31 @@ UnitFrames.KillNamePlateClutter = function(self)
 		return
 	end
 
-	local BlizzPlateManaBar = ClassNameplateManaBarFrame -- NamePlateDriverFrame.classNamePlatePowerBar
-	if (BlizzPlateManaBar) then
-		--BlizzPlateManaBar:Hide()
-		--BlizzPlateManaBar:UnregisterAllEvents()
-		BlizzPlateManaBar:SetAlpha(0)
+	--local BlizzPlateManaBar = ClassNameplateManaBarFrame -- NamePlateDriverFrame.classNamePlatePowerBar
+	--if (BlizzPlateManaBar) then
+	--	BlizzPlateManaBar:SetAlpha(0)
+	--end
+
+	if (NamePlateDriverFrame.classNamePlatePowerBar) then
+		NamePlateDriverFrame.classNamePlatePowerBar:Hide()
+		NamePlateDriverFrame.classNamePlatePowerBar:UnregisterAllEvents()
+	end
+
+	if (NamePlateDriverFrame.SetupClassNameplateBars) then
+		hooksecurefunc(NamePlateDriverFrame, "SetupClassNameplateBars", function(nameplate)
+			if (not nameplate or nameplate:IsForbidden()) then
+				return
+			end
+
+			if (nameplate.classNamePlateMechanicFrame) then
+				nameplate.classNamePlateMechanicFrame:Hide()
+			end
+
+			if (nameplate.classNamePlatePowerBar) then
+				nameplate.classNamePlatePowerBar:Hide()
+				nameplate.classNamePlatePowerBar:UnregisterAllEvents()
+			end
+		end)
 	end
 
 	if (NamePlateDriverFrame.UpdateNamePlateOptions) then
