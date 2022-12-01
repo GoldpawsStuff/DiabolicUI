@@ -52,6 +52,15 @@ local defaults = {
 			enableDevelopmentMode = false,
 			relativeScale = 1
 		},
+		chatbubbles = {
+			enableChatBubbles = true,
+			visibility = {
+				world = true,
+				worldcombat = true,
+				instance = true,
+				instancecombat = false
+			}
+		},
 		minimap = {
 			useServerTime = false,
 			useHalfClock = true
