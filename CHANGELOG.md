@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-12-01
+### Added
+- Added chat bubble styling. Untested.
+
+## [2.0.72-RC] 2022-12-01
+### Fixed
+- Fixed minimap left clicks in retail.
+
 ## [2.0.71-RC] 2022-11-28
 ### Fixed
 - Fixed a bug that would render primary action bar keybinds useless after leaving a vehicle or petbattle.
