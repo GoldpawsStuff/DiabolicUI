@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased] 2022-12-01
 ### Added
-- Added chat bubble styling. Untested.
+- Added chat bubble styling.
 
 ## [2.0.72-RC] 2022-12-01
 ### Fixed
