@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.75-RC] 2022-12-07
+### Fixed
+- Fixed a bug related to faulty event registration when handling compatibility and interactions with Bartender4.
+
 ## [2.0.74-RC] 2022-12-01
 ### Changed
 - Updated TaintLess.xml to 22-11-27.
