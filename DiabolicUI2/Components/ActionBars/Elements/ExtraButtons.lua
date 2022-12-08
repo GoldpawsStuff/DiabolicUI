@@ -226,9 +226,10 @@ ExtraButtons.OnInitialize = function(self)
 		if (UIPARENT_MANAGED_FRAME_POSITIONS) then
 			UIPARENT_MANAGED_FRAME_POSITIONS.ExtraAbilityContainer = nil
 		end
-		ExtraAbilityContainer.SetSize = noop
+		--ExtraAbilityContainer.SetSize = noop -- taints the editmode
 		ExtraAbilityContainer:SetFrameStrata("LOW")
 		ExtraAbilityContainer:SetFrameLevel(10)
+		ExtraAbilityContainer.ignoreFramePositionManager = true
 		ExtraActionBarFrame:SetParent(extraScaffold)
 		ExtraActionBarFrame:ClearAllPoints()
 		ExtraActionBarFrame:SetAllPoints()
