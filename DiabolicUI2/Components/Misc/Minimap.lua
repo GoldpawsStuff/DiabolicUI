@@ -350,15 +350,13 @@ MinimapMod.UpdateZone = function(self)
 end
 
 MinimapMod.UpdatePosition = function(self)
-	local db = ns.Config.Minimap
 	Minimap:SetParent(PetHider)
 	Minimap:ClearAllPoints()
-	Minimap:SetPoint(unpack(db.Position))
+	Minimap:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -60)
 	Minimap:SetMovable(true)
 end
 
 MinimapMod.UpdateSize = function(self)
-	local db = ns.Config.Minimap
 	Minimap:SetSize(280,280)
 end
 
