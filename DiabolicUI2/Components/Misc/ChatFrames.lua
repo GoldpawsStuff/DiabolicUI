@@ -24,26 +24,34 @@
 
 --]]
 local Addon, ns = ...
-local ChatFrames = ns:NewModule("ChatFrames", "LibMoreEvents-1.0", "AceHook-3.0")
+local ChatFrames = ns:NewModule("ChatFrames", "LibMoreEvents-1.0", "AceHook-3.0", "AceConsole-3.0", "AceTimer-3.0")
 
 -- Lua API
 local _G = _G
-local pairs = pairs
 local ipairs = ipairs
-local math_floor = math.floor
-local string_format = string.format
+local pairs = pairs
+local string_lower = string.lower
 
 -- WoW API
+local FCF_DockFrame = FCF_DockFrame
 local FCF_GetChatWindowInfo = FCF_GetChatWindowInfo
+local FCF_SetButtonSide = FCF_SetButtonSide
 local FCF_SetLocked = FCF_SetLocked
+local FCF_SetTabPosition = FCF_SetTabPosition
 local FCF_SetWindowAlpha = FCF_SetWindowAlpha
 local FCF_SetWindowColor = FCF_SetWindowColor
+local FCF_UpdateButtonSide = FCF_UpdateButtonSide
 local FCFDock_GetChatFrames = FCFDock_GetChatFrames
-local hooksecurefunc = hooksecurefunc
+local FCFDock_GetInsertIndex = FCFDock_GetInsertIndex
+local FCFDock_HideInsertHighlight = FCFDock_HideInsertHighlight
+local FCFDock_PlaceInsertHighlight = FCFDock_PlaceInsertHighlight
+local GetCursorPosition = GetCursorPosition
+local IsMouseButtonDown = IsMouseButtonDown
 local UIFrameFadeRemoveFrame = UIFrameFadeRemoveFrame
 
 -- Addon API
 local GetFont = ns.API.GetFont
+local GetPosition = ns.API.GetPosition
 local SetObjectScale = ns.API.SetObjectScale
 local UIHider = ns.Hider
 
@@ -85,11 +93,25 @@ local TEXTURES = {
 	}
 }
 
+-- Local element cache for lookups without member properties
+local Elements = setmetatable({}, { __index = function(t,k) rawset(t,k,{}) return rawget(t,k) end })
+
+local Tab_PostEnter = function(tab)
+	local frame = _G["ChatFrame"..tab:GetID()]
+	Elements[frame].isMouseOverTab = true
+	ChatFrames:UpdateClutter()
+end
+
+local Tab_PostLeave = function(tab)
+	local frame = _G["ChatFrame"..tab:GetID()]
+	Elements[frame].isMouseOverTab = false
+	ChatFrames:UpdateClutter()
+end
+
+-------------------------------------------------------
 -- Custom ChatFrame API
 -------------------------------------------------------
--------------------------------------------------------
 local ChatFrame = {}
-local Elements = setmetatable({}, { __index = function(t,k) rawset(t,k,{}) return rawget(t,k) end })
 
 -- Getters
 -------------------------------------------------------
@@ -264,260 +286,145 @@ ChatFrame.GetTabTextures = function(self)
 	end
 end
 
--- Post Updates
 -------------------------------------------------------
--- Apply our own font family and style, keep size.
-ChatFrame.PostUpdateFont = function(self)
-	if (self._templock) then
-		return
-	end
-	self._templock = true
-
-	local fontObject = self:GetFontObject()
-	local font, size, style = fontObject:GetFont()
-	fontObject:SetFont(font, size, "OUTLINE")
-	fontObject:SetShadowColor(0,0,0,.5)
-	fontObject:SetShadowOffset(-.75, -.75)
-	--fontObject:SetFont(font, size, "")
-	--fontObject:SetShadowColor(0,0,0,.75)
-
-	self._templock = nil
-end
-
 -- Module API
 -------------------------------------------------------
--------------------------------------------------------
-ChatFrames.StyleChat = function(self, frame)
-	local name = frame:GetName()
-	local id = frame:GetID()
+ChatFrames.StyleFrame = function(self, frame)
+	if (frame.isSkinned) then return end
 
-	frame:SetClampRectInsets(0, 0, 0, 0)
-	frame:SetClampedToScreen(false)
-	--frame:SetClampedToScreen(true)
-	--frame:SetClampRectInsets(-54, -54, -54, -310)
-	frame:SetFading(5)
-	frame:SetTimeVisible(25)
-	frame:SetIndentedWordWrap(false)
-	frame.ignoreFramePositionManager = true
+	-- Embed our API
+	for method,func in next,ChatFrame do
+		frame[method] = func
+	end
+
+	if (frame:GetID() == 2) then
+		local buttonframe = CombatLogQuickButtonFrame_Custom
+		for i = 1, buttonframe:GetNumRegions() do
+			local region = select(i, buttonframe:GetRegions())
+			if (region and region:GetObjectType() == "Texture") then
+				region:SetTexture(nil)
+			end
+		end
+	end
 
 	SetObjectScale(frame)
 
-	FCF_SetWindowColor(frame, 0, 0, 0, 0)
-	FCF_SetWindowAlpha(frame, 0, 1)
-	FCFTab_UpdateAlpha(frame)
-
-	if (Elements[frame].styled) then
-		return
-	end
-
-	local editBox = ChatFrame.GetEditBox(frame)
-	local buttonFrame = ChatFrame.GetButtonFrame(frame)
-	local minimizeButton = ChatFrame.GetMinimizeButton(frame)
-	local bottomButton = ChatFrame.GetToBottomButton(frame)
-	local scrollBar = ChatFrame.GetScrollBar(frame)
-	local scrollTexture = ChatFrame.GetScrollBarThumbTexture(frame)
-	local tab = ChatFrame.GetTab(frame)
-
-	for tex in ChatFrame.GetFrameTextures(frame) do
+	-- Kill frame textures.
+	for tex in frame:GetFrameTextures() do
 		tex:SetTexture(nil)
 		tex:SetAlpha(0)
 	end
 
-	if (buttonFrame) then
-		-- Take control of the tab's alpha changes
-		-- and disable blizzard's own fading.
-		buttonFrame:SetAlpha(1)
-		buttonFrame.SetAlpha = UIFrameFadeRemoveFrame
+	local buttonFrame = frame:GetButtonFrame()
 
-		--buttonFrame:SetParent(UIHider)
-		for tex in ChatFrame.GetButtonFrameTextures(frame) do
-			tex:SetTexture(nil)
-			tex:SetAlpha(0)
-		end
+	-- Take control of the tab's alpha changes
+	-- and disable blizzard's own fading.
+	--buttonFrame:SetAlpha(1)
+	--buttonFrame.SetAlpha = UIFrameFadeRemoveFrame
+
+	-- Kill the button frame textures.
+	for tex in frame:GetButtonFrameTextures() do
+		tex:SetTexture(nil)
+		tex:SetAlpha(0)
 	end
 
-	if (tab) then
+	local tab = frame:GetTab()
+	local fontObject = GetFont(15,true,"Chat")
 
-		local fontObject = GetFont(13,true,"Chat")
+	-- Take control of the tab's alpha changes
+	-- and disable blizzard's own fading.
+	tab:SetNormalFontObject(fontObject)
+	--tab:SetAlpha(1)
+	--tab.SetAlpha = UIFrameFadeRemoveFrame
 
-		-- Take control of the tab's alpha changes
-		-- and disable blizzard's own fading.
-		tab:SetNormalFontObject(fontObject)
-		tab:SetAlpha(1)
-		tab.SetAlpha = UIFrameFadeRemoveFrame
-
-		-- kill the tab textures
-		for tex in ChatFrame.GetTabTextures(frame) do
-			tex:SetTexture(nil)
-			tex:SetAlpha(0)
-		end
-
-		local tabText = ChatFrame.GetTabText(frame)
-		if (tabText) then
-			tabText:Hide()
-			tabText:SetAlpha(.5)
-			tabText:SetFontObject(fontObject)
-		end
-
-		local tabIcon = ChatFrame.GetTabIcon(frame)
-		if (tabIcon) then
-			tabIcon:Hide()
-		end
-
-		-- Toggle tab text visibility on hover
-		tab:HookScript("OnEnter", function()
-			Elements[frame].isMouseOverTab = true
-			self:UpdateClutter()
-		end)
-
-		tab:HookScript("OnLeave", function()
-			Elements[frame].isMouseOverTab = false
-			self:UpdateClutter()
-		end)
-
-		--tab:HookScript("OnClick", function()
-		--	--self:UpdateClutter()
-		--	--self:UpdateDockedChatTabs()
-		--end)
-
+	for tex in frame:GetTabTextures() do
+		tex:SetTexture(nil)
+		tex:SetAlpha(0)
 	end
 
-	if (editBox) then
-		for tex in ChatFrame.GetEditBoxTextures(frame) do
-			tex:SetTexture(nil)
-			tex:SetAlpha(0)
-		end
+	local tabText = frame:GetTabText()
+	tabText:Hide()
+	tabText:SetAlpha(.5)
+	tabText:SetFontObject(fontObject)
 
-		editBox:Hide()
-		editBox:SetAltArrowKeyMode(false)
-		editBox:SetHeight(45)
-		editBox:ClearAllPoints()
-		editBox:SetPoint("LEFT", frame, "LEFT", -15, 0)
-		editBox:SetPoint("RIGHT", frame, "RIGHT", 15, 0)
-		editBox:SetPoint("TOP", frame, "BOTTOM", 0, -1)
+	local tabIcon = frame:GetTabIcon()
+	if (tabIcon) then
+		tabIcon:Hide()
 	end
 
-	ChatFrames:UpdateChatFont(frame)
+	-- Toggle tab text visibility on hover
+	tab:HookScript("OnEnter", Tab_PostEnter)
+	tab:HookScript("OnLeave", Tab_PostLeave)
 
-	hooksecurefunc(frame, "SetFont", function(...) ChatFrames:UpdateChatFont(...) end) -- blizzard use this
-	hooksecurefunc(frame, "SetFontObject", function(...) ChatFrames:UpdateChatFont(...) end) -- not blizzard
-
-	Elements[frame].styled = true
-
-	if (self.PostSetupChatFrames) then
-		self:PostSetupChatFrames()
+	local editBox = frame:GetEditBox()
+	for tex in frame:GetEditBoxTextures() do
+		tex:SetTexture(nil)
+		tex:SetAlpha(0)
 	end
-end
+	editBox:Hide()
+	editBox:SetAltArrowKeyMode(false)
+	editBox:SetHeight(45)
+	editBox:ClearAllPoints()
+	editBox:SetPoint("LEFT", frame, "LEFT", -15, 0)
+	editBox:SetPoint("RIGHT", frame, "RIGHT", 15, 0)
+	editBox:SetPoint("TOP", frame, "BOTTOM", 0, -1)
 
-ChatFrames.SetupChatFrames = function(self)
-	for _,frameName in pairs(_G.CHAT_FRAMES) do
-		local frame = _G[frameName]
-		if (frame) then
-			self:StyleChat(frame)
-		end
-	end
-	if (self.PostUpdateChatFrames) then
-		self:PostUpdateChatFrames()
-	end
-end
-
-ChatFrames.SetupChatDefaults = function(self)
-
-	-- Need to set this to avoid frame popping back up
-	CHAT_FRAME_BUTTON_FRAME_MIN_ALPHA = 0
-
-	-- Chat window chat heights
-	if (CHAT_FONT_HEIGHTS) then
-		for i = #CHAT_FONT_HEIGHTS, 1, -1 do
-			CHAT_FONT_HEIGHTS[i] = nil
-		end
-		-- Ensure we have bigger fonts for Wrath!
-		for i,v in ipairs({ 12, 14, 16, 18, 20, 22, 24, 28, 32 }) do
-			CHAT_FONT_HEIGHTS[i] = v
-		end
-	end
+	self:UpdateChatFont(frame)
+	self:SecureHook(frame, "SetFont", "UpdateChatFont")
 
 end
 
-ChatFrames.SetupChatHover = function(self)
-	self.frame.elapsed = 0
-	self.frame:SetScript("OnUpdate", function(frame, elapsed)
-		frame.elapsed = frame.elapsed - elapsed
-		if (frame.elapsed > 0) then
-			return
+ChatFrames.StyleTempFrame = function(self)
+	local frame = FCF_GetCurrentChatFrame()
+	if (not frame or frame.isSkinned) then return end
+	self:StyleFrame(frame)
+end
+
+ChatFrames.SetChatFramePosition = function(self, frame)
+	local id = frame:GetID()
+
+	if (id == 1) then
+		if (not ns.IsRetail) then
+			frame.ignoreFramePositionManager = true
 		end
-		frame.elapsed = 1/60
-		self:UpdateClutter()
-	end)
-end
 
-ChatFrames.SetupDockingLocks = function(self)
-	if (self.OverrideDockingLocks) then
-		self:OverrideDockingLocks()
-	else
-		FCF_SetLocked(ChatFrame1, true)
-		hooksecurefunc("FCF_ToggleLockOnDockedFrame", function()
-			for _, frame in pairs(FCFDock_GetChatFrames(_G.GENERAL_CHAT_DOCK)) do
-				FCF_SetLocked(frame, true)
-			end
-		end)
-	end
-end
-
-ChatFrames.UpdateChatPositions = function(self)
-	if (self.OverrideChatPositions) then
-		self:OverrideChatPositions()
-	else
-		local frame = _G.ChatFrame1
 		frame:SetUserPlaced(false)
+		frame:SetSize(self:GetDefaultChatFrameSize())
 		frame:ClearAllPoints()
-		frame:SetAllPoints(self.frame)
-		frame.ignoreFramePositionManager = true
-	end
-end
+		frame:SetPoint(self:GetDefaultChatFramePosition())
 
-ChatFrames.UpdateChatFont = function(self, ...)
-	if (self.OverrideChatFont) then
-		self:OverrideChatFont(...)
-	else
-		ChatFrame.PostUpdateFont(...)
-	end
-end
-
-ChatFrames.UpdateDockedChatTabs = function(self)
-	local frame = ChatFrame1
-	if (self.frame:IsMouseOver(30,0,-30,30)) then
-		for _,frameName in pairs(_G.CHAT_FRAMES) do
-			local frame = _G[frameName]
-			if (frame) then
-				local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(frame:GetID())
-				if (docked and not frame.minimized) then
-					local tabText = ChatFrame.GetTabText(frame)
-					if (tabText) then
-						tabText:Show()
-						if (shown) then
-							tabText:SetAlpha(.9)
-						else
-							tabText:SetAlpha(.5)
-						end
-					end
-				end
-			end
+		if (ns.IsRetail) then
+			hooksecurefunc(frame, "SetPoint", function(frame)
+				frame:ClearAllPoints()
+				frame:SetPointBase(self:GetDefaultChatFramePosition())
+			end)
 		end
 
 	else
-		for _,frameName in pairs(_G.CHAT_FRAMES) do
-			local frame = _G[frameName]
-			if (frame) then
-				local name, fontSize, r, g, b, a, shown, locked, docked, uninteractable = FCF_GetChatWindowInfo(frame:GetID())
-				if (docked and not frame.minimized) then
-					local tabText = ChatFrame.GetTabText(frame)
-					if (tabText) then tabText:Hide() end
-				end
-			end
-		end
-
+		-- add back code to fix scale and positions of other frames here. Ignore for now.
 	end
+
+end
+
+ChatFrames.SaveChatFramePositionAndDimensions = function(self)
+end
+
+ChatFrames.UpdateTabAlpha = function(self, frame)
+	local tab = frame:GetTab()
+	if (tab.noMouseAlpha == .4 or tab.noMouseAlpha == .2) then
+		tab:SetAlpha(0)
+		tab.noMouseAlpha = 0
+	end
+end
+
+ChatFrames.UpdateChatFont = function(self, frame)
+	if (not frame) then return end
+	local font,_,style = GetFont(14,true,"Chat"):GetFont()
+	local currentFont, currentSize, currentStyle = frame:GetFont()
+	if (font == currentFont and style == currentStyle) then
+		return
+	end
+	frame:SetFont(font, currentSize, style)
 end
 
 ChatFrames.UpdateButtons = function(self, event, ...)
@@ -595,17 +502,17 @@ ChatFrames.UpdateButtons = function(self, event, ...)
 end
 
 ChatFrames.UpdateClutter = function(self, event, ...)
-	self:UpdateDockedChatTabs()
 	self:UpdateButtons(event, ...)
 end
 
-ChatFrames.KillToastButton = function(self)
-	if (QuickJoinToastButton) then
-		QuickJoinToastButton:SetParent(UIHider)
-	end
+ChatFrames.GetDefaultChatFrameSize = function(self)
+	return 475,228
 end
 
--- Returns an iterator for the global buttons
+ChatFrames.GetDefaultChatFramePosition = function(self)
+	return "BOTTOMLEFT", 54, 310
+end
+
 ChatFrames.GetGlobalButtons = function(self)
 	local counter = 0
 	local numEntries = #GLOBAL_BUTTONS
@@ -624,45 +531,62 @@ ChatFrames.GetGlobalButtons = function(self)
 	end
 end
 
--- Module Core
--------------------------------------------------------
 ChatFrames.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then
 		local isInitialLogin, isReloadingUi = ...
 		if (isInitialLogin or isReloadingUi) then
-			self:SetupChatFrames()
-			self:SetupChatHover()
-			self:SetupDockingLocks()
-			self:UpdateChatPositions()
-			self:UpdateClutter(event, ...)
-			self:RegisterEvent("UPDATE_CHAT_WINDOWS", "OnEvent")
-			self:RegisterEvent("UPDATE_FLOATING_CHAT_WINDOWS", "OnEvent")
-			self:SecureHook("FCF_OpenTemporaryWindow", "SetupChatFrames")
-			self:SecureHook("FCF_DockUpdate","UpdateClutter")
-		end
-		self:KillToastButton()
 
-	elseif (event == "UPDATE_CHAT_WINDOWS" or event == "UPDATE_FLOATING_CHAT_WINDOWS") then
-		self:SetupChatFrames()
-		self:UpdateChatPositions()
-		self:UpdateClutter(event, ...)
+			for i = 1, NUM_CHAT_WINDOWS do
+				local chatFrame = _G["ChatFrame"..i]
+				self:StyleFrame(chatFrame)
+				self:SetChatFramePosition(chatFrame)
+			end
+
+			self:UpdateButtons(event, ...)
+
+			self:SecureHook("FCF_OpenTemporaryWindow", "StyleTempFrame")
+			self:ScheduleRepeatingTimer("UpdateClutter", 1/10)
+
+			if (ns.IsRetail) then
+				QuickJoinToastButton:UnregisterAllEvents()
+				QuickJoinToastButton:SetParent(UIHider)
+				QuickJoinToastButton:Hide()
+			end
+
+			if (not ns.IsRetail) then
+				self:RegisterEvent("UPDATE_FLOATING_CHAT_WINDOWS", "OnEvent")
+				self:RegisterEvent("UPDATE_CHAT_WINDOWS", "OnEvent")
+				self:RegisterEvent("VARIABLES_LOADED", "OnEvent")
+			end
+
+			ChatFrame1:Clear()
+		end
+	elseif (event == "VARIABLES_LOADED" or event == "UPDATE_CHAT_WINDOWS" or event == "UPDATE_FLOATING_CHAT_WINDOWS") then
+		for i = 1, NUM_CHAT_WINDOWS do
+			local chatFrame = _G["ChatFrame"..i]
+			self:SetChatFramePosition(chatFrame)
+		end
 	end
 end
 
-ChatFrames.GetDefaultChatFrameSize = function(self)
-	return 475,228
-end
-
-ChatFrames.GetDefaultChatFramePosition = function(self)
-	return "BOTTOMLEFT", 54, 310
-end
-
 ChatFrames.OnInitialize = function(self)
+
 	local scaffold = SetObjectScale(CreateFrame("Frame", nil, UIParent))
 	scaffold:SetSize(self:GetDefaultChatFrameSize())
 	scaffold:SetPoint(self:GetDefaultChatFramePosition())
 	self.frame = scaffold
-	self:SetupChatDefaults()
+
+	if (CHAT_FONT_HEIGHTS) then
+		for i = #CHAT_FONT_HEIGHTS, 1, -1 do
+			CHAT_FONT_HEIGHTS[i] = nil
+		end
+		for i,v in ipairs({ 12, 14, 16, 18, 20, 22, 24, 28, 32 }) do
+			CHAT_FONT_HEIGHTS[i] = v
+		end
+	end
+
+	--self:RegisterChatCommand("resetchat", "ResetChat")
+
 end
 
 ChatFrames.OnEnable = function(self)
