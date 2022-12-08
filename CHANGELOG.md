@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-12-08
+## [2.0.76-RC] 2022-12-08
+### Changed
+- The chat module will now auto-disable if the addons Prat or Glass are enabled.
+
 ### Fixed
 - Fixed the extra action buttons for 10.0.2.
 - Fixed the objectives tracker for 10.0.2.
