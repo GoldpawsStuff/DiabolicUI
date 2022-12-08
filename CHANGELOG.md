@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-12-08
+### Fixed
+- Fixed the extra action buttons for 10.0.2.
+
 ## [2.0.75-RC] 2022-12-07
 ### Fixed
 - Fixed a bug related to faulty event registration when handling compatibility and interactions with Bartender4.
