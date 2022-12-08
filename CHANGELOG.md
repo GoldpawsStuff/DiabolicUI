@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed the extra action buttons for 10.0.2.
 - Fixed the objectives tracker for 10.0.2.
 - Fixed the chat frames for 10.0.2.
+- Fixed the minimap for 10.0.2.
 - Stopped tainting the edit mode.
 
 ## [2.0.75-RC] 2022-12-07
