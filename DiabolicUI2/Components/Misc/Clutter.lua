@@ -283,8 +283,6 @@ Clutter.HandleArcheologyBar = function(self, event, ...)
 		return self:RegisterEvent("ADDON_LOADED", "HandleArcheologyBar")
 	end
 
-	local db = ns.Config.Clutter
-
 	bar:ClearAllPoints()
 	bar:SetPoint("TOP", UIParent, "TOP", 0, -360) -- no idea if this is good
 end
