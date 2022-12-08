@@ -24,7 +24,7 @@
 
 --]]
 local Addon, ns = ...
-local Bigmap = ns:NewModule("Minimap", "LibMoreEvents-1.0", "AceTimer-3.0", "AceHook-3.0", "AceConsole-3.0")
+local MinimapMod = ns:NewModule("Minimap", "LibMoreEvents-1.0", "AceTimer-3.0", "AceHook-3.0", "AceConsole-3.0")
 
 -- Lua API
 local ipairs = ipairs
@@ -81,6 +81,7 @@ local L_HAVE_MAIL_FROM = HAVE_MAIL_FROM -- "Unread mail from:"
 local TORGHAST_ZONE_ID = 2162
 local IN_TORGHAST = (not IsResting()) and (GetRealZoneText() == GetRealZoneText(TORGHAST_ZONE_ID))
 
+local PetHider = ns.PetHider
 local UIHider = ns.Hider
 local noop = ns.Noop
 
@@ -189,7 +190,7 @@ local Time_OnClick = function(self, mouseButton)
 	end
 end
 
-Bigmap.UpdateCompass = function(self)
+MinimapMod.UpdateCompass = function(self)
 	local compassFrame = self.compassFrame
 	if (not compassFrame) then
 		return
@@ -227,7 +228,7 @@ Bigmap.UpdateCompass = function(self)
 	end
 end
 
-Bigmap.UpdatePerformance = function(self)
+MinimapMod.UpdatePerformance = function(self)
 	local performance = self.performance
 	if (not performance) then
 		return
@@ -261,7 +262,7 @@ Bigmap.UpdatePerformance = function(self)
 
 end
 
-Bigmap.UpdateClock = function(self)
+MinimapMod.UpdateClock = function(self)
 	local time = self.time
 	if (not time) then
 		return
@@ -287,7 +288,7 @@ Bigmap.UpdateClock = function(self)
 	end
 end
 
-Bigmap.UpdateMail = function(self)
+MinimapMod.UpdateMail = function(self)
 	local mail = self.mail
 	if (not mail) then
 		return
@@ -300,7 +301,7 @@ Bigmap.UpdateMail = function(self)
 	end
 end
 
-Bigmap.UpdateTimers = function(self)
+MinimapMod.UpdateTimers = function(self)
 	-- In Torghast, map is always locked. Weird.
 	-- *Note that this is only in the tower, not the antechamber.
 	-- *We're resting in the antechamber, and it's a sanctuary. Good indicators.
@@ -327,7 +328,7 @@ Bigmap.UpdateTimers = function(self)
 	end
 end
 
-Bigmap.UpdateZone = function(self)
+MinimapMod.UpdateZone = function(self)
 	local zoneName = self.zoneName
 	if (not zoneName) then
 		return
@@ -348,14 +349,22 @@ Bigmap.UpdateZone = function(self)
 	zoneName:SetText(minimapZoneName)
 end
 
-Bigmap.InitializeMinimap = function(self)
+MinimapMod.UpdatePosition = function(self)
+	local db = ns.Config.Minimap
+	Minimap:SetParent(PetHider)
+	Minimap:ClearAllPoints()
+	Minimap:SetPoint(unpack(db.Position))
+	Minimap:SetMovable(true)
+end
 
-	local MinimapCluster = SetObjectScale(_G.MinimapCluster)
-	local Minimap = _G.Minimap
+MinimapMod.UpdateSize = function(self)
+	local db = ns.Config.Minimap
+	Minimap:SetSize(280,280)
+end
 
-	-- Clear Clutter
-	--------------------------------------------------------
+MinimapMod.DisableBlizzard = function(self)
 	MinimapCluster:UnregisterAllEvents()
+	MinimapCluster:EnableMouse(false)
 	MinimapBackdrop:SetParent(UIHider)
 	GameTimeFrame:SetParent(UIHider)
 	GameTimeFrame:UnregisterAllEvents()
@@ -367,7 +376,16 @@ Bigmap.InitializeMinimap = function(self)
 		MinimapCluster.Tracking:SetParent(UIHider)
 		MinimapCluster.ZoneTextButton:SetParent(UIHider)
 		Minimap.ZoomIn:SetParent(UIHider)
+		Minimap.ZoomIn:UnregisterAllEvents()
 		Minimap.ZoomOut:SetParent(UIHider)
+		Minimap.ZoomOut:UnregisterAllEvents()
+		Minimap:SetArchBlobRingAlpha(0)
+		Minimap:SetArchBlobRingScalar(0)
+		Minimap:SetQuestBlobRingAlpha(0)
+		Minimap:SetQuestBlobRingScalar(0)
+		ExpansionLandingPageMinimapButton:SetParent(UIHider)
+		ExpansionLandingPageMinimapButton:ClearAllPoints()
+		ExpansionLandingPageMinimapButton:SetPoint("CENTER")
 	else
 		MinimapBorderTop:SetParent(UIHider)
 		MiniMapInstanceDifficulty:SetParent(UIHider)
@@ -378,31 +396,15 @@ Bigmap.InitializeMinimap = function(self)
 		MinimapZoomIn:SetParent(UIHider)
 		MinimapZoomOut:SetParent(UIHider)
 	end
+end
 
-	-- Setup Main Frames
-	--------------------------------------------------------
-	if (ns.IsRetail) then
-		local dummy = CreateFrame("Frame", nil, MinimapCluster)
-		dummy:SetPoint(Minimap:GetPoint())
+MinimapMod.StyleMinimap = function(self)
 
-		-- Sourced from FrameXML/Minimap.lua#264
-		dummy.defaultFramePoints = {};
-		for i = 1, dummy:GetNumPoints() do
-			local point, relativeTo, relativePoint, offsetX, offsetY = dummy:GetPoint(i);
-			dummy.defaultFramePoints[i] = { point = point, relativeTo = relativeTo, relativePoint = relativePoint, offsetX = offsetX, offsetY = offsetY };
-		end
-
-		MinimapCluster.Minimap = dummy
-	end
-
-	local minimapHolder = CreateFrame("Frame", ns.Prefix.."MinimapAnchor", Minimap)
-	minimapHolder:SetSize(280,280) -- keep it minimap sized
-	minimapHolder:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60, -60)
+	SetObjectScale(MinimapCluster)
+	SetObjectScale(Minimap)
 
 	Minimap:SetFrameStrata("MEDIUM")
-	Minimap:ClearAllPoints()
-	Minimap:SetPoint("TOPRIGHT", minimapHolder, "TOPRIGHT", 0, 0)
-	Minimap:SetSize(280,280) -- default is 140,140
+	Minimap:SetSize(280,280)
 	Minimap:SetMaskTexture(GetMedia("minimap-mask-transparent"))
 	Minimap:EnableMouseWheel(true)
 	Minimap:SetScript("OnMouseWheel", Minimap_OnMouseWheel)
@@ -644,10 +646,10 @@ Bigmap.InitializeMinimap = function(self)
 	end
 end
 
-Bigmap.InitializeMBB = function(self)
+MinimapMod.InitializeMBB = function(self)
 end
 
-Bigmap.InitializeNarcissus = function(self)
+MinimapMod.InitializeNarcissus = function(self)
 	local Narci_MinimapButton = SetObjectScale(Narci_MinimapButton)
 	if (not Narci_MinimapButton) then
 		return
@@ -678,7 +680,7 @@ Bigmap.InitializeNarcissus = function(self)
 
 end
 
-Bigmap.InitializeAddon = function(self, addon, ...)
+MinimapMod.InitializeAddon = function(self, addon, ...)
 	if (addon == "ADDON_LOADED") then
 		addon = ...
 	end
@@ -692,7 +694,7 @@ Bigmap.InitializeAddon = function(self, addon, ...)
 	self.Addons[addon] = nil
 end
 
-Bigmap.SetClock = function(self, input)
+MinimapMod.SetClock = function(self, input)
 	local args = { self:GetArgs(string_lower(input)) }
 	for _,arg in ipairs(args) do
 		if (arg == "24") then
@@ -707,47 +709,46 @@ Bigmap.SetClock = function(self, input)
 	end
 end
 
-Bigmap.OnEvent = function(self, event)
+MinimapMod.OnEvent = function(self, event)
 	if (event == "PLAYER_ENTERING_WORLD") then
 		self:UpdateZone()
 		self:UpdateMail()
 		self:UpdateTimers()
 
-	elseif (event == "VARIABLES_LOADED") or (event == "SETTINGS_LOADED") then
+	elseif (event == "VARIABLES_LOADED") then
 		self:UpdateTimers()
+		self:UpdateSize()
+		self:UpdatePosition()
 
 	elseif (event == "PLAYER_REGEN_ENABLED") then
 		if (not InCombatLockdown()) then
 			self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 			self:UpdateTimers()
 		end
-
-	elseif (event == "CVAR_UPDATE") then
-		self:UpdateTimers()
-
-	elseif (event == "UPDATE_PENDING_MAIL") then
-		self:UpdateMail()
-
-	elseif (event == "ZONE_CHANGED") or (event == "ZONE_CHANGED_INDOORS") or (event == "ZONE_CHANGED_NEW_AREA") then
-		self:UpdateZone()
 	end
 end
 
-Bigmap.OnInitialize = function(self)
+MinimapMod.OnInitialize = function(self)
 
-	self:InitializeMinimap()
-	self:RegisterEvent("CVAR_UPDATE", "OnEvent")
+	self:DisableBlizzard()
+	self:StyleMinimap()
+	self:UpdatePosition()
+	self:UpdateSize()
+
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
-	self:RegisterEvent("UPDATE_PENDING_MAIL", "OnEvent")
 	self:RegisterEvent("VARIABLES_LOADED", "OnEvent")
-	self:RegisterEvent("ZONE_CHANGED", "OnEvent")
-	self:RegisterEvent("ZONE_CHANGED_INDOORS", "OnEvent")
-	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
-	self:RegisterChatCommand("setclock", "SetClock")
+	self:RegisterEvent("CVAR_UPDATE", "UpdateTimers")
+	self:RegisterEvent("UPDATE_PENDING_MAIL", "UpdateMail")
+	self:RegisterEvent("ZONE_CHANGED", "UpdateZone")
+	self:RegisterEvent("ZONE_CHANGED_INDOORS", "UpdateZone")
+	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateZone")
 
 	if (ns.IsRetail) then
-		self:RegisterEvent("SETTINGS_LOADED", "OnEvent")
+		self:RegisterEvent("EDIT_MODE_LAYOUTS_UPDATED", "UpdatePosition")
+		self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", "UpdatePosition")
 	end
+
+	self:RegisterChatCommand("setclock", "SetClock")
 
 	if (not SlashCmdList["CALENDAR"]) then
 		self:RegisterChatCommand("calendar", function()
