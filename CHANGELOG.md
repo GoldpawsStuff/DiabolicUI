@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.77-RC] 2022-12-09
+### Fixed
+- The wrath quest tracker once again works today and all the animals in the forest are happy!
+
 ## [2.0.76-RC] 2022-12-08
 ### Changed
 - The chat module will now auto-disable if the addons Prat or Glass are enabled.
