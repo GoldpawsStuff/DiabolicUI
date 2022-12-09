@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.78-RC] 2022-12-09
+### Fixed
+- Our micro menu module should no longer interfere with ConsolePort.
+
 ## [2.0.77-RC] 2022-12-09
 ### Fixed
 - The wrath quest tracker once again works today and all the animals in the forest are happy!
