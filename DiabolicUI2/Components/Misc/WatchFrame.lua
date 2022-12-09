@@ -189,7 +189,7 @@ Tracker.InitializeWatchFrame = function(self)
 	self:UpdateWatchFrame()
 end
 
-Tracker.UpdateWrathTracker = function(self)
+Tracker.UpdateWatchFrame = function(self)
 
 	SetCVar("watchFrameWidth", "1") -- 306 or 204
 
