@@ -41,6 +41,7 @@ local UnitAffectingCombat = UnitAffectingCombat
 
 -- Addon API
 local GetFont = ns.API.GetFont
+local IsAddOnEnabled = ns.API.IsAddOnEnabled
 local SetObjectScale = ns.API.SetObjectScale
 
 -- Create a custom bubble.
@@ -415,6 +416,9 @@ ChatBubbles.OnEvent = function(self, event, ...)
 end
 
 ChatBubbles.OnInitialize = function(self)
+	if (IsAddOnEnabled("Prat-3.0")) then
+		return self:Disable()
+	end
 
 	self.customBubbles = {}
 	self.numBubbles = 0
