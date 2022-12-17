@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 2022-12-17
+- This release is for Wrath only.
+
+## [2.0.8-RC] 2022-12-14
+### Fixed
+- Chat bubbles are now disabled when Prat is loaded. They just don't play nice together.
+
 ## [2.0.79-RC] 2022-12-09
 ### Fixed
 - Chat bubble font sizes should now be more sane.
