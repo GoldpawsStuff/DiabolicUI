@@ -1,6 +1,6 @@
 [![patreon](https://www.goldpawsstuff.com/shared/img/common/pa-button.png)](https://www.patreon.com/goldpawsstuff)
 [![paypal](https://www.goldpawsstuff.com/shared/img/common/pp-button.png)](https://www.paypal.me/goldpawsstuff)
-[![discord](https://www.goldpawsstuff.com/shared/img/common/dd-button.png)](https://discord.gg/MUSfWXd)
+[![discord](https://www.goldpawsstuff.com/shared/img/common/dd-button.png)](https://discord.gg/RwcSm8V3Dy)
 [![twitter](https://www.goldpawsstuff.com/shared/img/common/tw-button.png)](https://twitter.com/GoldpawsStuff)
 
 Check out the [FAQ](https://github.com/GoldpawsStuff/DiabolicUI/wiki/FAQ) section for answers to most of your questions, as well as the various [/chatcommands](https://github.com/GoldpawsStuff/DiabolicUI/wiki/Chat_Commands) available to the user interface!
