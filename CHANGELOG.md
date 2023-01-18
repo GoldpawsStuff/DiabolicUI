@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.10-RC] 2023-01-18
+### Fixed
+- More fixes for the new checked/highlight action button textures in WoW 3.4.1.
+
 ## [2.0.9-RC] 2023-01-18
 ### Fixed
 - Fixed issues related to API changes in WoW 3.4.1.
