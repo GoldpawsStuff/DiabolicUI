@@ -83,7 +83,7 @@ PetButton.Create = function(self, id, name, parent)
 	button:SetAttribute("buttonLock", true)
 
 	button:RegisterForDrag("LeftButton", "RightButton")
-	button:RegisterForClicks("AnyUp", ns.IsRetail and "AnyDown")
+	button:RegisterForClicks("AnyUp")
 
 	button:UnregisterAllEvents()
 	button:SetScript("OnEvent", nil)

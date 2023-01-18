@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] 2022-12-17
-- This release is for Wrath only.
+## [2.0.9-RC] 2023-01-18
+### Fixed
+- Fixed issues related to API changes in WoW 3.4.1.
 
 ## [2.0.8-RC] 2022-12-14
 ### Fixed

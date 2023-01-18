@@ -138,10 +138,14 @@ local style = function(button)
 	button:SetScript("OnEnter", buttonOnEnter)
 	button:SetScript("OnLeave", buttonOnLeave)
 
+	-- Some crap WoW10 border I can't figure out how to remove right now.
+	-- This has now been backported to Wrath Classic 3.4.1 too. Great.
+	button:DisableDrawLayer("ARTWORK")
+
 	-- Button is pushed
 	-- Responds to mouse and keybinds
 	-- if we allow blizzard to handle it.
-	local pushedTexture = button:CreateTexture(nil, "ARTWORK", nil, 1)
+	local pushedTexture = button:CreateTexture(nil, "OVERLAY", nil, 1)
 	pushedTexture:SetVertexColor(1, 1, 1, .05)
 	pushedTexture:SetTexture(m)
 	pushedTexture:SetAllPoints(button.icon)
@@ -149,11 +153,11 @@ local style = function(button)
 
 	button:SetPushedTexture(button.PushedTexture)
 	button:GetPushedTexture():SetBlendMode("ADD")
-	button:GetPushedTexture():SetDrawLayer("ARTWORK", 1)
+	button:GetPushedTexture():SetDrawLayer("OVERLAY", 1)
 
 	-- Autoattack flash
 	local flash = button.Flash
-	flash:SetDrawLayer("ARTWORK", 2)
+	flash:SetDrawLayer("OVERLAY", 2)
 	flash:SetAllPoints(icon)
 	flash:SetVertexColor(1, 0, 0, .25)
 	flash:SetTexture(m)

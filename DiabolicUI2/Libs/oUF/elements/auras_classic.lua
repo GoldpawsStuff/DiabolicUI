@@ -233,7 +233,7 @@ local function updateIcon(element, unit, index, offset, filter, isDebuff, visibl
 			end
 
 			if(button.Icon) then button.Icon:SetTexture(texture) end
-			if(button.Count) then button.Count:SetText(count > 1 and count) end
+			if(button.Count) then button.Count:SetText(count > 1 and count or nil) end
 
 			local width = element.width or element.size or 16
 			local height = element.height or element.size or 16
